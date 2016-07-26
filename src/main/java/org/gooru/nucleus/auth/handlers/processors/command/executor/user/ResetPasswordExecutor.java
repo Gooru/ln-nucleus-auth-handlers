@@ -15,12 +15,16 @@ import org.gooru.nucleus.auth.handlers.utils.InternalHelper;
 import org.gooru.nucleus.auth.handlers.utils.ServerValidatorUtility;
 import org.javalite.activejdbc.LazyList;
 
+import io.vertx.core.json.JsonObject;
+
 class ResetPasswordExecutor implements DBExecutor {
 
     private RedisClient redisClient;
     private MessageContext messageContext;
     private String emailId;
     private AJEntityUserIdentity userIdentity;
+    private JsonObject customizedMailTemplate;
+    private String mailTemplateName;
 
     public ResetPasswordExecutor(MessageContext messageContext) {
         this.redisClient = RedisClient.instance();
@@ -32,6 +36,14 @@ class ResetPasswordExecutor implements DBExecutor {
         emailId = messageContext.requestBody().getString(ParameterConstants.PARAM_USER_EMAIL_ID);
         ServerValidatorUtility.rejectIfNull(emailId, MessageCodeConstants.AU0014,
             HttpConstants.HttpStatus.BAD_REQUEST.getCode());
+
+        customizedMailTemplate =
+            messageContext.requestBody().getJsonObject(ParameterConstants.CUSTOMIZE_MAIL_TEMPLATE);
+        if (customizedMailTemplate != null && !customizedMailTemplate.isEmpty()) {
+            mailTemplateName = customizedMailTemplate.getString(ParameterConstants.MAIL_TEMPLATE_NAME);
+            ServerValidatorUtility.rejectIfNullOrEmpty(mailTemplateName, MessageCodeConstants.AU0052,
+                HttpConstants.HttpStatus.BAD_REQUEST.getCode());
+        }
     }
 
     @Override
@@ -47,9 +59,21 @@ class ResetPasswordExecutor implements DBExecutor {
         final String token = InternalHelper.generatePasswordResetToken(userIdentity.getUserId());
         this.redisClient.set(token, userIdentity.getEmailId(), HelperConstants.EXPIRE_IN_SECONDS);
         MailNotifyBuilder mailNotifyBuilder = new MailNotifyBuilder();
-        mailNotifyBuilder.setTemplateName(MailTemplateConstants.PASSWORD_CHANGE_REQUEST).addToAddress(emailId)
-            .putContext(ParameterConstants.MAIL_TOKEN, InternalHelper.encodeToken(token))
-            .putContext(ParameterConstants.PARAM_USER_ID, userIdentity.getUserId());
+
+        if (customizedMailTemplate == null || customizedMailTemplate.isEmpty()) {
+            mailNotifyBuilder.setTemplateName(MailTemplateConstants.PASSWORD_CHANGE_REQUEST).addToAddress(emailId)
+                .putContext(ParameterConstants.MAIL_TOKEN, InternalHelper.encodeToken(token))
+                .putContext(ParameterConstants.PARAM_USER_ID, userIdentity.getUserId());
+        } else {
+            mailNotifyBuilder.setTemplateName(mailTemplateName).addToAddress(emailId)
+                .putContext(ParameterConstants.MAIL_TOKEN, InternalHelper.encodeToken(token))
+                .putContext(ParameterConstants.PARAM_USER_ID, userIdentity.getUserId());
+            JsonObject mailContext = customizedMailTemplate.getJsonObject(ParameterConstants.MAIL_TEMPLATE_CONTEXT);
+            mailContext.forEach(field -> {
+                String value = (field.getValue() != null ? field.getValue().toString() : null);
+                mailNotifyBuilder.putContext(field.getKey(), value);
+            });
+        }
         return new MessageResponse.Builder().setResponseBody(null).addMailNotify(mailNotifyBuilder.build())
             .setContentTypeJson().setStatusOkay().successful().build();
     }

@@ -48,6 +48,7 @@ public class UserVerticle extends AbstractVerticle {
                     final JsonArray mailNotifies = result.mailNotify();
                     Stream<JsonObject> stream = mailNotifies.stream().map(mailNotify -> (JsonObject) mailNotify);
                     stream.forEach((JsonObject mailNotify) -> {
+                        LOG.debug("sending email with data :{}", mailNotify.toString());
                         InternalHelper.executeHTTPClientPost(configRegistry.getMailRestApiUrl(), mailNotify.toString(),
                             accessToken);
                     });
