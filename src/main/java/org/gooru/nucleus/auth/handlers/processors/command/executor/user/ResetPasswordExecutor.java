@@ -69,10 +69,12 @@ class ResetPasswordExecutor implements DBExecutor {
                 .putContext(ParameterConstants.MAIL_TOKEN, InternalHelper.encodeToken(token))
                 .putContext(ParameterConstants.PARAM_USER_ID, userIdentity.getUserId());
             JsonObject mailContext = customizedMailTemplate.getJsonObject(ParameterConstants.MAIL_TEMPLATE_CONTEXT);
-            mailContext.forEach(field -> {
-                String value = (field.getValue() != null ? field.getValue().toString() : null);
-                mailNotifyBuilder.putContext(field.getKey(), value);
-            });
+            if (mailContext != null && !mailContext.isEmpty()) {
+                mailContext.forEach(field -> {
+                    String value = (field.getValue() != null ? field.getValue().toString() : null);
+                    mailNotifyBuilder.putContext(field.getKey(), value);
+                });
+            }
         }
         return new MessageResponse.Builder().setResponseBody(null).addMailNotify(mailNotifyBuilder.build())
             .setContentTypeJson().setStatusOkay().successful().build();
