@@ -16,6 +16,14 @@ public class AJEntityAuthClient extends Model {
     public static final String GET_AUTH_CLIENT_ID_AND_KEY = "client_id = ?::uuid and client_key = ?";
     public static final String GET_AUTH_CLIENT_KEY = "client_key = ?";
 
+    public static final String INSERT_AUTH_CLIENT =
+        "INSERT INTO auth_client(client_id, name, url, client_key, description, contact_email, access_token_validity,"
+            + " created_at, grant_types, cdn_urls) VALUES(?::uuid, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?::jsonb)";
+    
+    public static final String SELECT_CLIENT_UUID = "SELECT gen_random_uuid() AS uuid";
+    public static final String UUID = "uuid";
+    public static final String CLIENT_KEY_SEPARATOR = "#";
+    
     public String getClientId() {
         return getString(ParameterConstants.PARAM_CLIENT_ID);
     }

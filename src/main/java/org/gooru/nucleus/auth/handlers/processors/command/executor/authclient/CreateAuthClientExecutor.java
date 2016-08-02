@@ -1,8 +1,9 @@
 package org.gooru.nucleus.auth.handlers.processors.command.executor.authclient;
 
-import io.vertx.core.json.JsonObject;
-
-import java.util.UUID;
+import java.sql.Timestamp;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.MessageCodeConstants;
@@ -13,17 +14,22 @@ import org.gooru.nucleus.auth.handlers.processors.data.transform.model.AuthClien
 import org.gooru.nucleus.auth.handlers.processors.messageProcessor.MessageContext;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityAuthClient;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPermission;
-import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.DBEnums;
 import org.gooru.nucleus.auth.handlers.utils.InternalHelper;
 import org.gooru.nucleus.auth.handlers.utils.ServerValidatorUtility;
+import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public final class CreateAuthClientExecutor implements DBExecutor {
 
     private final MessageContext messageContext;
     private AuthClientDTO authClientDTO;
-    private AJEntityAuthClient authClient;
     private String userId;
+    private static Logger LOGGER = LoggerFactory.getLogger(CreateAuthClientExecutor.class);
 
     public CreateAuthClientExecutor(MessageContext messageContext) {
         this.messageContext = messageContext;
@@ -52,25 +58,29 @@ public final class CreateAuthClientExecutor implements DBExecutor {
 
     @Override
     public MessageResponse executeRequest() {
-        String clientKey = UUID.randomUUID().toString();
-        authClient = new AJEntityAuthClient();
-        authClient.set(ParameterConstants.PARAM_NAME, authClientDTO.getName());
-        authClient.set(ParameterConstants.PARAM_GRANT_TYPES, DBEnums.jsonArray(authClientDTO.getGrantTypes()));
-        authClient.set(ParameterConstants.PARAM_CDN_URLS, DBEnums.jsonObject(authClientDTO.getCdnUrls()));
-        authClient.set(ParameterConstants.PARAM_CLIENT_KEY, InternalHelper.encryptClientKey(clientKey));
-        authClient.set(ParameterConstants.PARAM_ACCESS_TOKEN_VALIDITY, 3600);
-        if (authClientDTO.getContactEmail() != null) {
-            authClient.set(ParameterConstants.PARAM_CONTACT_EMAIL, authClientDTO.getContactEmail());
+        
+        List<Map> uuid = Base.findAll(AJEntityAuthClient.SELECT_CLIENT_UUID);
+        String clientId = uuid.get(0).get(AJEntityAuthClient.UUID).toString(); 
+        LOGGER.debug("Client ID generated from DB: {}", clientId);
+        
+        long createdAt = System.currentTimeMillis();
+        LOGGER.debug("Created At: {}", createdAt);
+        
+        String clientKey = InternalHelper.encrypt(clientId + AJEntityAuthClient.CLIENT_KEY_SEPARATOR + createdAt);
+        LOGGER.debug("Client Key generated: {}", clientKey);
+        
+        int cnt = Base.exec(AJEntityAuthClient.INSERT_AUTH_CLIENT, clientId, authClientDTO.getName(),
+            authClientDTO.getUrl(), InternalHelper.encryptClientKey(clientKey), authClientDTO.getDescription(), authClientDTO.getContactEmail(), 3600, new Timestamp(createdAt),
+            toPostgresArrayString(authClientDTO.getGrantTypes()), authClientDTO.getCdnUrls().toString());
+
+        if (cnt == 0) {
+            JsonObject result = new JsonObject();
+            result.put("message", "invalid request parameters");
+            return new MessageResponse.Builder().setResponseBody(result).setContentTypeJson().setStatusBadRequest().failed().build();
         }
-        if (authClientDTO.getDescription() != null) {
-            authClient.set(ParameterConstants.PARAM_DESCRIPTION, authClientDTO.getDescription());
-        }
-        if (authClientDTO.getUrl() != null) {
-            authClient.set(ParameterConstants.PARAM_URL, authClientDTO.getUrl());
-        }
-        authClient.saveIt();
+        
         JsonObject results = new JsonObject();
-        results.put(ParameterConstants.PARAM_CLIENT_ID, authClient.getId().toString());
+        results.put(ParameterConstants.PARAM_CLIENT_ID, clientId);
         results.put(ParameterConstants.PARAM_CLIENT_KEY, clientKey);
         return new MessageResponse.Builder().setResponseBody(results).setContentTypeJson().setStatusOkay().successful()
             .build();
@@ -79,6 +89,24 @@ public final class CreateAuthClientExecutor implements DBExecutor {
     @Override
     public boolean handlerReadOnly() {
         return false;
+    }
+    
+    public static String toPostgresArrayString(JsonArray input) {
+        Iterator<Object> it = input.iterator();
+        if (!it.hasNext()) {
+            return "[]";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        for (;;) {
+            String s = it.next().toString();
+            sb.append('"').append(s).append('"');
+            if (!it.hasNext()) {
+                return sb.append(']').toString();
+            }
+            sb.append(',');
+        }
     }
 
 }
