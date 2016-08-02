@@ -57,14 +57,16 @@ class ResetPasswordExecutor implements DBExecutor {
     @Override
     public MessageResponse executeRequest() {
         final String token = InternalHelper.generatePasswordResetToken(userIdentity.getUserId());
-        this.redisClient.set(token, userIdentity.getEmailId(), HelperConstants.EXPIRE_IN_SECONDS);
+        
         MailNotifyBuilder mailNotifyBuilder = new MailNotifyBuilder();
 
         if (customizedMailTemplate == null || customizedMailTemplate.isEmpty()) {
+            this.redisClient.set(token, userIdentity.getEmailId(), HelperConstants.EXPIRE_IN_SECONDS);
             mailNotifyBuilder.setTemplateName(MailTemplateConstants.PASSWORD_CHANGE_REQUEST).addToAddress(emailId)
                 .putContext(ParameterConstants.MAIL_TOKEN, InternalHelper.encodeToken(token))
                 .putContext(ParameterConstants.PARAM_USER_ID, userIdentity.getUserId());
         } else {
+            this.redisClient.set(token, userIdentity.getEmailId(), HelperConstants.EXPIRE_IN_SECONDS_ETUSERS);
             mailNotifyBuilder.setTemplateName(mailTemplateName).addToAddress(emailId)
                 .putContext(ParameterConstants.MAIL_TOKEN, InternalHelper.encodeToken(token))
                 .putContext(ParameterConstants.PARAM_USER_ID, userIdentity.getUserId());
