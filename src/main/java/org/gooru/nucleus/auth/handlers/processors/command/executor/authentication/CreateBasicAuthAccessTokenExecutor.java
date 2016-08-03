@@ -77,9 +77,11 @@ public final class CreateBasicAuthAccessTokenExecutor implements DBExecutor {
         final String username = credentials[0];
         final String password = InternalHelper.encryptPassword(credentials[1]);
         
-        LazyList<AJEntityUserIdentity> userIdentityEmail =
-            AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_EMAIL_PASSWORD, username, password);
-        userIdentity = userIdentityEmail.size() > 0 ? userIdentityEmail.get(0) : null;
+        if (username.indexOf("@") > 1) {
+            LazyList<AJEntityUserIdentity> userIdentityEmail =
+                AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_EMAIL_PASSWORD, username, password);
+            userIdentity = userIdentityEmail.size() > 0 ? userIdentityEmail.get(0) : null;
+        }
         
         if (userIdentity == null) {
             LazyList<AJEntityUserIdentity> userIdentityUsername =
