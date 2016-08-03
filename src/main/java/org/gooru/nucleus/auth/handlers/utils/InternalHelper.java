@@ -75,10 +75,16 @@ public final class InternalHelper {
     public static String[] getUsernameAndPassword(String basicAuthCredentials) {
         byte credentialsDecoded[] = Base64.getDecoder().decode(basicAuthCredentials);
         final String credential = new String(credentialsDecoded, 0, credentialsDecoded.length);
-        final String[] credentials = credential.split(":");
-        if (credentials.length != 2) {
+        
+        int index = credential.indexOf(':');
+        if (index <= 0) {
             throw new InvalidRequestException(ServerValidatorUtility.generateErrorMessage(MessageCodeConstants.AU0007));
         }
+        
+        String[] credentials = new String[2];
+        credentials[0] = credential.substring(0, index);
+        credentials[1] = credential.substring((index + 1));
+
         return credentials;
     }
 
