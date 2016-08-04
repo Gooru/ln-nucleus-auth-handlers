@@ -17,10 +17,13 @@ import org.gooru.nucleus.auth.handlers.processors.exceptions.ConflictException;
 import org.gooru.nucleus.auth.handlers.processors.exceptions.GoneException;
 import org.gooru.nucleus.auth.handlers.processors.exceptions.NotFoundException;
 import org.gooru.nucleus.auth.handlers.processors.exceptions.UnauthorizedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServerValidatorUtility {
 
     private static final ResourceBundle MESSAGE = ResourceBundle.getBundle("message");
+    private static Logger LOGGER = LoggerFactory.getLogger(ServerValidatorUtility.class);
 
     public static void addValidatorIfNullError(final JsonObject errors, final String fieldName, final Object data,
         final String code, final String... placeHolderReplacer) {
@@ -142,18 +145,19 @@ public class ServerValidatorUtility {
 
     public static void reject(Throwable e) {
         if (e instanceof BadRequestException) {
-            throw new BadRequestException(e.getMessage());
+            throw new BadRequestException(e);
         } else if (e instanceof NotFoundException) {
-            throw new NotFoundException(e.getMessage());
+            throw new NotFoundException(e);
         } else if (e instanceof AccessDeniedException) {
-            throw new AccessDeniedException(e.getMessage());
+            throw new AccessDeniedException(e);
         } else if (e instanceof UnauthorizedException) {
-            throw new UnauthorizedException(e.getMessage());
+            throw new UnauthorizedException(e);
         } else if (e instanceof ConflictException) { 
-            throw new ConflictException(e.getMessage());
+            throw new ConflictException(e);
         } else if (e instanceof GoneException) { 
-            throw new GoneException(e.getMessage());
+            throw new GoneException(e);
         } else {
+            LOGGER.error("something went wrong", e);
             throw new RuntimeException("internal api error");
         }
     }

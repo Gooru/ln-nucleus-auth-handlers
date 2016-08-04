@@ -76,15 +76,19 @@ public final class CreateBasicAuthAccessTokenExecutor implements DBExecutor {
         final String credentials[] = InternalHelper.getUsernameAndPassword(basicAuthCredentials);
         final String username = credentials[0];
         final String password = InternalHelper.encryptPassword(credentials[1]);
+        
         if (username.indexOf("@") > 1) {
             LazyList<AJEntityUserIdentity> userIdentityEmail =
                 AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_EMAIL_PASSWORD, username, password);
             userIdentity = userIdentityEmail.size() > 0 ? userIdentityEmail.get(0) : null;
-        } else {
+        }
+        
+        if (userIdentity == null) {
             LazyList<AJEntityUserIdentity> userIdentityUsername =
                 AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_CANONICAL_USERNAME_PASSWORD, username.toLowerCase(), password);
             userIdentity = userIdentityUsername.size() > 0 ? userIdentityUsername.get(0) : null;
         }
+        
         rejectIfNull(userIdentity, MessageCodeConstants.AU0008, HttpConstants.HttpStatus.UNAUTHORIZED.getCode());
         reject(userIdentity.getStatus().equalsIgnoreCase(ParameterConstants.PARAM_STATUS_DEACTIVATED),
             MessageCodeConstants.AU0009, HttpConstants.HttpStatus.FORBIDDEN.getCode());
