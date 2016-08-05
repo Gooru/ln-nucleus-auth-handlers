@@ -145,17 +145,17 @@ public class ServerValidatorUtility {
 
     public static void reject(Throwable e) {
         if (e instanceof BadRequestException) {
-            throw new BadRequestException(e);
+            throw new BadRequestException(e.getMessage(), e);
         } else if (e instanceof NotFoundException) {
-            throw new NotFoundException(e);
+            throw new NotFoundException(e.getMessage(), e);
         } else if (e instanceof AccessDeniedException) {
-            throw new AccessDeniedException(e);
+            throw new AccessDeniedException(e.getMessage(), e);
         } else if (e instanceof UnauthorizedException) {
-            throw new UnauthorizedException(e);
+            throw new UnauthorizedException(e.getMessage(), e);
         } else if (e instanceof ConflictException) { 
-            throw new ConflictException(e);
+            throw new ConflictException(e.getMessage(), e);
         } else if (e instanceof GoneException) { 
-            throw new GoneException(e);
+            throw new GoneException(e.getMessage(), e);
         } else {
             LOGGER.error("something went wrong", e);
             throw new RuntimeException("internal api error");
