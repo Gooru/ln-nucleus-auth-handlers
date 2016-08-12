@@ -162,7 +162,7 @@ class AuthorizeUserExecutor implements DBExecutor {
                 username.append(lastname.substring(0, lastname.length() > 5 ? 5 : lastname.length()));
             }
             LazyList<AJEntityUserIdentity> results =
-                AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_CANONICAL_USERNAME, username.toString().toLowerCase());
+                AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_USERNAME, username.toString());
             AJEntityUserIdentity identityUsername = results.size() > 0 ? results.get(0) : null;
             if (identityUsername != null) {
                 final Random randomNumber = new Random();
