@@ -132,7 +132,7 @@ class AuthorizeUserExecutor implements DBExecutor {
         saveAccessToken(token, accessToken, authClient.getAccessTokenValidity());
         accessToken.put(ParameterConstants.PARAM_ACCESS_TOKEN, token);
         
-        if ( user ) {
+        if ( user != null ) {
            accessToken.put(ParameterConstants.PARAM_USER_THUMBNAIL_PATH, user.getThumbnailPath());
         }
         
