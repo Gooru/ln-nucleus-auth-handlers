@@ -20,7 +20,7 @@ public final class HelperConstants {
 
     public static final List<String> USERS_JSON_FIELDS = Arrays.asList("course", "grade");
 
-    public static final List<String> USERS_PREFS_JSON_FIELDS = Arrays.asList("standard_preference");
+    public static final List<String> USERS_PREFS_JSON_FIELDS = Arrays.asList("user_id", "profile_visibility");
 
     public static final String HEADER_AUTHORIZATION = "Authorization";
 
