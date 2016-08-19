@@ -47,14 +47,19 @@ public final class FetchAccessTokenExecutor implements DBExecutor {
         if (!userId.equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS)) {
             LazyList<AJEntityUser> users = AJEntityUser.where(AJEntityUser.GET_USER, userId);
             AJEntityUser user = users.size() > 0 ? users.get(0) : null;
-            if (user.getFirstname() != null) {
-                accessToken.put(ParameterConstants.PARAM_USER_FIRSTNAME, user.getFirstname());
-            }
-            if (user.getLastname() != null) {
-                accessToken.put(ParameterConstants.PARAM_USER_LASTNAME, user.getLastname());
-            }
-            if (user.getUserCategory() != null) {
-                accessToken.put(ParameterConstants.PARAM_USER_CATEGORY, user.getUserCategory());
+            if (user != null) {
+                if (user.getFirstname() != null) {
+                    accessToken.put(ParameterConstants.PARAM_USER_FIRSTNAME, user.getFirstname());
+                }
+                if (user.getLastname() != null) {
+                    accessToken.put(ParameterConstants.PARAM_USER_LASTNAME, user.getLastname());
+                }
+                if (user.getUserCategory() != null) {
+                    accessToken.put(ParameterConstants.PARAM_USER_CATEGORY, user.getUserCategory());
+                }
+                if (user.getThumbnailPath() != null) {
+                    accessToken.put(ParameterConstants.PARAM_USER_THUMBNAIL_PATH, user.getThumbnailPath());
+                }
             }
         }
         return new MessageResponse.Builder().setResponseBody(accessToken).setContentTypeJson().setStatusOkay()
