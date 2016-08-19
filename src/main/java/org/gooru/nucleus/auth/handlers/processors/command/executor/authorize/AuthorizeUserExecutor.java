@@ -93,6 +93,7 @@ class AuthorizeUserExecutor implements DBExecutor {
         String identityId = authorizeDTO.getUser().getIdentityId();
         boolean isEmailIdentity = false;
         AJEntityUserIdentity userIdentity = null;
+        AJEntityUser user = null;
         EventBuilder eventBuilder = new EventBuilder();
         MailNotifyBuilder mailNotifyBuilder = new MailNotifyBuilder();
         if (identityId.indexOf("@") > 1) {
@@ -113,6 +114,9 @@ class AuthorizeUserExecutor implements DBExecutor {
             eventBuilder = responseDTO.getEventBuilder();
             mailNotifyBuilder.setTemplateName(MailTemplateConstants.WELCOME_MAIL).addToAddress(
                 userIdentity.getEmailId());
+        } else {
+            LazyList<AJEntityUser> users = AJEntityUser.where(AJEntityUser.GET_USER, userIdentity.getUserId());
+            user = users.size() > 0 ? users.get(0) : null;
         }
 
         final JsonObject accessToken = new JsonObject();
@@ -127,6 +131,11 @@ class AuthorizeUserExecutor implements DBExecutor {
         accessToken.put(ParameterConstants.PARAM_USER_PREFERENCE, prefs);
         saveAccessToken(token, accessToken, authClient.getAccessTokenValidity());
         accessToken.put(ParameterConstants.PARAM_ACCESS_TOKEN, token);
+        
+        if ( user != null ) {
+           accessToken.put(ParameterConstants.PARAM_USER_THUMBNAIL_PATH, user.getThumbnailPath());
+        }
+        
         eventBuilder.setEventName(Event.AUTHORIZE_USER.getName())
             .putPayLoadObject(ParameterConstants.PARAM_ACCESS_TOKEN, token)
             .putPayLoadObject(ParameterConstants.PARAM_CLIENT_ID, authClient.getClientId())
@@ -162,7 +171,7 @@ class AuthorizeUserExecutor implements DBExecutor {
                 username.append(lastname.substring(0, lastname.length() > 5 ? 5 : lastname.length()));
             }
             LazyList<AJEntityUserIdentity> results =
-                AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_USERNAME, username.toString());
+                AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_CANONICAL_USERNAME, username.toString().toLowerCase());
             AJEntityUserIdentity identityUsername = results.size() > 0 ? results.get(0) : null;
             if (identityUsername != null) {
                 final Random randomNumber = new Random();

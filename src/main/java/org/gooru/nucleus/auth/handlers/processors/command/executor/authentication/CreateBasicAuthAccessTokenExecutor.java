@@ -120,6 +120,7 @@ public final class CreateBasicAuthAccessTokenExecutor implements DBExecutor {
         if (user.getUserCategory() != null) {
             accessToken.put(ParameterConstants.PARAM_USER_CATEGORY, user.getUserCategory());
         }
+        accessToken.put(ParameterConstants.PARAM_USER_THUMBNAIL_PATH, user.getThumbnailPath());
         EventBuilder eventBuilder = new EventBuilder();
         eventBuilder.setEventName(Event.AUTHENTICATION_USER.getName())
             .putPayLoadObject(ParameterConstants.PARAM_ACCESS_TOKEN, token)
