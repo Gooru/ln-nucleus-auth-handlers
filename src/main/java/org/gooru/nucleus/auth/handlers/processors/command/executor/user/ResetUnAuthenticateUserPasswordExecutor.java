@@ -3,6 +3,7 @@ package org.gooru.nucleus.auth.handlers.processors.command.executor.user;
 import static org.gooru.nucleus.auth.handlers.utils.ServerValidatorUtility.reject;
 import static org.gooru.nucleus.auth.handlers.utils.ServerValidatorUtility.rejectIfNull;
 
+import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.HttpConstants;
 import org.gooru.nucleus.auth.handlers.constants.MailTemplateConstants;
 import org.gooru.nucleus.auth.handlers.constants.MessageCodeConstants;
@@ -55,10 +56,13 @@ class ResetUnAuthenticateUserPasswordExecutor implements DBExecutor {
         userIdentity.setPassword(InternalHelper.encryptPassword(newPassword));
         userIdentity.saveIt();
         this.redisClient.del(token);
+        final String newtoken = InternalHelper.generatePasswordResetToken(userIdentity.getUserId());
+        this.redisClient.set(newtoken, userIdentity.getEmailId(), HelperConstants.EXPIRE_IN_SECONDS);
         MailNotifyBuilder mailNotifyBuilder = new MailNotifyBuilder();
         mailNotifyBuilder.setTemplateName(MailTemplateConstants.PASSWORD_CHANGED)
-            .addToAddress(userIdentity.getEmailId()).putContext(ParameterConstants.MAIL_TOKEN, InternalHelper.encodeToken(token))
-            .putContext(ParameterConstants.PARAM_USER_USERNAME, userIdentity.getUsername());
+            .addToAddress(userIdentity.getEmailId()).putContext(ParameterConstants.MAIL_TOKEN, InternalHelper.encodeToken(newtoken))
+            .putContext(ParameterConstants.PARAM_USER_USERNAME, userIdentity.getUsername())
+            .putContext(ParameterConstants.PARAM_USER_ID, userIdentity.getUserId());
         return new MessageResponse.Builder().addMailNotify(mailNotifyBuilder.build()).setContentTypeJson()
             .setStatusNoOutput().successful().build();
     }
