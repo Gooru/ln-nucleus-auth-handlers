@@ -57,7 +57,8 @@ class ResetAuthenticateUserPasswordExecutor implements DBExecutor {
         MailNotifyBuilder mailNotifyBuilder = new MailNotifyBuilder();
         mailNotifyBuilder.setTemplateName(MailTemplateConstants.PASSWORD_CHANGED)
             .addToAddress(userIdentity.getEmailId()).putContext(ParameterConstants.MAIL_TOKEN, InternalHelper.encodeToken(token))
-            .putContext(ParameterConstants.PARAM_USER_USERNAME, userIdentity.getUsername());
+            .putContext(ParameterConstants.PARAM_USER_USERNAME, userIdentity.getUsername())
+            .putContext(ParameterConstants.PARAM_USER_ID, userIdentity.getUserId());
         return new MessageResponse.Builder().setResponseBody(null).addMailNotify(mailNotifyBuilder.build())
             .setContentTypeJson().setStatusNoOutput().successful().build();
     }

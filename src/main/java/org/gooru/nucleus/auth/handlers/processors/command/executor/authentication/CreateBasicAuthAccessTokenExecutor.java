@@ -111,16 +111,20 @@ public final class CreateBasicAuthAccessTokenExecutor implements DBExecutor {
         accessToken.put(ParameterConstants.PARAM_ACCESS_TOKEN, token);
         LazyList<AJEntityUser> users = AJEntityUser.where(AJEntityUser.GET_USER, userIdentity.getUserId());
         AJEntityUser user = users.size() > 0 ? users.get(0) : null;
-        if (user.getFirstname() != null) {
-            accessToken.put(ParameterConstants.PARAM_USER_FIRSTNAME, user.getFirstname());
+        if (user != null) {
+            if (user.getFirstname() != null) {
+                accessToken.put(ParameterConstants.PARAM_USER_FIRSTNAME, user.getFirstname());
+            }
+            if (user.getLastname() != null) {
+                accessToken.put(ParameterConstants.PARAM_USER_LASTNAME, user.getLastname());
+            }
+            if (user.getUserCategory() != null) {
+                accessToken.put(ParameterConstants.PARAM_USER_CATEGORY, user.getUserCategory());
+            }
+            if (user.getThumbnailPath() != null) {
+                accessToken.put(ParameterConstants.PARAM_USER_THUMBNAIL_PATH, user.getThumbnailPath());
+            }
         }
-        if (user.getLastname() != null) {
-            accessToken.put(ParameterConstants.PARAM_USER_LASTNAME, user.getLastname());
-        }
-        if (user.getUserCategory() != null) {
-            accessToken.put(ParameterConstants.PARAM_USER_CATEGORY, user.getUserCategory());
-        }
-        accessToken.put(ParameterConstants.PARAM_USER_THUMBNAIL_PATH, user.getThumbnailPath());
         EventBuilder eventBuilder = new EventBuilder();
         eventBuilder.setEventName(Event.AUTHENTICATION_USER.getName())
             .putPayLoadObject(ParameterConstants.PARAM_ACCESS_TOKEN, token)
