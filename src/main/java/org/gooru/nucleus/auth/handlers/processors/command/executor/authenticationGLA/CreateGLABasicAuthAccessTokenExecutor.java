@@ -71,7 +71,7 @@ class CreateGLABasicAuthAccessTokenExecutor implements DBExecutor {
         }
         if (username.indexOf("@") > 1) {
             LazyList<AJEntityUserIdentity> userIdentityEmail =
-                AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_EMAIL_PASSWORD, username,
+                AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_EMAIL_PASSWORD, username.toLowerCase(),
                     InternalHelper.encryptPassword(password));
             userIdentity = userIdentityEmail.size() > 0 ? userIdentityEmail.get(0) : null;
         } else {

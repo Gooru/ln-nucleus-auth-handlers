@@ -45,7 +45,7 @@ class ResendConfirmationEmailExecutor implements DBExecutor {
         rejectIfNull(user, MessageCodeConstants.AU0026, HttpConstants.HttpStatus.NOT_FOUND.getCode(),
             ParameterConstants.PARAM_USER);
         LazyList<AJEntityUserIdentity> userIdentitys =
-            AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_EMAIL, user.getEmailId());
+            AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_EMAIL, user.getEmailId().toLowerCase());
         userIdentity = userIdentitys.size() > 0 ? userIdentitys.get(0) : null;
         rejectIfNull(userIdentity, MessageCodeConstants.AU0026, HttpConstants.HttpStatus.NOT_FOUND.getCode(),
             ParameterConstants.PARAM_USER);

@@ -162,7 +162,7 @@ class CreateUserExecutor implements DBExecutor {
 
         }
 
-        user.setEmailId(emailId);
+        user.setEmailId(emailId.toLowerCase());
         if (userDTO.getGrade() != null) {
             user.setGrade(userDTO.getGrade());
         }
@@ -228,7 +228,7 @@ class CreateUserExecutor implements DBExecutor {
         }
         rejectError(errors, HttpConstants.HttpStatus.BAD_REQUEST.getCode());
         LazyList<AJEntityUserIdentity> emailAdressResult =
-            AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_EMAIL, emailId);
+            AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_EMAIL, emailId.toLowerCase());
         addValidator(errors, !(emailAdressResult.size() == 0), ParameterConstants.PARAM_USER_EMAIL_ID,
             MessageCodeConstants.AU0023, emailId, ParameterConstants.EMAIL_ADDRESS);
         LazyList<AJEntityUserIdentity> results =
