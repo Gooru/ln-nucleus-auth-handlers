@@ -48,7 +48,7 @@ class ResetPasswordExecutor implements DBExecutor {
 
     @Override
     public void validateRequest() {
-        LazyList<AJEntityUserIdentity> results = AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_EMAIL, emailId);
+        LazyList<AJEntityUserIdentity> results = AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_EMAIL, emailId.toLowerCase());
         userIdentity = results.size() > 0 ? results.get(0) : null;
         ServerValidatorUtility.rejectIfNull(userIdentity, MessageCodeConstants.AU0026,
             HttpConstants.HttpStatus.NOT_FOUND.getCode(), ParameterConstants.PARAM_USER);

@@ -99,7 +99,7 @@ class AuthorizeUserExecutor implements DBExecutor {
         if (identityId.indexOf("@") > 1) {
             isEmailIdentity = true;
             LazyList<AJEntityUserIdentity> userIdentityEmail =
-                AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_EMAIL, identityId);
+                AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_EMAIL, identityId.toLowerCase());
             userIdentity = userIdentityEmail.size() > 0 ? userIdentityEmail.get(0) : null;
         } else {
             LazyList<AJEntityUserIdentity> userIdentityReference =

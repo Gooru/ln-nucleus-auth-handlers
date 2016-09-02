@@ -70,7 +70,7 @@ class ConfirmUserEmailExecutor implements DBExecutor {
             userIdentity.setEmailId(emailId);
             LazyList<AJEntityUser> results = AJEntityUser.where(AJEntityUser.GET_USER, userIdentity.getUserId());
             AJEntityUser user = (results.size() > 0) ? results.get(0) : null;
-            user.setEmailId(emailId);
+            user.setEmailId(emailId.toLowerCase());
             user.saveIt();
 
             eventBuilder.put(SchemaConstants.USER_DEMOGRAPHIC,

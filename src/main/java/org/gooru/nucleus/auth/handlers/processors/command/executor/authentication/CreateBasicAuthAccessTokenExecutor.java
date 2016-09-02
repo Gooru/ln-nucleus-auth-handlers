@@ -79,7 +79,7 @@ public final class CreateBasicAuthAccessTokenExecutor implements DBExecutor {
         
         if (username.indexOf("@") > 1) {
             LazyList<AJEntityUserIdentity> userIdentityEmail =
-                AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_EMAIL_PASSWORD, username, password);
+                AJEntityUserIdentity.where(AJEntityUserIdentity.GET_BY_EMAIL_PASSWORD, username.toLowerCase(), password);
             userIdentity = userIdentityEmail.size() > 0 ? userIdentityEmail.get(0) : null;
         }
         
