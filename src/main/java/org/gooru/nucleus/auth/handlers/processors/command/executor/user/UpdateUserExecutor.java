@@ -95,13 +95,13 @@ public final class UpdateUserExecutor implements DBExecutor {
         final EventBuilder eventBuilder = new EventBuilder();
 
         if (userDTO.getFirstname() != null) {
-            addValidator(errors, !(userDTO.getFirstname().matches("[a-zA-Z0-9 ]+")),
+            addValidator(errors, !(userDTO.getFirstname().matches("[a-zA-Z0-9'. -]+")),
                 ParameterConstants.PARAM_USER_FIRSTNAME, MessageCodeConstants.AU0021,
                 ParameterConstants.PARAM_USER_FIRSTNAME);
             user.setFirstname(userDTO.getFirstname());
         }
         if (userDTO.getLastname() != null) {
-            addValidator(errors, !(userDTO.getLastname().matches("[a-zA-Z0-9 ]+")),
+            addValidator(errors, !(userDTO.getLastname().matches("[a-zA-Z0-9'. -]+")),
                 ParameterConstants.PARAM_USER_LASTNAME, MessageCodeConstants.AU0021,
                 ParameterConstants.PARAM_USER_LASTNAME);
             user.setLastname(userDTO.getLastname());
