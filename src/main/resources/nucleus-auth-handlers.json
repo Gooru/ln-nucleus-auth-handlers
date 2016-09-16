@@ -13,7 +13,7 @@
          "maximumPoolSize" : 5
    },
    "defaultUserPrefs" : {"standard_preference":  {"K12.SC" : "C3", "K12.LA" : "CCSS", "K12.SC" : "CCSS"} , "profile_visiblity" : false},
-   "verticles.deploy.list": ["service:org.gooru.nucleus.auth.handlers.bootstrap.AuthVerticle", "service:org.gooru.nucleus.auth.handlers.bootstrap.AuthenticationVerticle", "service:org.gooru.nucleus.auth.handlers.bootstrap.AuthorizeVerticle", "service:org.gooru.nucleus.auth.handlers.bootstrap.UserVerticle", "service:org.gooru.nucleus.auth.handlers.bootstrap.UserPrefsVerticle", "service:org.gooru.nucleus.auth.handlers.bootstrap.AuthenticationGLAVersionVerticle"],
+   "verticles.deploy.list": ["service:org.gooru.nucleus.auth.handlers.bootstrap.AuthVerticle", "service:org.gooru.nucleus.auth.handlers.bootstrap.AuthenticationVerticle", "service:org.gooru.nucleus.auth.handlers.bootstrap.AuthorizeVerticle", "service:org.gooru.nucleus.auth.handlers.bootstrap.UserVerticle", "service:org.gooru.nucleus.auth.handlers.bootstrap.UserPrefsVerticle", "service:org.gooru.nucleus.auth.handlers.bootstrap.AuthenticationGLAVersionVerticle", "service:org.gooru.nucleus.auth.handlers.bootstrap.InternalVerticle"],
    "mail.rest.api.url" : "http://127.0.0.1:8081/api/nucleus-utils/v1/emails",
    "event.rest.api.url" : "http://127.0.0.1:8081/api/nucleus/api/internal/v1/events",
    "send.confirmation.email" : false
