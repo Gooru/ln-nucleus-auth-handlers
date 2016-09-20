@@ -28,6 +28,10 @@ public final class RepoFactory {
     public static AuthClientRepo getAuthClientRepo(MessageContext messageContext) {
         return AJRepoFactory.getAuthClientRepo(messageContext);
     }
+    
+    public static InternalRepo getInternalRepo(MessageContext messageContext) {
+        return AJRepoFactory.getInternalRepo(messageContext);
+    }
 
     private RepoFactory() {
         throw new AssertionError();

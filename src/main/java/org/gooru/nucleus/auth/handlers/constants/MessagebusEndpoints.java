@@ -15,5 +15,6 @@ public class MessagebusEndpoints {
     public static final String MBEP_EVENT = "org.gooru.nucleus.message.bus.publisher.event";
     public static final String MBEP_EMAIL_NOFIFY = "org.gooru.nucleus.auth.message.bus.email.notify";
     public static final String MBEP_AUTH_CLIENT = "org.gooru.nucleus.auth.message.bus.auth.client";
+    public static final String MBEP_INTERNAL = "org.gooru.nucleus.auth.message.bus.internal";
 
 }

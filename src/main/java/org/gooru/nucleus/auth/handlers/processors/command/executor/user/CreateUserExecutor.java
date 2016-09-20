@@ -118,13 +118,13 @@ class CreateUserExecutor implements DBExecutor {
         final AJEntityUser user = new AJEntityUser();
         final String firstname = userDTO.getFirstname();
         if (firstname != null) {
-            addValidator(errors, !(firstname.matches("[a-zA-Z0-9 ]+")), ParameterConstants.PARAM_USER_FIRSTNAME,
+            addValidator(errors, !(firstname.matches("[a-zA-Z0-9'. -]+")), ParameterConstants.PARAM_USER_FIRSTNAME,
                 MessageCodeConstants.AU0021, ParameterConstants.PARAM_USER_FIRSTNAME);
             user.setFirstname(firstname);
         }
         final String lastname = userDTO.getLastname();
         if (lastname != null) {
-            addValidator(errors, !(lastname.matches("[a-zA-Z0-9 ]+")), ParameterConstants.PARAM_USER_LASTNAME,
+            addValidator(errors, !(lastname.matches("[a-zA-Z0-9'. -]+")), ParameterConstants.PARAM_USER_LASTNAME,
                 MessageCodeConstants.AU0021, ParameterConstants.PARAM_USER_LASTNAME);
             user.setLastname(lastname);
         }
