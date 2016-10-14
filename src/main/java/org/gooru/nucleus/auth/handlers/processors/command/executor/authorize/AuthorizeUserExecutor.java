@@ -159,7 +159,7 @@ class AuthorizeUserExecutor implements DBExecutor {
 
         final AJEntityUserIdentity userIdentity = createUserIdentityValue(grantType, user, clientId);
         if (isEmailIdentity) {
-            userIdentity.setEmailId(userDTO.getIdentityId());
+            userIdentity.setEmailId(userDTO.getIdentityId().toLowerCase());
             userIdentity.setEmailConfirmStatus(true);
         } else {
             userIdentity.setReferenceId(userDTO.getIdentityId());
