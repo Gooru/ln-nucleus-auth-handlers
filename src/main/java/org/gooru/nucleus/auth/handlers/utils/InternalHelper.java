@@ -87,6 +87,22 @@ public final class InternalHelper {
 
         return credentials;
     }
+    
+    public static String[] getClientIdAndSecret(String basicAuthCredentials) {
+        byte credentialsDecoded[] = Base64.getDecoder().decode(basicAuthCredentials);
+        final String credential = new String(credentialsDecoded, 0, credentialsDecoded.length);
+        
+        int index = credential.indexOf(':');
+        if (index <= 0) {
+            throw new InvalidRequestException(ServerValidatorUtility.generateErrorMessage(MessageCodeConstants.AU0004));
+        }
+        
+        String[] credentials = new String[2];
+        credentials[0] = credential.substring(0, index);
+        credentials[1] = credential.substring((index + 1));
+
+        return credentials;
+    }
 
     public static Date isValidDate(String dateAsString) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");

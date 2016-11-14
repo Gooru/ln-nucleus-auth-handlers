@@ -22,6 +22,10 @@ public class InternalMessageProcessor implements MessageProcessorHandler {
         case CommandConstants.INTERNAL_IMPERSONATE:
             result = RepoFactory.getInternalRepo(messageContext).impersonate();
             break;
+        
+        case CommandConstants.INTERNAL_LTI_SSO:
+            result = RepoFactory.getInternalRepo(messageContext).sso();
+            break;
             
         default:
             LOGGER.error("Invalid command type passed in, not able to handle");
