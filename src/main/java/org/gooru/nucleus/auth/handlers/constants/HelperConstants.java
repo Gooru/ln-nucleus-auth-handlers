@@ -33,6 +33,8 @@ public final class HelperConstants {
     public static final String CREATE_APP_KEY = "create.app.key";
     
     public static final String CHAR_ENCODING_UTF8 = "UTF-8";
+    
+    public static final String GRANT_TYPE_SSO = "ltisso";
 
     static {
         Map<String, String> gender = new HashMap<>();

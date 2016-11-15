@@ -19,12 +19,17 @@ public class AJEntityUserIdentity extends Model {
     public static final String GET_BY_EMAIL = "email_id = ? and status != 'deleted'";
     public static final String GET_BY_USERNAME = "username = ? and status != 'deleted'";
     public static final String GET_BY_REFERENCE = "reference_id = ? and status != 'deleted'";
+    public static final String GET_BY_REFERENCE_AND_CLIENTID = "reference_id = ? and client_id = ?::uuid and status != 'deleted'";
     public static final String GET_BY_ID_PASSWORD = "user_id = ?::uuid and password = ? and status != 'deleted'";
     public static final String GET_BY_USER_ID = "user_id = ?::uuid and  status != 'deleted'";
     public static final String GET_BY_CANONICAL_USERNAME = "canonical_username = ? and status != 'deleted'";
     public static final String GET_BY_CANONICAL_USERNAME_PASSWORD =
         "canonical_username = ?  and password = ? and login_type = 'credential' and status != 'deleted'";
 
+    
+    public static final String LOGIN_TYPE_LTISSO = "ltisso";
+    public static final String PROVISION_TYPE_LTISSO = "ltisso";
+    
     public String getUsername() {
         return getString(ParameterConstants.PARAM_USER_USERNAME);
     }

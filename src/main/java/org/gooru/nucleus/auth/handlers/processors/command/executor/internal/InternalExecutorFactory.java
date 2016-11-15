@@ -13,4 +13,8 @@ public final class InternalExecutorFactory {
 		return new ImpersonateExecutor(messageContext);
 	}
 
+    public static DBExecutor sso(MessageContext messageContext) {
+        return new SSOExecutor(messageContext);
+    }
+
 }

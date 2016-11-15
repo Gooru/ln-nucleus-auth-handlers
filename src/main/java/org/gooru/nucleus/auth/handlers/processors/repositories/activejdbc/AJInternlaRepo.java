@@ -24,4 +24,9 @@ public class AJInternlaRepo implements InternalRepo {
         return TransactionExecutor.executeTransaction(InternalExecutorFactory.impersonate(messageContext));
     }
 
+    @Override
+    public MessageResponse sso() {
+        return TransactionExecutor.executeTransaction(InternalExecutorFactory.sso(messageContext));
+    }
+
 }

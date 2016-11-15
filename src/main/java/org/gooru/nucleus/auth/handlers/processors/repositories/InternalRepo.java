@@ -7,4 +7,6 @@ public interface InternalRepo {
     MessageResponse authenticate();
     
     MessageResponse impersonate();
+    
+    MessageResponse sso();
 }
