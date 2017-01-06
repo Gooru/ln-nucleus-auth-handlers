@@ -23,6 +23,9 @@ public class ParameterConstants {
     public static final String PARAM_CONTACT_EMAIL = "contact_email";
     public static final String PARAM_PERMISSION = "permission";
     public static final String PARAM_CREATED_AT = "created_at";
+    public static final String PARAM_TENANT_ID = "tenant_id";
+    public static final String PARAM_TENANT_ROOT = "tenant_root";
+    public static final String PARAM_TENANT = "tenant";
        
 
     // User

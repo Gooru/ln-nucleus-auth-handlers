@@ -74,6 +74,14 @@ public final class CreateAnonymousAccessTokenExecutor implements DBExecutor {
         accessToken.put(ParameterConstants.PARAM_CLIENT_ID, authClient.getClientId());
         accessToken.put(ParameterConstants.PARAM_PROVIDED_AT, System.currentTimeMillis());
         accessToken.put(ParameterConstants.PARAM_CDN_URLS, authClient.getCdnUrls());
+        
+        //Temporary changes to support multitenancy
+        JsonObject tenantJson = new JsonObject();
+        String strNull = null;
+        tenantJson.put(ParameterConstants.PARAM_TENANT_ID, "ba956a97-ae15-11e5-a302-f8a963065976");
+        tenantJson.put(ParameterConstants.PARAM_TENANT_ROOT, strNull);
+        accessToken.put(ParameterConstants.PARAM_TENANT, tenantJson);
+        
         JsonObject prefs = new JsonObject();
         prefs.put(ParameterConstants.PARAM_USER_EMAIL_ID, "");
         accessToken.put(ParameterConstants.PARAM_USER_PREFERENCE, prefs);

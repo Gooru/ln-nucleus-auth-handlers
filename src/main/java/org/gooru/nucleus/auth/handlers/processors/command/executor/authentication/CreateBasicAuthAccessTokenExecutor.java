@@ -102,6 +102,14 @@ public final class CreateBasicAuthAccessTokenExecutor implements DBExecutor {
         accessToken.put(ParameterConstants.PARAM_USER_USERNAME, userIdentity.getUsername());
         accessToken.put(ParameterConstants.PARAM_CLIENT_ID, authClient.getClientId());
         accessToken.put(ParameterConstants.PARAM_PROVIDED_AT, System.currentTimeMillis());
+        
+        //Temporary changes to support multitenancy
+        JsonObject tenantJson = new JsonObject();
+        String strNull = null;
+        tenantJson.put(ParameterConstants.PARAM_TENANT_ID, "ba956a97-ae15-11e5-a302-f8a963065976");
+        tenantJson.put(ParameterConstants.PARAM_TENANT_ROOT, strNull);
+        accessToken.put(ParameterConstants.PARAM_TENANT, tenantJson);
+        
         final String token = InternalHelper.generateToken(authClient.getClientId(), userIdentity.getUserId());
         JsonObject prefs = new JsonObject();
         prefs.put(ParameterConstants.PARAM_USER_EMAIL_ID, userIdentity.getEmailId());
