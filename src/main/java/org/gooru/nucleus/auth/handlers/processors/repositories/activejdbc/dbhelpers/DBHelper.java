@@ -2,15 +2,23 @@ package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhel
 
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
 import org.gooru.nucleus.auth.handlers.processors.utils.InternalHelper;
+import org.gooru.nucleus.auth.handlers.processors.utils.PreferenceSettingsUtil;
 import org.javalite.activejdbc.LazyList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.vertx.core.json.JsonObject;
 
 /**
  * @author szgooru
  * Created On: 07-Jan-2017
  */
 public final class DBHelper {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(DBHelper.class);
 
     private DBHelper() {
         throw new AssertionError();
@@ -52,5 +60,19 @@ public final class DBHelper {
     public static AJEntityUsers getUserByEmailAndTenantId(String email, String tenantId) {
         LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_TENANT_ID, email, tenantId);
         return users.isEmpty() ? null : users.get(0);
+    }
+    
+    public static JsonObject getUserPreference(String userId) {
+        AJEntityUserPreference userPreference =
+            AJEntityUserPreference.findFirst(AJEntityUserPreference.SELECT_BY_USERID, userId);
+        JsonObject userPreferenceJson;
+        if (userPreference == null) {
+            LOGGER.warn("user preferences not found, returning default");
+            userPreferenceJson = PreferenceSettingsUtil.getDefaultPreference();
+        } else {
+            userPreferenceJson = new JsonObject(userPreference.getString(AJEntityUserPreference.PREFERENCE_SETTINGS));
+        }
+        
+        return userPreferenceJson;
     }
 } 

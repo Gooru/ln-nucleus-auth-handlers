@@ -7,6 +7,7 @@ import java.util.List;
 import org.gooru.nucleus.auth.handlers.app.components.AppConfigRegistry;
 import org.gooru.nucleus.auth.handlers.app.components.DataSourceRegistry;
 import org.gooru.nucleus.auth.handlers.app.components.RedisClient;
+import org.gooru.nucleus.auth.handlers.app.components.UtilityManager;
 
 public class Initializers implements Iterable<Initializer> {
     private final Iterator<Initializer> internalIterator;
@@ -16,6 +17,7 @@ public class Initializers implements Iterable<Initializer> {
         initializers.add(DataSourceRegistry.getInstance());
         initializers.add(RedisClient.instance());
         initializers.add(AppConfigRegistry.instance());
+        initializers.add(UtilityManager.getInstance());
         internalIterator = initializers.iterator();
     }
 

@@ -11,6 +11,7 @@ import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.emails.EmailNotificationBuilder;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entitybuilders.EntityBuilder;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.validators.PayloadValidator;
@@ -19,6 +20,7 @@ import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult.Exec
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponseFactory;
 import org.gooru.nucleus.auth.handlers.processors.utils.InternalHelper;
+import org.gooru.nucleus.auth.handlers.processors.utils.PreferenceSettingsUtil;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,6 +107,10 @@ public class SignupUserHandler implements DBHandler {
             tenantJson.put(AJEntityUsers.TENANT_ID, tenant.getString(AJEntityTenant.ID));
             tenantJson.put(AJEntityUsers.TENANT_ROOT, user.getString(AJEntityUsers.TENANT_ROOT));
             result.put(ParameterConstants.PARAM_TENANT, tenantJson);
+            
+            //Get default preference settings
+            JsonObject userPreference = PreferenceSettingsUtil.getDefaultPreference();
+            result.put(AJEntityUserPreference.PREFERENCE_SETTINGS, userPreference);
 
             // Check if there is no validity and set to default;
             int accessTokenValidity = tenant.getInteger(AJEntityTenant.ACCESS_TOKEN_VALIDITY);

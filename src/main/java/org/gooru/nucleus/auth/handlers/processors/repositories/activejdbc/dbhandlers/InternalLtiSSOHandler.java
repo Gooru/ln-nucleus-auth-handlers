@@ -8,8 +8,10 @@ import org.gooru.nucleus.auth.handlers.constants.MessageConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.DBHelper;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entitybuilders.EntityBuilder;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.validators.PayloadValidator;
@@ -163,6 +165,9 @@ public class InternalLtiSSOHandler implements DBHandler {
         tenantJson.put(AJEntityUsers.TENANT_ID, tenant.getString(AJEntityTenant.ID));
         tenantJson.put(AJEntityUsers.TENANT_ROOT, user.getString(AJEntityUsers.TENANT_ROOT));
         result.put(ParameterConstants.PARAM_TENANT, tenantJson);
+        
+        JsonObject userPreference = DBHelper.getUserPreference(user.getString(AJEntityUsers.ID));
+        result.put(AJEntityUserPreference.PREFERENCE_SETTINGS, userPreference);
 
         // Check if there is no validity and set to default;
         int accessTokenValidity = tenant.getInteger(AJEntityTenant.ACCESS_TOKEN_VALIDITY);
