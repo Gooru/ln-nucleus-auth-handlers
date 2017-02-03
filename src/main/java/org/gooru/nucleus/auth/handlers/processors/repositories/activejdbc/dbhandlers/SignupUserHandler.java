@@ -3,7 +3,6 @@ package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhan
 import java.util.ResourceBundle;
 import java.util.UUID;
 
-import org.gooru.nucleus.auth.handlers.app.components.RedisClient;
 import org.gooru.nucleus.auth.handlers.constants.EmailTemplateConstants;
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
@@ -11,7 +10,6 @@ import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.emails.EmailNotificationBuilder;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
-import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entitybuilders.EntityBuilder;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.validators.PayloadValidator;
@@ -19,8 +17,7 @@ import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult;
 import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponseFactory;
-import org.gooru.nucleus.auth.handlers.processors.utils.InternalHelper;
-import org.gooru.nucleus.auth.handlers.processors.utils.PreferenceSettingsUtil;
+import org.gooru.nucleus.auth.handlers.processors.responses.ResoponseBuilder;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +30,6 @@ import io.vertx.core.json.JsonObject;
  */
 public class SignupUserHandler implements DBHandler {
 
-    private final RedisClient redisClient;
     private final ProcessorContext context;
     private static final Logger LOGGER = LoggerFactory.getLogger(SignupUserHandler.class);
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
@@ -43,7 +39,6 @@ public class SignupUserHandler implements DBHandler {
 
     public SignupUserHandler(ProcessorContext context) {
         this.context = context;
-        this.redisClient = RedisClient.instance();
     }
 
     @Override
@@ -92,45 +87,16 @@ public class SignupUserHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
         if (user.insert()) {
-            final JsonObject result = new JsonObject();
-            result.put(ParameterConstants.PARAM_USER_ID, user.getString(AJEntityUsers.ID));
-            result.put(AJEntityUsers.USERNAME, user.getString(AJEntityUsers.USERNAME));
-            result.put(ParameterConstants.PARAM_APP_ID,
-                context.requestBody().getString(ParameterConstants.PARAM_APP_ID, null));
-            result.put(ParameterConstants.PARAM_PARTNER_ID,
-                context.requestBody().getString(ParameterConstants.PARAM_PARTNER_ID, null));
-            result.put(ParameterConstants.PARAM_PROVIDED_AT, System.currentTimeMillis());
-            result.put(AJEntityUsers.EMAIL, user.getString(AJEntityUsers.EMAIL));
-            result.put(ParameterConstants.PARAM_CDN_URLS, new JsonObject(tenant.getString(AJEntityTenant.CDN_URLS)));
-
-            JsonObject tenantJson = new JsonObject();
-            tenantJson.put(AJEntityUsers.TENANT_ID, tenant.getString(AJEntityTenant.ID));
-            tenantJson.put(AJEntityUsers.TENANT_ROOT, user.getString(AJEntityUsers.TENANT_ROOT));
-            result.put(ParameterConstants.PARAM_TENANT, tenantJson);
-            
-            //Get default preference settings
-            JsonObject userPreference = PreferenceSettingsUtil.getDefaultPreference();
-            result.put(AJEntityUserPreference.PREFERENCE_SETTINGS, userPreference);
-
-            // Check if there is no validity and set to default;
-            int accessTokenValidity = tenant.getInteger(AJEntityTenant.ACCESS_TOKEN_VALIDITY);
-            final String token = InternalHelper.generateToken(user.getString(AJEntityUsers.ID), null,
-                tenant.getString(AJEntityTenant.ID));
-            saveAccessToken(token, result, accessTokenValidity);
-
-            result.put(ParameterConstants.PARAM_ACCESS_TOKEN, token);
-            result.put(AJEntityUsers.FIRST_NAME, user.getString(AJEntityUsers.FIRST_NAME));
-            result.put(AJEntityUsers.LAST_NAME, user.getString(AJEntityUsers.LAST_NAME));
-            result.put(AJEntityUsers.USER_CATEGORY, user.getString(AJEntityUsers.USER_CATEGORY));
-            result.put(AJEntityUsers.THUMBNAIL, user.getString(AJEntityUsers.THUMBNAIL));
+            final JsonObject result = new ResoponseBuilder(context, user, tenant, null).build();
 
             EmailNotificationBuilder emailNotificationBuilder = new EmailNotificationBuilder();
-            emailNotificationBuilder.setTemplateName(EmailTemplateConstants.WELCOME_MAIL).addToAddress(user.getString(AJEntityUsers.EMAIL));
-            
+            emailNotificationBuilder.setTemplateName(EmailTemplateConstants.WELCOME_MAIL)
+                .addToAddress(user.getString(AJEntityUsers.EMAIL));
+
             LOGGER.info("user created successfully");
             return new ExecutionResult<>(
-                MessageResponseFactory.createPostResponse(result,
-                    EventBuilderFactory.getSignupUserEventBuilder(user.getString(AJEntityUsers.ID), emailNotificationBuilder)),
+                MessageResponseFactory.createPostResponse(result, EventBuilderFactory
+                    .getSignupUserEventBuilder(user.getString(AJEntityUsers.ID), emailNotificationBuilder)),
                 ExecutionStatus.SUCCESSFUL);
         }
 
@@ -142,11 +108,6 @@ public class SignupUserHandler implements DBHandler {
     @Override
     public boolean handlerReadOnly() {
         return false;
-    }
-
-    private void saveAccessToken(String token, JsonObject session, Integer expireAtInSeconds) {
-        session.put(ParameterConstants.PARAM_ACCESS_TOKEN_VALIDITY, expireAtInSeconds);
-        this.redisClient.set(token, session.toString(), expireAtInSeconds);
     }
 
     private void autoPopulate() {

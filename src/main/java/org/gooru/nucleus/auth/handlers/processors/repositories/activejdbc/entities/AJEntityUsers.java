@@ -78,7 +78,7 @@ public class AJEntityUsers extends Model {
 
     public static final String SELECT_FOR_SIGNIN =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, tenant_root FROM users WHERE"
-            + " email = ? OR username = ? AND tenant_id = ?::uuid AND login_type = 'credential' AND is_deleted = false";
+            + " email = ? OR username = ? AND tenant_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_BY_ID =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, tenant_id, tenant_root FROM users WHERE"
