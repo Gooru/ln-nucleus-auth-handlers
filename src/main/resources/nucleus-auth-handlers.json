@@ -1,0 +1,18 @@
+{
+  "comment" : "This is bundled JSON file. Idea is that we should externalize this also as part of build. Currently this is going to hold the dev env information",
+  "redis" : {
+          "host" : "127.0.0.1",
+          "port" : 6379
+  },
+  "defaultDataSource" : {
+         "nucleus.ds.type" : "hikari",
+         "jdbcUrl" : "jdbc:postgresql://localhost:5432/nucleus",
+         "username" : "nucleus",
+         "password" : "nucleus",
+         "autoCommit" : false,
+         "maximumPoolSize" : 5
+   },
+   "mail.rest.api.url" : "http://127.0.0.1:8081/api/nucleus-utils/v1/emails",
+   "event.rest.api.url" : "http://127.0.0.1:8081/api/nucleus/api/internal/v1/events",
+   "send.confirmation.email" : false
+}

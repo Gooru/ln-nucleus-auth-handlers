@@ -1,0 +1,189 @@
+package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhandlers;
+
+import java.sql.SQLException;
+import java.util.ResourceBundle;
+import java.util.UUID;
+
+import org.gooru.nucleus.auth.handlers.app.components.RedisClient;
+import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
+import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
+import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
+import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entitybuilders.EntityBuilder;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.validators.PayloadValidator;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.validators.RequestValidator;
+import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult;
+import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult.ExecutionStatus;
+import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
+import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponseFactory;
+import org.gooru.nucleus.auth.handlers.processors.utils.InternalHelper;
+import org.javalite.activejdbc.LazyList;
+import org.postgresql.util.PGobject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.vertx.core.json.JsonObject;
+
+/**
+ * @author szgooru Created On: 03-Jan-2017
+ *
+ */
+public class AuthorizeUserHandler implements DBHandler {
+
+    private final ProcessorContext context;
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeUserHandler.class);
+    private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
+
+    private final RedisClient redisClient;
+    private static String clientId;
+    private static String clientKey;
+    private static AJEntityPartner partner;
+    private static AJEntityTenant tenant;
+    private static AJEntityUsers user;
+
+    public AuthorizeUserHandler(ProcessorContext context) {
+        this.context = context;
+        this.redisClient = RedisClient.instance();
+    }
+
+    @Override
+    public ExecutionResult<MessageResponse> checkSanity() {
+        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
+            RequestValidator.authorizeFieldSelector(), RequestValidator.getValidatorRegistry());
+        if (errors != null && !errors.isEmpty()) {
+            LOGGER.warn("Validation errors for request");
+            return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
+                ExecutionResult.ExecutionStatus.FAILED);
+        }
+
+        clientId = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_ID);
+        clientKey = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_KEY);
+        // TODO:
+        // Validate user payload from request
+
+        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    }
+
+    @Override
+    public ExecutionResult<MessageResponse> validateRequest() {
+
+        LazyList<AJEntityTenant> tenants;
+
+        // First lookup in partner if not found, fall back on tenant
+        LazyList<AJEntityPartner> partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
+            InternalHelper.encryptClientKey(clientKey));
+        if (partners.isEmpty()) {
+            tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
+                InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.anonymous.getType());
+        } else {
+            partner = partners.get(0);
+            tenants =
+                AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID, partner.getString(AJEntityPartner.TENANT_ID));
+        }
+
+        if (tenants.isEmpty()) {
+            LOGGER.warn("No matching partner or tenant found for client_id '{}' and client_key '{}'", clientId,
+                clientKey);
+            return new ExecutionResult<>(
+                MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("tenant.not.found")),
+                ExecutionStatus.FAILED);
+        }
+
+        tenant = tenants.get(0);
+
+        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    }
+
+    @Override
+    public ExecutionResult<MessageResponse> executeRequest() {
+        String identityId = context.requestBody().getJsonObject(ParameterConstants.PARAM_USER).getString(AJEntityUsers.REFERENCE_ID);
+        LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_REFERENCE_ID_TENANT_ID,
+            identityId, identityId, clientId);
+        if (users.isEmpty()) {
+            LOGGER.debug("user not found in database for email or reference_id: {}, client_id: {}", identityId,
+                clientId);
+            user = new AJEntityUsers();
+            user.set(AJEntityUsers.TENANT_ID, getPGObject(clientId));
+            user.setString(AJEntityUsers.LOGIN_TYPE,
+                context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE));
+            autoPopulate();
+
+            if (!user.insert()) {
+                LOGGER.debug("unable to create new user");
+                return new ExecutionResult<>(
+                    MessageResponseFactory.createInvalidRequestResponse("Unable to create user"),
+                    ExecutionStatus.FAILED);
+            }
+        } else {
+            user = users.get(0);
+        }
+
+        final JsonObject result = new JsonObject();
+        result.put(ParameterConstants.PARAM_USER_ID, user.getString(AJEntityUsers.ID));
+        result.put(AJEntityUsers.USERNAME, user.getString(AJEntityUsers.USERNAME));
+        result.put(ParameterConstants.PARAM_APP_ID,
+            context.requestBody().getString(ParameterConstants.PARAM_APP_ID, null));
+        result.put(ParameterConstants.PARAM_PARTNER_ID,
+            context.requestBody().getString(ParameterConstants.PARAM_PARTNER_ID, null));
+        result.put(ParameterConstants.PARAM_PROVIDED_AT, System.currentTimeMillis());
+        result.put(AJEntityUsers.EMAIL, user.getString(AJEntityUsers.EMAIL));
+        result.put(ParameterConstants.PARAM_CDN_URLS, new JsonObject(tenant.getString(AJEntityTenant.CDN_URLS)));
+
+        JsonObject tenantJson = new JsonObject();
+        tenantJson.put(AJEntityUsers.TENANT_ID, tenant.getString(AJEntityTenant.ID));
+        tenantJson.put(AJEntityUsers.TENANT_ROOT, user.getString(AJEntityUsers.TENANT_ROOT));
+        result.put(ParameterConstants.PARAM_TENANT, tenantJson);
+
+        // Check if there is no validity and set to default;
+        int accessTokenValidity = tenant.getInteger(AJEntityTenant.ACCESS_TOKEN_VALIDITY);
+        final String token =
+            InternalHelper.generateToken(user.getString(AJEntityUsers.ID), null, tenant.getString(AJEntityTenant.ID));
+        saveAccessToken(token, result, accessTokenValidity);
+
+        result.put(ParameterConstants.PARAM_ACCESS_TOKEN, token);
+        result.put(AJEntityUsers.FIRST_NAME, user.getString(AJEntityUsers.FIRST_NAME));
+        result.put(AJEntityUsers.LAST_NAME, user.getString(AJEntityUsers.LAST_NAME));
+        result.put(AJEntityUsers.USER_CATEGORY, user.getString(AJEntityUsers.USER_CATEGORY));
+        result.put(AJEntityUsers.THUMBNAIL, user.getString(AJEntityUsers.THUMBNAIL));
+
+        return new ExecutionResult<>(
+            MessageResponseFactory.createPostResponse(result,
+                EventBuilderFactory.getAuthorizeUserEventBuilder(user.getString(AJEntityUsers.ID))),
+            ExecutionStatus.SUCCESSFUL);
+    }
+
+    @Override
+    public boolean handlerReadOnly() {
+        return false;
+    }
+
+    private void saveAccessToken(String token, JsonObject session, Integer expireAtInSeconds) {
+        session.put(ParameterConstants.PARAM_ACCESS_TOKEN_VALIDITY, expireAtInSeconds);
+        this.redisClient.set(token, session.toString(), expireAtInSeconds);
+    }
+
+    private void autoPopulate() {
+        new DefaultAJEntityUsersBuilder().build(user,
+            context.requestBody().getJsonObject(ParameterConstants.PARAM_USER), AJEntityUsers.getConverterRegistry());
+    }
+
+    private static class DefaultPayloadValidator implements PayloadValidator {
+    }
+
+    private static class DefaultAJEntityUsersBuilder implements EntityBuilder<AJEntityUsers> {
+    }
+
+    private PGobject getPGObject(String value) {
+        PGobject pgObject = new PGobject();
+        pgObject.setType("uuid");
+        try {
+            pgObject.setValue(value);
+            return pgObject;
+        } catch (SQLException e) {
+            return null;
+        }
+    }
+}
