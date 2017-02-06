@@ -44,8 +44,9 @@ public class ChangePassowrdHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
-        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
-            AJEntityUsers.changePasswordFieldSelector(), AJEntityUsers.getValidatorRegistry());
+        JsonObject errors = new DefaultPayloadValidator()
+            .validatePayload(context.requestBody(), AJEntityUsers.changePasswordFieldSelector(),
+                AJEntityUsers.getValidatorRegistry());
         if (errors != null && !errors.isEmpty()) {
             LOGGER.warn("Validation errors for request");
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
@@ -104,9 +105,8 @@ public class ChangePassowrdHandler implements DBHandler {
             .putContext(ParameterConstants.PARAM_USER_ID, user.getString(AJEntityUsers.ID))
             .putContext(ParameterConstants.MAIL_USERNAME, user.getString(AJEntityUsers.USERNAME));
 
-        return new ExecutionResult<>(
-            MessageResponseFactory.createNoContentResponse(EventBuilderFactory
-                .getResetPasswordEventBuilder(user.getString(AJEntityUsers.ID), emailNotificationBuilder)),
+        return new ExecutionResult<>(MessageResponseFactory.createNoContentResponse(EventBuilderFactory
+            .getResetPasswordEventBuilder(user.getString(AJEntityUsers.ID), emailNotificationBuilder)),
             ExecutionStatus.SUCCESSFUL);
     }
 

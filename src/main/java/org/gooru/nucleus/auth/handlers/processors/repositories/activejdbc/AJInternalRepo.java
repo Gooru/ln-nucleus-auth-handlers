@@ -8,12 +8,12 @@ import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 
 /**
  * @author szgooru
- * Created On: 03-Jan-2017
+ *         Created On: 03-Jan-2017
  */
 public class AJInternalRepo implements InternalRepo {
 
     private final ProcessorContext context;
-    
+
     public AJInternalRepo(ProcessorContext context) {
         this.context = context;
     }
@@ -30,7 +30,7 @@ public class AJInternalRepo implements InternalRepo {
 
     @Override
     public MessageResponse ltisso() {
-        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildInternalLtiSSOHandler(context) );
+        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildInternalLtiSSOHandler(context));
     }
 
 }

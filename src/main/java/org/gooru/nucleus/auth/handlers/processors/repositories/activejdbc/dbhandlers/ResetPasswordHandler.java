@@ -24,7 +24,6 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * @author szgooru Created On: 03-Jan-2017
- *
  */
 public class ResetPasswordHandler implements DBHandler {
 
@@ -46,8 +45,9 @@ public class ResetPasswordHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
-        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
-            AJEntityUsers.resetPasswordFieldSelector(), AJEntityUsers.getValidatorRegistry());
+        JsonObject errors = new DefaultPayloadValidator()
+            .validatePayload(context.requestBody(), AJEntityUsers.resetPasswordFieldSelector(),
+                AJEntityUsers.getValidatorRegistry());
         if (errors != null && !errors.isEmpty()) {
             LOGGER.warn("Validation errors for request");
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
@@ -107,9 +107,8 @@ public class ResetPasswordHandler implements DBHandler {
             .putContext(ParameterConstants.PARAM_USER_ID, user.getString(AJEntityUsers.ID))
             .putContext(ParameterConstants.MAIL_USERNAME, user.getString(AJEntityUsers.USERNAME));
 
-        return new ExecutionResult<>(
-            MessageResponseFactory.createNoContentResponse(EventBuilderFactory
-                .getResetPasswordEventBuilder(user.getString(AJEntityUsers.ID), emailNotificationBuilder)),
+        return new ExecutionResult<>(MessageResponseFactory.createNoContentResponse(EventBuilderFactory
+            .getResetPasswordEventBuilder(user.getString(AJEntityUsers.ID), emailNotificationBuilder)),
             ExecutionStatus.SUCCESSFUL);
     }
 

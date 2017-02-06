@@ -13,8 +13,7 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * @author szgooru
- * Created On: 03-Jan-2017
- *
+ *         Created On: 03-Jan-2017
  */
 class SignoutUserProcessor extends AbstractCommandProcessor {
 
@@ -38,7 +37,8 @@ class SignoutUserProcessor extends AbstractCommandProcessor {
             if (tokenDetails != null) {
                 String userId = tokenDetails.getString(ParameterConstants.PARAM_USER_ID);
                 RedisClient.instance().del(context.accessToken());
-                return MessageResponseFactory.createNoContentResponse(EventBuilderFactory.getSignoutUserEventBuilder(userId));
+                return MessageResponseFactory
+                    .createNoContentResponse(EventBuilderFactory.getSignoutUserEventBuilder(userId));
             }
             return MessageResponseFactory.createNoContentResponse();
         } catch (Throwable t) {

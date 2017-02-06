@@ -5,8 +5,7 @@ import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.AJRepo
 
 /**
  * @author szgooru
- * Created On: 02-Jan-2017
- *
+ *         Created On: 02-Jan-2017
  */
 public final class RepoBuilder {
 

@@ -9,8 +9,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author gooru
- * Created On: 03-Jan-2017
- *
+ *         Created On: 03-Jan-2017
  */
 class SigninUserProcessor extends AbstractCommandProcessor {
 
@@ -28,8 +27,8 @@ class SigninUserProcessor extends AbstractCommandProcessor {
     @Override
     protected MessageResponse processCommand() {
         try {
-             LOGGER.info("signing in user");
-             return RepoBuilder.buildAuthenticationRepo(context).signinUser();
+            LOGGER.info("signing in user");
+            return RepoBuilder.buildAuthenticationRepo(context).signinUser();
         } catch (Throwable t) {
             LOGGER.error("exception while user signin", t.getMessage());
             return MessageResponseFactory.createInvalidRequestResponse(t.getMessage());

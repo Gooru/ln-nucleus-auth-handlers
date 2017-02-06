@@ -20,7 +20,7 @@ public class AJEntityPartner extends Model {
     public static final String DESCRIPTION = "description";
     public static final String ACCESS_TOKEN_VALIDITY = "access_token_validity";
     public static final String EMAIL = "email";
-    
+
     public static final String SELECT_BY_ID_SECRET =
         "SELECT id, tenant_id, access_token_validity FROM partner WHERE id = ?::uuid AND secret = ?";
 }

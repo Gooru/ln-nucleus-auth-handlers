@@ -1,12 +1,11 @@
 package org.gooru.nucleus.auth.handlers.app.components;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-
 import org.gooru.nucleus.auth.handlers.bootstrap.shutdown.Finalizer;
 import org.gooru.nucleus.auth.handlers.bootstrap.startup.Initializer;
 import org.gooru.nucleus.auth.handlers.constants.ConfigConstants;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -24,9 +23,8 @@ public final class RedisClient implements Initializer, Finalizer {
         jedisPoolConfig.setMinIdle(1);
         jedisPoolConfig.setMaxWaitMillis(30000);
         jedisPoolConfig.setTestOnBorrow(true);
-        pool =
-            new JedisPool(jedisPoolConfig, redisConfig.getString(ConfigConstants.HOST),
-                redisConfig.getInteger(ConfigConstants.PORT));
+        pool = new JedisPool(jedisPoolConfig, redisConfig.getString(ConfigConstants.HOST),
+            redisConfig.getInteger(ConfigConstants.PORT));
     }
 
     public static RedisClient instance() {

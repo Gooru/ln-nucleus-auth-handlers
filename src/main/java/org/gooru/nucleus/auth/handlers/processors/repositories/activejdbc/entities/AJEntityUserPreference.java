@@ -13,12 +13,12 @@ import org.javalite.activejdbc.annotations.Table;
 @Table("user_preference")
 @IdName("user_id")
 public class AJEntityUserPreference extends Model {
-    
+
     public static final String USER_ID = "user_id";
     public static final String PREFERENCE_SETTINGS = "preference_settings";
 
     public static final String SELECT_BY_USERID = "user_id = ?::uuid";
-    
+
     public static final List<String> RESPONSE_FIELDS = Arrays.asList(PREFERENCE_SETTINGS);
-    
+
 }

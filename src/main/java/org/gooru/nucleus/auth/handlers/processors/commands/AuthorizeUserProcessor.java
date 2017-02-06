@@ -9,8 +9,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author gooru
- * Created On: 03-Jan-2017
- *
+ *         Created On: 03-Jan-2017
  */
 public class AuthorizeUserProcessor extends AbstractCommandProcessor {
 

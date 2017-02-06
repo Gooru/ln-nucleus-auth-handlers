@@ -70,7 +70,7 @@ public class GetUserTokenDetailsHandler implements DBHandler {
         result.put(AJEntityUsers.LAST_NAME, user.getString(AJEntityUsers.LAST_NAME));
         result.put(AJEntityUsers.USER_CATEGORY, user.getString(AJEntityUsers.USER_CATEGORY));
         result.put(AJEntityUsers.THUMBNAIL, user.getString(AJEntityUsers.THUMBNAIL));
-        
+
         LOGGER.debug("user token details fetched successfully");
         return new ExecutionResult<>(MessageResponseFactory.createGetResponse(result),
             ExecutionResult.ExecutionStatus.SUCCESSFUL);

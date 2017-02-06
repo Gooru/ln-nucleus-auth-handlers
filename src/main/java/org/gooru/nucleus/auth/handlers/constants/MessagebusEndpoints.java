@@ -2,8 +2,7 @@ package org.gooru.nucleus.auth.handlers.constants;
 
 /**
  * @author szgooru
- * Created On: 30-Dec-2016
- *
+ *         Created On: 30-Dec-2016
  */
 public final class MessagebusEndpoints {
 

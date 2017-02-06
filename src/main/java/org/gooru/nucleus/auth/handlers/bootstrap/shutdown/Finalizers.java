@@ -7,7 +7,6 @@ import java.util.List;
 import org.gooru.nucleus.auth.handlers.app.components.DataSourceRegistry;
 import org.gooru.nucleus.auth.handlers.app.components.RedisClient;
 
-
 public class Finalizers implements Iterable<Finalizer> {
 
     private final Iterator<Finalizer> internalIterator;

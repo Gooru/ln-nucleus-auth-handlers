@@ -9,8 +9,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author szgooru
- * Created On: 02-Jan-2017
- *
+ *         Created On: 02-Jan-2017
  */
 class SigninAnonymousProcessor extends AbstractCommandProcessor {
 

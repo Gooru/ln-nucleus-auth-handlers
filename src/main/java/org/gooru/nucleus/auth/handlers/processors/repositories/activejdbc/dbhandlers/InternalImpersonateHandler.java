@@ -26,7 +26,7 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * @author szgooru
- * Created On: 03-Jan-2017
+ *         Created On: 03-Jan-2017
  */
 public class InternalImpersonateHandler implements DBHandler {
 
@@ -47,8 +47,9 @@ public class InternalImpersonateHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
-        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
-            RequestValidator.authorizeFieldSelector(), RequestValidator.getValidatorRegistry());
+        JsonObject errors = new DefaultPayloadValidator()
+            .validatePayload(context.requestBody(), RequestValidator.authorizeFieldSelector(),
+                RequestValidator.getValidatorRegistry());
         if (errors != null && !errors.isEmpty()) {
             LOGGER.warn("Validation errors for request");
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
@@ -82,11 +83,12 @@ public class InternalImpersonateHandler implements DBHandler {
         LazyList<AJEntityTenant> tenants;
 
         // First lookup in partner if not found, fall back on tenant
-        LazyList<AJEntityPartner> partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
-            InternalHelper.encryptClientKey(clientKey));
+        LazyList<AJEntityPartner> partners = AJEntityPartner
+            .findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey));
         if (partners.isEmpty()) {
-            tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
-                InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.credential.getType());
+            tenants = AJEntityTenant
+                .findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey),
+                    HelperConstants.GrantTypes.credential.getType());
         } else {
             partner = partners.get(0);
             tenants =
@@ -109,9 +111,11 @@ public class InternalImpersonateHandler implements DBHandler {
         String userId = credentials[0];
         LOGGER.debug("userid: {}", userId);
 
-        LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_ID_TENANT_ID, userId, tenant.getString(AJEntityTenant.ID));
+        LazyList<AJEntityUsers> users =
+            AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_ID_TENANT_ID, userId, tenant.getString(AJEntityTenant.ID));
         if (users.isEmpty()) {
-            LOGGER.warn("user not found in database for id: {}, tenant_id:{}", userId, tenant.getString(AJEntityTenant.ID));
+            LOGGER.warn("user not found in database for id: {}, tenant_id:{}", userId,
+                tenant.getString(AJEntityTenant.ID));
             return new ExecutionResult<>(
                 MessageResponseFactory.createUnauthorizedResponse((RESOURCE_BUNDLE.getString("user.not.found"))),
                 ExecutionStatus.FAILED);
@@ -124,7 +128,7 @@ public class InternalImpersonateHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
-        final JsonObject result =  new ResoponseBuilder(context, user, tenant, partner).build();
+        final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
 
         LOGGER.debug("user token generated successfully");
         return new ExecutionResult<>(MessageResponseFactory.createGetResponse(result),

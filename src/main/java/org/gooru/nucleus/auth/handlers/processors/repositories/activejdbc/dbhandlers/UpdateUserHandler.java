@@ -22,7 +22,6 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * @author gooru Created On: 03-Jan-2017
- *
  */
 public class UpdateUserHandler implements DBHandler {
 
@@ -39,8 +38,9 @@ public class UpdateUserHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
         // TODO: revisit the field validation for null/nullable fields
-        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
-            AJEntityUsers.updateFieldSelector(), AJEntityUsers.getValidatorRegistry());
+        JsonObject errors = new DefaultPayloadValidator()
+            .validatePayload(context.requestBody(), AJEntityUsers.updateFieldSelector(),
+                AJEntityUsers.getValidatorRegistry());
         if (errors != null && !errors.isEmpty()) {
             LOGGER.warn("Validation errors for request");
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
@@ -74,15 +74,13 @@ public class UpdateUserHandler implements DBHandler {
 
         if (!user.save()) {
             LOGGER.warn("unable to update user for id:{}", user.get(AJEntityUsers.ID));
-            return new ExecutionResult<>(
-                MessageResponseFactory.createValidationErrorResponse(
-                    new JsonObject().put(MessageConstants.MSG_MESSAGE, RESOURCE_BUNDLE.getString("user.save.error"))),
+            return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(
+                new JsonObject().put(MessageConstants.MSG_MESSAGE, RESOURCE_BUNDLE.getString("user.save.error"))),
                 ExecutionStatus.FAILED);
         }
 
-        return new ExecutionResult<>(
-            MessageResponseFactory.createNoContentResponse(
-                EventBuilderFactory.getUpdateUserEventBuilder(user.getString(AJEntityUsers.ID))),
+        return new ExecutionResult<>(MessageResponseFactory
+            .createNoContentResponse(EventBuilderFactory.getUpdateUserEventBuilder(user.getString(AJEntityUsers.ID))),
             ExecutionStatus.SUCCESSFUL);
     }
 

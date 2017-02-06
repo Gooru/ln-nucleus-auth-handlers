@@ -2,7 +2,6 @@ package org.gooru.nucleus.auth.handlers.constants;
 
 /**
  * @author szgooru Created On: 02-Jan-2017
- *
  */
 public final class HelperConstants {
 
@@ -14,7 +13,7 @@ public final class HelperConstants {
     public static final int RESET_PASS_TOKEN_EXPIRY = 86400;
     public static final String CHAR_ENCODING_UTF8 = "UTF-8";
     public static final String HEADER_TOKEN = "Token ";
-    
+
     public enum UserCategories {
         teacher("teacher"),
         student("student"),
@@ -36,7 +35,10 @@ public final class HelperConstants {
     }
 
     public enum UserGender {
-        male("male"), female("female"), other("other"), not_wise_to_share("not_wise_to_share");
+        male("male"),
+        female("female"),
+        other("other"),
+        not_wise_to_share("not_wise_to_share");
 
         public final String gender;
 
@@ -50,7 +52,11 @@ public final class HelperConstants {
     }
 
     public enum UserLoginType {
-        google("google"), wsfed("wsfed"), saml("saml"), credential("credential"), ltisso("ltisso");
+        google("google"),
+        wsfed("wsfed"),
+        saml("saml"),
+        credential("credential"),
+        ltisso("ltisso");
 
         public final String type;
 

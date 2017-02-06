@@ -12,8 +12,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author szgooru
- * Created On: 30-Dec-2016
- *
+ *         Created On: 30-Dec-2016
  */
 public enum CommandProcessorBuilder {
 
@@ -94,7 +93,6 @@ public enum CommandProcessorBuilder {
             return new ChangePasswordProcessor(context);
         }
     };
-
 
     private String name;
 

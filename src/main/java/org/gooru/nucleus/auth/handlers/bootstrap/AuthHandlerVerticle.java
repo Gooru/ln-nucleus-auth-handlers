@@ -23,9 +23,9 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * @author szgooru
- * Created On: 30-Dec-2016
+ *         Created On: 30-Dec-2016
  */
-public class AuthHandlerVerticle extends AbstractVerticle{
+public class AuthHandlerVerticle extends AbstractVerticle {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthHandlerVerticle.class);
 
@@ -53,7 +53,8 @@ public class AuthHandlerVerticle extends AbstractVerticle{
                             LOGGER.debug("event data to be posted: {}", eventData.toString());
                             final String accessToken = getAccessToken(message, response);
                             InternalHelper
-                                .executeHTTPClientPost(appConfigRegistry.getEventRestApiUrl(), eventData.toString(), accessToken);
+                                .executeHTTPClientPost(appConfigRegistry.getEventRestApiUrl(), eventData.toString(),
+                                    accessToken);
                         }
                     });
                 }).completionHandler(result -> {

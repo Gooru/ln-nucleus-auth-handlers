@@ -124,6 +124,7 @@ public interface FieldValidator {
     }
 
     static final Pattern USERNAME_PATTERN = Pattern.compile("[a-zA-Z0-9]+");
+
     static boolean validateUsername(Object o) {
         if (o == null) {
             return false;
@@ -151,6 +152,7 @@ public interface FieldValidator {
     }
 
     static final Pattern FIRSTNAME_PATTERN = Pattern.compile("[a-zA-Z0-9'. -]+");
+
     static boolean validateFirstName(Object o) {
         if (o == null) {
             return false;
@@ -165,6 +167,7 @@ public interface FieldValidator {
     }
 
     static final Pattern LASTNAME_PATTERN = Pattern.compile("[a-zA-Z0-9'. -]+");
+
     static boolean validateLastName(Object o) {
         if (o == null) {
             return false;

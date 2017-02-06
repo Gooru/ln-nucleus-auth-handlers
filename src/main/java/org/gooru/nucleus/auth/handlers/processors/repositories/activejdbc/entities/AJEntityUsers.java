@@ -1,12 +1,7 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.convertors.ConverterRegistry;
@@ -65,46 +60,54 @@ public class AJEntityUsers extends Model {
     private static final Set<String> MANDATORY_FIELDS =
         new HashSet<>(Arrays.asList(USERNAME, EMAIL, PASSWORD, BIRTH_DATE, FIRST_NAME, LAST_NAME, TENANT_ID));
 
-    private static final Set<String> UPDATABLE_FIELDS =
-        new HashSet<>(Arrays.asList(ABOUT, FIRST_NAME, LAST_NAME, COUNTRY, COUNTRY_ID, GRADE, ROSTER_GLOBAL_USERID,
-            SCHOOL_DISTRICT_ID, STATE, STATE_ID, THUMBNAIL, USER_CATEGORY, USERNAME));
+    private static final Set<String> UPDATABLE_FIELDS = new HashSet<>(Arrays
+        .asList(ABOUT, FIRST_NAME, LAST_NAME, COUNTRY, COUNTRY_ID, GRADE, ROSTER_GLOBAL_USERID, SCHOOL_DISTRICT_ID,
+            STATE, STATE_ID, THUMBNAIL, USER_CATEGORY, USERNAME));
 
     private static final Set<String> TRG_RESET_PASSWORD_FIELDS = new HashSet<>(Arrays.asList(EMAIL, TENANT_ID));
 
-    private static final Set<String> RESET_PASSWORD_FIELDS = new HashSet<>(Arrays.asList(ParameterConstants.PARAM_TOKEN, PASSWORD));
+    private static final Set<String> RESET_PASSWORD_FIELDS =
+        new HashSet<>(Arrays.asList(ParameterConstants.PARAM_TOKEN, PASSWORD));
 
     private static final Set<String> CHANGE_PASSWORD_FIELDS =
         new HashSet<>(Arrays.asList(ParameterConstants.PARAM_OLD_PASSWORD, ParameterConstants.PARAM_NEW_PASSWORD));
 
     public static final String SELECT_FOR_SIGNIN =
-        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, tenant_root FROM users WHERE"
+        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+            + "tenant_root FROM users WHERE"
             + " email = ? OR username = ? AND tenant_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_BY_ID =
-        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, tenant_id, tenant_root FROM users WHERE"
+        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+            + "tenant_id, tenant_root FROM users WHERE"
             + " id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_BY_ID_TENANT_ID =
-        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, tenant_root FROM users WHERE"
+        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+            + "tenant_root FROM users WHERE"
             + " id = ?::uuid AND tenant_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_FOR_SIGNUP =
         "SELECT id FROM users WHERE (email = ? OR username = ?) AND tenant_id = ?::uuid";
 
     public static final String SELECT_BY_REFERENCE_ID_TENANT_ID =
-        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, tenant_root FROM users WHERE"
+        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+            + "tenant_root FROM users WHERE"
             + " reference_id = ? AND tenant_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_BY_EMAIL_REFERENCE_ID_TENANT_ID =
-        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, tenant_root FROM users WHERE"
+        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+            + "tenant_root FROM users WHERE"
             + " email = ? OR reference_id = ? AND tenant_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_BY_EMAIL =
-        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, tenant_root FROM users WHERE"
+        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+            + "tenant_root FROM users WHERE"
             + " email = ? AND is_deleted = false";
 
     public static final String SELECT_BY_EMAIL_TENANT_ID =
-        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, tenant_root FROM users WHERE"
+        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+            + "tenant_root FROM users WHERE"
             + " email = ? AND tenant_id = ?::uuid AND is_deleted = false";
 
     private static final Map<String, FieldValidator> validatorRegistry;

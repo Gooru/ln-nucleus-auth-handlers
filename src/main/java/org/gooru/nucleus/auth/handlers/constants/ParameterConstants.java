@@ -2,8 +2,7 @@ package org.gooru.nucleus.auth.handlers.constants;
 
 /**
  * @author szgooru
- * Created On: 02-Jan-2017
- *
+ *         Created On: 02-Jan-2017
  */
 public final class ParameterConstants {
 
@@ -25,15 +24,15 @@ public final class ParameterConstants {
     public static final String PARAM_TOKEN = "token";
     public static final String PARAM_OLD_PASSWORD = "old_password";
     public static final String PARAM_NEW_PASSWORD = "new_password";
-    
+
     public static final String PARAM_USER = "user";
     public static final String PARAM_USER_ID = "user_id";
-    
+
     //Email Notification Constants
     public static final String MAIL_TEMPLATE_NAME = "mail_template_name";
     public static final String MAIL_TEMPLATE_CONTEXT = "mail_template_context";
     public static final String MAIL_TO_ADDRESSES = "to_addresses";
     public static final String MAIL_TOKEN = "token";
     public static final String MAIL_USERNAME = "username";
-    
+
 }

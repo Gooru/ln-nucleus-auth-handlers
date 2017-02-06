@@ -68,7 +68,7 @@ public interface FieldConverter {
             return null;
         }
     }
-    
+
     static PGobject convertPasswordToEncryted(Object o) {
         /*String CUSTOM_PASSWORD_TYPE = "custom-password";
         PGobject pgObject = new PGobject();
@@ -82,7 +82,7 @@ public interface FieldConverter {
             return null;
         }
     }
-    
+
     static PGobject convertFieldToLowercase(Object o) {
         PGobject pgObject = new PGobject();
         pgObject.setType(TEXT_TYPE);
@@ -93,6 +93,6 @@ public interface FieldConverter {
             return null;
         }
     }
-    
+
     PGobject convertField(Object fieldValue);
 }

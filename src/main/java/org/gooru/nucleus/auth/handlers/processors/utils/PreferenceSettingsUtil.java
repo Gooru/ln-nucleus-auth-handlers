@@ -9,28 +9,28 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * @author szgooru
- * Created On: 01-Feb-2017
+ *         Created On: 01-Feb-2017
  */
 public final class PreferenceSettingsUtil {
 
     private static JsonObject defaultPreference;
     private static final String DEFAULT_PREF_LOOKUP_KEY = "DEFAULT_PREFERENCE";
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(PreferenceSettingsUtil.class); 
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PreferenceSettingsUtil.class);
     private static final String SELECT_DEFAULT_PREF = "SELECT value FROM default_lookup WHERE key = ?";
-    
+
     private PreferenceSettingsUtil() {
         throw new AssertionError();
     }
-    
+
     public static JsonObject getDefaultPreference() {
         if (defaultPreference == null) {
             LOGGER.warn("returning null default preference");
         }
-        
+
         return defaultPreference;
     }
-    
+
     public static void initialize() {
         try {
             Base.open(DataSourceRegistry.getInstance().getDefaultDataSource());

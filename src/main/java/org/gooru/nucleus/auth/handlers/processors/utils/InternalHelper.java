@@ -13,8 +13,7 @@ import org.gooru.nucleus.auth.handlers.processors.exceptions.InvalidRequestExcep
 
 /**
  * @author szgooru
- * Created On: 02-Jan-2017
- *
+ *         Created On: 02-Jan-2017
  */
 public final class InternalHelper {
 
@@ -88,8 +87,8 @@ public final class InternalHelper {
     }
 
     public static String generatePasswordResetToken(String userId) {
-        return Base64.getEncoder().encodeToString(
-            (System.currentTimeMillis() + COLON + userId + COLON + RESET_PASSWORD_TOKEN).getBytes());
+        return Base64.getEncoder()
+            .encodeToString((System.currentTimeMillis() + COLON + userId + COLON + RESET_PASSWORD_TOKEN).getBytes());
     }
 
     public static String encodeToken(String token) {
