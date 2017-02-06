@@ -12,11 +12,11 @@ import org.slf4j.LoggerFactory;
  * Created On: 03-Jan-2017
  *
  */
-public class UpdateUserProcessor extends AbstractCommandProcessor {
+class UpdateUserProcessor extends AbstractCommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateUserProcessor.class);
 
-    protected UpdateUserProcessor(ProcessorContext context) {
+    UpdateUserProcessor(ProcessorContext context) {
         super(context);
     }
 

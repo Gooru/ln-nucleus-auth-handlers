@@ -11,11 +11,11 @@ import org.slf4j.LoggerFactory;
  * @author szgooru
  * Created On: 03-Jan-2017
  */
-public class InternalLtiSSOProcessor extends AbstractCommandProcessor {
+class InternalLtiSSOProcessor extends AbstractCommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InternalLtiSSOProcessor.class);
-    
-    protected InternalLtiSSOProcessor(ProcessorContext context) {
+
+    InternalLtiSSOProcessor(ProcessorContext context) {
         super(context);
     }
 

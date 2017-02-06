@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 public class ChangePasswordProcessor extends AbstractCommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChangePasswordProcessor.class);
-    
-    protected ChangePasswordProcessor(ProcessorContext context) {
+
+    ChangePasswordProcessor(ProcessorContext context) {
         super(context);
     }
 

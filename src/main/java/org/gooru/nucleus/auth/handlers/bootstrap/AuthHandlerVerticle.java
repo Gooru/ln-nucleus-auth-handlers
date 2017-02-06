@@ -27,7 +27,7 @@ import io.vertx.core.json.JsonObject;
  */
 public class AuthHandlerVerticle extends AbstractVerticle{
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(AuthHandlerVerticle.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthHandlerVerticle.class);
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
@@ -47,7 +47,7 @@ public class AuthHandlerVerticle extends AbstractVerticle{
                     }, res -> {
                         MessageResponse response = (MessageResponse) res.result();
                         message.reply(response.reply(), response.deliveryOptions());
-                        
+
                         JsonObject eventData = response.event();
                         if (eventData != null) {
                             LOGGER.debug("event data to be posted: {}", eventData.toString());
@@ -96,11 +96,11 @@ public class AuthHandlerVerticle extends AbstractVerticle{
             finalizer.finalizeComponent();
         }
     }
-    
+
     private String getAccessToken(Message<?> message, MessageResponse messageResponse) {
         String accessToken = ((JsonObject) message.body()).getString(MessageConstants.MSG_HEADER_TOKEN);
         if (accessToken == null || accessToken.isEmpty()) {
-            final JsonObject result = (JsonObject) messageResponse.reply();
+            final JsonObject result = messageResponse.reply();
             final JsonObject resultHttpBody = result.getJsonObject(MessageConstants.MSG_HTTP_BODY);
             final JsonObject resultHttpRes = resultHttpBody.getJsonObject(MessageConstants.MSG_HTTP_RESPONSE);
             if (resultHttpRes != null) {

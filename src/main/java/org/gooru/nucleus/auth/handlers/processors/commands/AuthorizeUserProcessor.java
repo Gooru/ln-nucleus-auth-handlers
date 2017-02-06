@@ -16,7 +16,7 @@ public class AuthorizeUserProcessor extends AbstractCommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeUserProcessor.class);
 
-    protected AuthorizeUserProcessor(ProcessorContext context) {
+    AuthorizeUserProcessor(ProcessorContext context) {
         super(context);
     }
 

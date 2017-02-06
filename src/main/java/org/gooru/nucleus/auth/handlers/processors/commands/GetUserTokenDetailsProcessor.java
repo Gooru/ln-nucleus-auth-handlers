@@ -16,7 +16,7 @@ public class GetUserTokenDetailsProcessor extends AbstractCommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GetUserTokenDetailsProcessor.class);
 
-    protected GetUserTokenDetailsProcessor(ProcessorContext context) {
+    GetUserTokenDetailsProcessor(ProcessorContext context) {
         super(context);
     }
 

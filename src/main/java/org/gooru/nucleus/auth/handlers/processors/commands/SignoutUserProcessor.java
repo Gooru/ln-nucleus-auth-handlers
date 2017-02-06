@@ -16,11 +16,11 @@ import io.vertx.core.json.JsonObject;
  * Created On: 03-Jan-2017
  *
  */
-public class SignoutUserProcessor extends AbstractCommandProcessor {
+class SignoutUserProcessor extends AbstractCommandProcessor {
 
     private final Logger LOGGER = LoggerFactory.getLogger(SignoutUserProcessor.class);
 
-    protected SignoutUserProcessor(ProcessorContext context) {
+    SignoutUserProcessor(ProcessorContext context) {
         super(context);
     }
 
@@ -35,13 +35,12 @@ public class SignoutUserProcessor extends AbstractCommandProcessor {
             LOGGER.info("processing user signout");
             RedisClient redisClient = RedisClient.instance();
             JsonObject tokenDetails = redisClient.getJsonObject(context.accessToken());
-            if (tokenDetails == null || tokenDetails.isEmpty()) {
-                //TODO: do we want to return any error?
+            if (tokenDetails != null) {
+                String userId = tokenDetails.getString(ParameterConstants.PARAM_USER_ID);
+                RedisClient.instance().del(context.accessToken());
+                return MessageResponseFactory.createNoContentResponse(EventBuilderFactory.getSignoutUserEventBuilder(userId));
             }
-            
-            String userId = tokenDetails.getString(ParameterConstants.PARAM_USER_ID);
-            RedisClient.instance().del(context.accessToken());
-            return MessageResponseFactory.createNoContentResponse(EventBuilderFactory.getSignoutUserEventBuilder(userId));
+            return MessageResponseFactory.createNoContentResponse();
         } catch (Throwable t) {
             LOGGER.error("exception while user signout", t.getMessage());
             return MessageResponseFactory.createInternalErrorResponse(t.getMessage());

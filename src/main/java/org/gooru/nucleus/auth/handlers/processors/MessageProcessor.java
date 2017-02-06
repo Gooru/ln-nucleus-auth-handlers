@@ -43,9 +43,8 @@ public class MessageProcessor implements Processor {
             return MessageResponseFactory.createVersionDeprecatedResponse();
         } catch (Throwable t) {
             LOGGER.error("Exception while processing request");
-            MessageResponseFactory.createInternalErrorResponse("something went wrong in database transaction");
+            return MessageResponseFactory.createInternalErrorResponse("something went wrong in database transaction");
         }
-        return null;
     }
 
     private ProcessorContext createContext() {

@@ -51,7 +51,7 @@ public final class RedisClient implements Initializer, Finalizer {
     }
 
     public String get(final String key) {
-        String value = null;
+        String value;
         Jedis jedis = null;
         try {
             jedis = getJedis();
@@ -113,7 +113,7 @@ public final class RedisClient implements Initializer, Finalizer {
         }
     }
 
-    public Jedis getJedis() {
+    private Jedis getJedis() {
 
         return pool.getResource();
     }

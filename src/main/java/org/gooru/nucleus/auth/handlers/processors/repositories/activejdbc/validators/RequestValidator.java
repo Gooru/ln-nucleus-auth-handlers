@@ -19,15 +19,15 @@ public final class RequestValidator {
     private static final String USER_CATEGORY = "user_category";
     private static final String GRANT_TYPE = ParameterConstants.PARAM_GRANT_TYPE;
     private static final String USER = ParameterConstants.PARAM_USER;
-    
+
     private static final Map<String, FieldValidator> validatorRegistry;
 
-    public static final Set<String> LTISSO_FIELDS =
+    private static final Set<String> LTISSO_FIELDS =
         new HashSet<>(Arrays.asList(CLIENT_ID, CLIENT_KEY, USER_CATEGORY));
 
-    public static final Set<String> AUTHORIZE_FIELDS =
+    private static final Set<String> AUTHORIZE_FIELDS =
         new HashSet<>(Arrays.asList(CLIENT_ID, CLIENT_KEY, GRANT_TYPE, USER));
-    
+
     static {
         validatorRegistry = initializeValidators();
     }
@@ -49,7 +49,7 @@ public final class RequestValidator {
     public static FieldSelector authorizeFieldSelector() {
         return () -> Collections.unmodifiableSet(AUTHORIZE_FIELDS);
     }
-    
+
     public static ValidatorRegistry getValidatorRegistry() {
         return new RequestValidationRegistry();
     }

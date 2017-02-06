@@ -12,11 +12,11 @@ import org.slf4j.LoggerFactory;
  * Created On: 03-Jan-2017
  *
  */
-public class ResetPasswordProcessor extends AbstractCommandProcessor {
+class ResetPasswordProcessor extends AbstractCommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResetPasswordProcessor.class);
 
-    protected ResetPasswordProcessor(ProcessorContext context) {
+    ResetPasswordProcessor(ProcessorContext context) {
         super(context);
     }
 

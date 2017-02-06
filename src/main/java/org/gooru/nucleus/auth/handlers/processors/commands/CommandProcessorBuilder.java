@@ -27,6 +27,7 @@ public enum CommandProcessorBuilder {
             };
         }
     },
+    // TODO: Need to create instances of Internal Processors as well
     ANONYMOUS_SIGNIN(MessageConstants.MSG_OP_ANONYMOUS_SIGNIN) {
         @Override
         public Processor build(ProcessorContext context) {
@@ -36,13 +37,13 @@ public enum CommandProcessorBuilder {
     USER_SIGNIN(MessageConstants.MSG_OP_USER_SIGNIN) {
         @Override
         public Processor build(ProcessorContext context) {
-            return new SinginUserProcessor(context);
+            return new SigninUserProcessor(context);
         }
     },
     USER_SIGNUP(MessageConstants.MSG_OP_USER_SIGNUP) {
         @Override
         public Processor build(ProcessorContext context) {
-            return new SingupUserProcessor(context);
+            return new SignupUserProcessor(context);
         }
     },
     USER_UPDATE(MessageConstants.MSG_OP_USER_UPDATE) {
@@ -109,7 +110,7 @@ public enum CommandProcessorBuilder {
 
     static {
         for (CommandProcessorBuilder builder : values()) {
-            LOOKUP.put(builder.getName(), builder);
+            LOOKUP.put(builder.name, builder);
         }
     }
 

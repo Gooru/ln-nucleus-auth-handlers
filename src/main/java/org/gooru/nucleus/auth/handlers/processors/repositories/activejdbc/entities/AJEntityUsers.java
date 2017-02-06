@@ -37,43 +37,43 @@ public class AJEntityUsers extends Model {
     public static final String PARENT_USER_ID = "parent_user_id";
     public static final String USER_CATEGORY = "user_category";
     public static final String ROLES = "roles";
-    public static final String BIRTH_DATE = "birth_date";
-    public static final String GRADE = "grade";
+    private static final String BIRTH_DATE = "birth_date";
+    private static final String GRADE = "grade";
     public static final String COURSE = "course";
     public static final String THUMBNAIL = "thumbnail";
-    public static final String GENDER = "gender";
-    public static final String ABOUT = "about";
+    private static final String GENDER = "gender";
+    private static final String ABOUT = "about";
     public static final String SCHOOL_ID = "school_id";
     public static final String SCHOOL = "school";
-    public static final String SCHOOL_DISTRICT_ID = "school_district_id";
+    private static final String SCHOOL_DISTRICT_ID = "school_district_id";
     public static final String SCHOOL_DISTRICT = "school_district";
-    public static final String COUNTRY_ID = "country_id";
-    public static final String COUNTRY = "country";
-    public static final String STATE_ID = "state_id";
-    public static final String STATE = "state";
+    private static final String COUNTRY_ID = "country_id";
+    private static final String COUNTRY = "country";
+    private static final String STATE_ID = "state_id";
+    private static final String STATE = "state";
     public static final String METADATA = "metadata";
     public static final String ROSTER_ID = "roster_id";
-    public static final String ROSTER_GLOBAL_USERID = "roster_global_userid";
+    private static final String ROSTER_GLOBAL_USERID = "roster_global_userid";
     public static final String TENANT_ROOT = "tenant_root";
     public static final String TENANT_ID = "tenant_id";
     public static final String PARENT_ID = "partner_id";
     public static final String IS_DELETED = "is_deleted";
 
-    public static final Set<String> CREATABLE_FIELDS = new HashSet<>(
+    private static final Set<String> CREATABLE_FIELDS = new HashSet<>(
         Arrays.asList(USERNAME, EMAIL, PASSWORD, BIRTH_DATE, FIRST_NAME, LAST_NAME, TENANT_ID, GENDER, USER_CATEGORY));
 
-    public static final Set<String> MANDATORY_FIELDS =
+    private static final Set<String> MANDATORY_FIELDS =
         new HashSet<>(Arrays.asList(USERNAME, EMAIL, PASSWORD, BIRTH_DATE, FIRST_NAME, LAST_NAME, TENANT_ID));
 
-    public static final Set<String> UPDATABLE_FIELDS =
+    private static final Set<String> UPDATABLE_FIELDS =
         new HashSet<>(Arrays.asList(ABOUT, FIRST_NAME, LAST_NAME, COUNTRY, COUNTRY_ID, GRADE, ROSTER_GLOBAL_USERID,
             SCHOOL_DISTRICT_ID, STATE, STATE_ID, THUMBNAIL, USER_CATEGORY, USERNAME));
-    
-    public static final Set<String> TRG_RESET_PASSWORD_FIELDS = new HashSet<>(Arrays.asList(EMAIL, TENANT_ID));
-    
-    public static final Set<String> RESET_PASSWORD_FIELDS = new HashSet<>(Arrays.asList(ParameterConstants.PARAM_TOKEN, PASSWORD));
-    
-    public static final Set<String> CHANGE_PASSWORD_FIELDS =
+
+    private static final Set<String> TRG_RESET_PASSWORD_FIELDS = new HashSet<>(Arrays.asList(EMAIL, TENANT_ID));
+
+    private static final Set<String> RESET_PASSWORD_FIELDS = new HashSet<>(Arrays.asList(ParameterConstants.PARAM_TOKEN, PASSWORD));
+
+    private static final Set<String> CHANGE_PASSWORD_FIELDS =
         new HashSet<>(Arrays.asList(ParameterConstants.PARAM_OLD_PASSWORD, ParameterConstants.PARAM_NEW_PASSWORD));
 
     public static final String SELECT_FOR_SIGNIN =
@@ -83,7 +83,7 @@ public class AJEntityUsers extends Model {
     public static final String SELECT_BY_ID =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, tenant_id, tenant_root FROM users WHERE"
             + " id = ?::uuid AND is_deleted = false";
-    
+
     public static final String SELECT_BY_ID_TENANT_ID =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, tenant_root FROM users WHERE"
             + " id = ?::uuid AND tenant_id = ?::uuid AND is_deleted = false";
@@ -94,15 +94,15 @@ public class AJEntityUsers extends Model {
     public static final String SELECT_BY_REFERENCE_ID_TENANT_ID =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, tenant_root FROM users WHERE"
             + " reference_id = ? AND tenant_id = ?::uuid AND is_deleted = false";
-    
+
     public static final String SELECT_BY_EMAIL_REFERENCE_ID_TENANT_ID =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, tenant_root FROM users WHERE"
             + " email = ? OR reference_id = ? AND tenant_id = ?::uuid AND is_deleted = false";
-    
+
     public static final String SELECT_BY_EMAIL =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, tenant_root FROM users WHERE"
             + " email = ? AND is_deleted = false";
-    
+
     public static final String SELECT_BY_EMAIL_TENANT_ID =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, tenant_root FROM users WHERE"
             + " email = ? AND tenant_id = ?::uuid AND is_deleted = false";
@@ -138,9 +138,9 @@ public class AJEntityUsers extends Model {
         converterMap.put(TENANT_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
         converterMap.put(BIRTH_DATE,
             (fieldValue -> FieldConverter.convertFieldToDateWithFormat(fieldValue, DateTimeFormatter.ISO_LOCAL_DATE)));
-        converterMap.put(PASSWORD, (fieldValue -> FieldConverter.convertPasswordToEncryted(fieldValue)));
-        converterMap.put(USERNAME, (fieldValue -> FieldConverter.convertFieldToLowercase(fieldValue)));
-        converterMap.put(EMAIL, (fieldValue -> FieldConverter.convertFieldToLowercase(fieldValue)));
+        converterMap.put(PASSWORD, (FieldConverter::convertPasswordToEncryted));
+        converterMap.put(USERNAME, (FieldConverter::convertFieldToLowercase));
+        converterMap.put(EMAIL, (FieldConverter::convertFieldToLowercase));
         return converterMap;
     }
 
@@ -165,19 +165,19 @@ public class AJEntityUsers extends Model {
             }
         };
     }
-    
+
     public static FieldSelector updateFieldSelector() {
         return () -> Collections.unmodifiableSet(UPDATABLE_FIELDS);
     }
-    
+
     public static FieldSelector triggerResetPasswordEmailFieldSelector() {
         return () -> Collections.unmodifiableSet(TRG_RESET_PASSWORD_FIELDS);
     }
-    
+
     public static FieldSelector resetPasswordFieldSelector() {
         return () -> Collections.unmodifiableSet(RESET_PASSWORD_FIELDS);
     }
-    
+
     public static FieldSelector changePasswordFieldSelector() {
         return () -> Collections.unmodifiableSet(CHANGE_PASSWORD_FIELDS);
     }

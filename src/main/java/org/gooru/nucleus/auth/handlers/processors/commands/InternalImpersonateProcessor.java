@@ -11,11 +11,11 @@ import org.slf4j.LoggerFactory;
  * @author szgooru
  * Created On: 03-Jan-2017
  */
-public class InternalImpersonateProcessor extends AbstractCommandProcessor {
+class InternalImpersonateProcessor extends AbstractCommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InternalImpersonateProcessor.class);
-    
-    protected InternalImpersonateProcessor(ProcessorContext context) {
+
+    InternalImpersonateProcessor(ProcessorContext context) {
         super(context);
     }
 
