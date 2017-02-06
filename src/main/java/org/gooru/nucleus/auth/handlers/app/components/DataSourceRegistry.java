@@ -1,8 +1,5 @@
 package org.gooru.nucleus.auth.handlers.app.components;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +14,9 @@ import org.slf4j.LoggerFactory;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 
 public final class DataSourceRegistry implements Initializer, Finalizer {
 

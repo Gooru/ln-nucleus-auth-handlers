@@ -48,14 +48,15 @@ public class InternalLtiSSOHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
 
-        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
-            RequestValidator.ltissoFieldSelector(), RequestValidator.getValidatorRegistry());
+        JsonObject errors = new DefaultPayloadValidator()
+            .validatePayload(context.requestBody(), RequestValidator.ltissoFieldSelector(),
+                RequestValidator.getValidatorRegistry());
         if (errors != null && !errors.isEmpty()) {
             LOGGER.warn("Validation errors for request");
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
                 ExecutionResult.ExecutionStatus.FAILED);
         }
-        
+
         String grantType = context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE);
         if (!grantType.equalsIgnoreCase(HelperConstants.GrantTypes.ltisso.getType())) {
             LOGGER.warn("invalid grant type in request");
@@ -85,11 +86,12 @@ public class InternalLtiSSOHandler implements DBHandler {
         LazyList<AJEntityTenant> tenants;
 
         // First lookup in partner if not found, fall back on tenant
-        LazyList<AJEntityPartner> partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
-            InternalHelper.encryptClientKey(clientKey));
+        LazyList<AJEntityPartner> partners = AJEntityPartner
+            .findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey));
         if (partners.isEmpty()) {
-            tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
-                InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.ltisso.getType());
+            tenants = AJEntityTenant
+                .findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey),
+                    HelperConstants.GrantTypes.ltisso.getType());
         } else {
             partner = partners.get(0);
             tenants =
@@ -110,8 +112,8 @@ public class InternalLtiSSOHandler implements DBHandler {
         final String consumerClientId = credentials[0];
         final String consumerSecret = credentials[1];
 
-        LazyList<AJEntityTenant> consumerTenant =
-            AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, consumerClientId,
+        LazyList<AJEntityTenant> consumerTenant = AJEntityTenant
+            .findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, consumerClientId,
                 InternalHelper.encryptClientKey(consumerSecret), HelperConstants.GrantTypes.ltisso.getType());
 
         if (consumerTenant.isEmpty()) {
@@ -148,9 +150,8 @@ public class InternalLtiSSOHandler implements DBHandler {
 
         final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
 
-        return new ExecutionResult<>(
-            MessageResponseFactory.createPostResponse(result,
-                EventBuilderFactory.getLTISSOEventBuilder(user.getString(AJEntityUsers.ID))),
+        return new ExecutionResult<>(MessageResponseFactory
+            .createPostResponse(result, EventBuilderFactory.getLTISSOEventBuilder(user.getString(AJEntityUsers.ID))),
             ExecutionStatus.SUCCESSFUL);
     }
 
@@ -160,8 +161,9 @@ public class InternalLtiSSOHandler implements DBHandler {
     }
 
     private void autoPopulate() {
-        new DefaultAJEntityUsersBuilder().build(user,
-            context.requestBody().getJsonObject(ParameterConstants.PARAM_USER), AJEntityUsers.getConverterRegistry());
+        new DefaultAJEntityUsersBuilder()
+            .build(user, context.requestBody().getJsonObject(ParameterConstants.PARAM_USER),
+                AJEntityUsers.getConverterRegistry());
     }
 
     private static class DefaultPayloadValidator implements PayloadValidator {

@@ -9,14 +9,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author szgooru
- * Created On: 03-Jan-2017
- *
+ *         Created On: 03-Jan-2017
  */
-public class TriggerResetPasswordForUserProcessor extends AbstractCommandProcessor {
+class TriggerResetPasswordForUserProcessor extends AbstractCommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TriggerResetPasswordForUserProcessor.class);
 
-    protected TriggerResetPasswordForUserProcessor(ProcessorContext context) {
+    TriggerResetPasswordForUserProcessor(ProcessorContext context) {
         super(context);
     }
 

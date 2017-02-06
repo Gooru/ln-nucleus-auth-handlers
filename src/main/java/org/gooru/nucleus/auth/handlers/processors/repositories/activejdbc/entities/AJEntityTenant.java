@@ -34,7 +34,8 @@ public class AJEntityTenant extends Model {
         "SELECT id, cdn_urls, access_token_validity FROM tenant WHERE id = ?::uuid AND status = 'active'";
 
     public static final String SELECT_BY_ID_SECRET =
-        "SELECT id, cdn_urls, access_token_validity FROM tenant WHERE id = ?::uuid AND secret = ? AND grant_types @> ARRAY[?]::text[]"
-        + " AND status = 'active'";
+        "SELECT id, cdn_urls, access_token_validity FROM tenant WHERE id = ?::uuid AND secret = ? AND grant_types @> "
+            + "ARRAY[?]::text[]"
+            + " AND status = 'active'";
 
 }

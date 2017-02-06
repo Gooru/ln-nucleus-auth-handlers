@@ -57,11 +57,11 @@ public final class EmailNotificationBuilder {
 
     public JsonObject build() {
         JsonObject data = null;
-        if (getTemplateName() != null) {
+        if (templateName != null) {
             data = new JsonObject();
-            data.put(ParameterConstants.MAIL_TEMPLATE_NAME, getTemplateName());
-            data.put(ParameterConstants.MAIL_TEMPLATE_CONTEXT, getContext());
-            data.put(ParameterConstants.MAIL_TO_ADDRESSES, getToAddresses());
+            data.put(ParameterConstants.MAIL_TEMPLATE_NAME, templateName);
+            data.put(ParameterConstants.MAIL_TEMPLATE_CONTEXT, context);
+            data.put(ParameterConstants.MAIL_TO_ADDRESSES, toAddresses);
         }
         return data;
     }

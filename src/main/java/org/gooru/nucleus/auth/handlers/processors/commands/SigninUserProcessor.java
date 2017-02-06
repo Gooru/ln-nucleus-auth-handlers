@@ -8,15 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author szgooru
- * Created On: 02-Jan-2017
- *
+ * @author gooru
+ *         Created On: 03-Jan-2017
  */
-public class SingupUserProcessor extends AbstractCommandProcessor {
+class SigninUserProcessor extends AbstractCommandProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SingupUserProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SigninUserProcessor.class);
 
-    protected SingupUserProcessor(ProcessorContext context) {
+    SigninUserProcessor(ProcessorContext context) {
         super(context);
     }
 
@@ -28,11 +27,11 @@ public class SingupUserProcessor extends AbstractCommandProcessor {
     @Override
     protected MessageResponse processCommand() {
         try {
-            LOGGER.info("Creating new user");
-            return RepoBuilder.buildUserRepo(context).signupUser();
+            LOGGER.info("signing in user");
+            return RepoBuilder.buildAuthenticationRepo(context).signinUser();
         } catch (Throwable t) {
-            LOGGER.error("exception while creating new user", t.getMessage());
-            return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
+            LOGGER.error("exception while user signin", t.getMessage());
+            return MessageResponseFactory.createInvalidRequestResponse(t.getMessage());
         }
     }
 

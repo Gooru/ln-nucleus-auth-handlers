@@ -9,14 +9,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author szgooru
- * Created On: 02-Jan-2017
- *
+ *         Created On: 02-Jan-2017
  */
 public class GetUserTokenDetailsProcessor extends AbstractCommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GetUserTokenDetailsProcessor.class);
 
-    protected GetUserTokenDetailsProcessor(ProcessorContext context) {
+    GetUserTokenDetailsProcessor(ProcessorContext context) {
         super(context);
     }
 

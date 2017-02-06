@@ -12,13 +12,13 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * @author szgooru
- * Created On: 05-Jan-2017
+ *         Created On: 05-Jan-2017
  */
 public class CheckUserTokenProcessor extends AbstractCommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CheckUserTokenProcessor.class);
-    
-    protected CheckUserTokenProcessor(ProcessorContext context) {
+
+    CheckUserTokenProcessor(ProcessorContext context) {
         super(context);
     }
 

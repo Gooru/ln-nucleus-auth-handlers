@@ -8,8 +8,7 @@ import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 
 /**
  * @author szgooru
- * Created On: 02-Jan-2017
- *
+ *         Created On: 02-Jan-2017
  */
 public class AJAuthenticationRepo implements AuthenticationRepo {
 

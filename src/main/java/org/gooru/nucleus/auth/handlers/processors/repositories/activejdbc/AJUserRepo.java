@@ -35,8 +35,7 @@ public class AJUserRepo implements UserRepo {
 
     @Override
     public MessageResponse triggerResetPassword() {
-        return new TransactionExecutor()
-            .executeTransaction(DBHandlerBuilder.buildTriggerResetPasswordHandler(context));
+        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildTriggerResetPasswordHandler(context));
     }
 
     @Override

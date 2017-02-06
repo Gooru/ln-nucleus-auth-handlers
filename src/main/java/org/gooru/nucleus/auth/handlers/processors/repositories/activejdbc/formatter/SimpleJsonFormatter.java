@@ -99,7 +99,7 @@ class SimpleJsonFormatter implements JsonFormatter {
                 sb.append('"').append(Convert.toIsoString((Date) v)).append('"');
             } else if (v instanceof PGobject && ((PGobject) v).getType().equalsIgnoreCase(JSONB_TYPE)) {
                 sb.append(Convert.toString(v));
-            } else if (v instanceof String){
+            } else if (v instanceof String) {
                 sb.append('"');
                 try {
                     sb.append(StringEscapeUtils.escapeJava(String.valueOf(v)));

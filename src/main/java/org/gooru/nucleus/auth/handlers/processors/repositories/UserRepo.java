@@ -4,8 +4,7 @@ import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 
 /**
  * @author gooru
- * Created On: 02-Jan-2017
- *
+ *         Created On: 02-Jan-2017
  */
 public interface UserRepo {
 
@@ -18,6 +17,6 @@ public interface UserRepo {
     MessageResponse triggerResetPassword();
 
     MessageResponse resetPassword();
-    
+
     MessageResponse changePassword();
 }

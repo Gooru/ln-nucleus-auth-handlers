@@ -25,7 +25,7 @@ public interface FieldValidator {
     static boolean validateString(Object o, int len) {
         return !(o == null || !(o instanceof String) || ((String) o).isEmpty() || (((String) o).length() > len));
     }
-    
+
     static boolean validateString(Object o) {
         return !(o == null || !(o instanceof String) || ((String) o).isEmpty());
     }
@@ -35,7 +35,7 @@ public interface FieldValidator {
             return false;
         }
         try {
-            Integer.valueOf(o.toString());
+            Integer.parseInt(o.toString());
         } catch (NumberFormatException e) {
             return false;
         }
@@ -122,76 +122,70 @@ public interface FieldValidator {
     static boolean validateUuidIfPresent(String o) {
         return o == null || validateUuid(o);
     }
-    
+
+    static final Pattern USERNAME_PATTERN = Pattern.compile("[a-zA-Z0-9]+");
+
     static boolean validateUsername(Object o) {
         if (o == null) {
             return false;
         }
-        
+
         String username = o.toString();
         if (username.length() < 4 || username.length() > 20) {
             return false;
         }
-        
-        if (!(username.matches("[a-zA-Z0-9]+"))) {
-            return false;
-        }
-        return true;
+
+        return USERNAME_PATTERN.matcher(username).matches();
     }
-    
+
     static boolean validateUsernameIfPresent(String o) {
         return o == null || validateUsername(o);
     }
-    
+
     static boolean validatePassword(Object o) {
         if (o == null) {
             return false;
         }
-        
+
         String password = o.toString();
-        if (password.length() < 5 || password.length() > 20) {
-            return false;
-        }
-        return true;
+        return !(password.length() < 5 || password.length() > 20);
     }
-    
+
+    static final Pattern FIRSTNAME_PATTERN = Pattern.compile("[a-zA-Z0-9'. -]+");
+
     static boolean validateFirstName(Object o) {
         if (o == null) {
             return false;
         }
-        
+
         String firstname = o.toString();
         if (firstname.isEmpty() || firstname.length() > 20) {
             return false;
         }
-        
-        if (!(firstname.matches("[a-zA-Z0-9'. -]+"))) {
-            return false;
-        }
-        return true;
+
+        return FIRSTNAME_PATTERN.matcher(firstname).matches();
     }
-    
+
+    static final Pattern LASTNAME_PATTERN = Pattern.compile("[a-zA-Z0-9'. -]+");
+
     static boolean validateLastName(Object o) {
         if (o == null) {
             return false;
         }
-        
+
         String lastname = o.toString();
         if (lastname.isEmpty() || lastname.length() > 20) {
             return false;
         }
-        
-        if (!(lastname.matches("[a-zA-Z0-9'. -]+"))) {
-            return false;
-        }
-        return true;
+
+        return LASTNAME_PATTERN.matcher(lastname).matches();
     }
-    
+
     static boolean validateDateofBirth(Object o) {
         if (o == null) {
             return false;
         }
-        
+
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
         dateFormat.setLenient(false);
         try {
@@ -201,41 +195,39 @@ public interface FieldValidator {
         }
         return true;
     }
-    
+
     static boolean validateGenderIfPresent(Object o) {
         if (o == null) {
             return true;
         }
-        
-        if (HelperConstants.UserGender.valueOf(o.toString()) != null) {
-            return true;
-        }
-        
-        return false;
+        // TODO: Fix this statement as it will always return true. In case object does not match the enum constant, this
+        // code will result in IllegalArgumentException and thus making the below code redundant without a catch
+        // block for IllegalArgumentException in place
+        return HelperConstants.UserGender.valueOf(o.toString()) != null;
+
     }
-    
+
     static boolean validateUserCategoryIfPresent(Object o) {
         if (o == null) {
             return true;
         }
-        
-        if (HelperConstants.UserCategories.valueOf(o.toString()) != null) {
-            return true;
-        }
-        
-        return false;
+
+        // TODO: Fix this statement as it will always return true. In case object does not match the enum constant, this
+        // code will result in IllegalArgumentException and thus making the below code redundant without a catch
+        // block for IllegalArgumentException in place
+        return HelperConstants.UserCategories.valueOf(o.toString()) != null;
+
     }
-    
+
     static boolean validateUserGrantType(Object o) {
         if (o == null) {
             return false;
         }
-        
-        if (HelperConstants.GrantTypes.valueOf(o.toString()) == null) {
-            return false;
-        }
-        
-        return true;
+
+        // TODO: Fix this statement as it will always return true. In case object does not match the enum constant, this
+        // code will result in IllegalArgumentException and thus making the below code redundant without a catch
+        // block for IllegalArgumentException in place
+        return HelperConstants.GrantTypes.valueOf(o.toString()) != null;
     }
 
     boolean validateField(Object value);

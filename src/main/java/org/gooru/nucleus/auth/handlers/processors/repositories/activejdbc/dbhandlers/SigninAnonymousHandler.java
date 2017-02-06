@@ -25,7 +25,6 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * @author szgooru Created On: 02-Jan-2017
- *
  */
 public class SigninAnonymousHandler implements DBHandler {
 
@@ -47,14 +46,15 @@ public class SigninAnonymousHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
-        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
-            RequestValidator.authorizeFieldSelector(), RequestValidator.getValidatorRegistry());
+        JsonObject errors = new DefaultPayloadValidator()
+            .validatePayload(context.requestBody(), RequestValidator.authorizeFieldSelector(),
+                RequestValidator.getValidatorRegistry());
         if (errors != null && !errors.isEmpty()) {
             LOGGER.warn("Validation errors for request");
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
                 ExecutionResult.ExecutionStatus.FAILED);
         }
-        
+
         String grantType = context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE);
         if (!grantType.equalsIgnoreCase(HelperConstants.GrantTypes.anonymous.getType())) {
             LOGGER.warn("missing or invalid grant type in request");
@@ -74,11 +74,12 @@ public class SigninAnonymousHandler implements DBHandler {
         LazyList<AJEntityTenant> tenants;
 
         // First lookup in partner if not found, fall back on tenant
-        LazyList<AJEntityPartner> partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
-            InternalHelper.encryptClientKey(clientKey));
+        LazyList<AJEntityPartner> partners = AJEntityPartner
+            .findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey));
         if (partners.isEmpty()) {
-            tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
-                InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.anonymous.getType());
+            tenants = AJEntityTenant
+                .findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey),
+                    HelperConstants.GrantTypes.anonymous.getType());
         } else {
             partner = partners.get(0);
             tenants =
@@ -108,8 +109,8 @@ public class SigninAnonymousHandler implements DBHandler {
         result.put(ParameterConstants.PARAM_PROVIDED_AT, System.currentTimeMillis());
         result.put(ParameterConstants.PARAM_CDN_URLS, new JsonObject(tenant.getString(AJEntityTenant.CDN_URLS)));
 
-        int accessTokenValidity = (partner != null) ? partner.getInteger(AJEntityPartner.ACCESS_TOKEN_VALIDITY)
-            : tenant.getInteger(AJEntityTenant.ACCESS_TOKEN_VALIDITY);
+        int accessTokenValidity = (partner != null) ? partner.getInteger(AJEntityPartner.ACCESS_TOKEN_VALIDITY) :
+            tenant.getInteger(AJEntityTenant.ACCESS_TOKEN_VALIDITY);
 
         // Save access token with details in redis
         saveAccessToken(accessToken, result, accessTokenValidity);
@@ -117,7 +118,8 @@ public class SigninAnonymousHandler implements DBHandler {
         result.put(ParameterConstants.PARAM_ACCESS_TOKEN, accessToken);
 
         LOGGER.debug("anonymous token generated successfully");
-        return new ExecutionResult<>(MessageResponseFactory.createGetResponse(result, EventBuilderFactory.getAnonymousSigninEventBuilder(clientId)),
+        return new ExecutionResult<>(MessageResponseFactory
+            .createGetResponse(result, EventBuilderFactory.getAnonymousSigninEventBuilder(clientId)),
             ExecutionResult.ExecutionStatus.SUCCESSFUL);
     }
 

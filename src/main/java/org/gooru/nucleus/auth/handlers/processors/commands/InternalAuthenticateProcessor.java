@@ -9,14 +9,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author szgooru
- * Created On: 03-Jan-2017
- *
+ *         Created On: 03-Jan-2017
  */
-public class InternalAuthenticateProcessor extends AbstractCommandProcessor {
+class InternalAuthenticateProcessor extends AbstractCommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InternalAuthenticateProcessor.class);
-    
-    protected InternalAuthenticateProcessor(ProcessorContext context) {
+
+    InternalAuthenticateProcessor(ProcessorContext context) {
         super(context);
     }
 

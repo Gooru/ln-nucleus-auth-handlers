@@ -13,8 +13,7 @@ import io.vertx.core.eventbus.Message;
 
 /**
  * @author szgooru
- * Created On: 30-Dec-2016
- *
+ *         Created On: 30-Dec-2016
  */
 public class MessageProcessor implements Processor {
 
@@ -43,9 +42,8 @@ public class MessageProcessor implements Processor {
             return MessageResponseFactory.createVersionDeprecatedResponse();
         } catch (Throwable t) {
             LOGGER.error("Exception while processing request");
-            MessageResponseFactory.createInternalErrorResponse("something went wrong in database transaction");
+            return MessageResponseFactory.createInternalErrorResponse("something went wrong in database transaction");
         }
-        return null;
     }
 
     private ProcessorContext createContext() {

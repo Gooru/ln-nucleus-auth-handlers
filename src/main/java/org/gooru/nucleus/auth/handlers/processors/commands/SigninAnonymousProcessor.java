@@ -9,14 +9,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author szgooru
- * Created On: 02-Jan-2017
- *
+ *         Created On: 02-Jan-2017
  */
-public class SigninAnonymousProcessor extends AbstractCommandProcessor {
+class SigninAnonymousProcessor extends AbstractCommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SigninAnonymousProcessor.class);
 
-    protected SigninAnonymousProcessor(ProcessorContext context) {
+    SigninAnonymousProcessor(ProcessorContext context) {
         super(context);
     }
 

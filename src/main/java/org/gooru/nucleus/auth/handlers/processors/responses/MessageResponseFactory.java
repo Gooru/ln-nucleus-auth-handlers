@@ -68,7 +68,7 @@ public final class MessageResponseFactory {
         return new MessageResponse.Builder().successful().setStatusOkay().setContentTypeJson()
             .setResponseBody(responseBody).build();
     }
-    
+
     public static MessageResponse createGetResponse(JsonObject responseBody, EventBuilder eventBuilder) {
         return new MessageResponse.Builder().successful().setStatusOkay().setContentTypeJson()
             .setResponseBody(responseBody).setEventData(eventBuilder.build()).build();
