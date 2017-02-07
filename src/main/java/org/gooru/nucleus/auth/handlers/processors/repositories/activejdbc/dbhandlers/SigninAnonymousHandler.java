@@ -10,6 +10,8 @@ import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.validators.PayloadValidator;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.validators.RequestValidator;
 import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult;
@@ -17,6 +19,7 @@ import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult.Exec
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponseFactory;
 import org.gooru.nucleus.auth.handlers.processors.utils.InternalHelper;
+import org.gooru.nucleus.auth.handlers.processors.utils.PreferenceSettingsUtil;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,10 +108,18 @@ public class SigninAnonymousHandler implements DBHandler {
         final String accessToken =
             InternalHelper.generateToken(MessageConstants.MSG_USER_ANONYMOUS, partnerId, clientId);
         result.put(ParameterConstants.PARAM_USER_ID, MessageConstants.MSG_USER_ANONYMOUS);
-        result.put(ParameterConstants.PARAM_TENANT_ID, tenant.getString(AJEntityTenant.ID));
         result.put(ParameterConstants.PARAM_PROVIDED_AT, System.currentTimeMillis());
         result.put(ParameterConstants.PARAM_CDN_URLS, new JsonObject(tenant.getString(AJEntityTenant.CDN_URLS)));
 
+        JsonObject tenantJson = new JsonObject();
+        tenantJson.put(AJEntityUsers.TENANT_ID, tenant.getString(AJEntityTenant.ID));
+        //TODO: Fetch tenant root from the tenant table
+        tenantJson.putNull(AJEntityUsers.TENANT_ROOT);
+        result.put(ParameterConstants.PARAM_TENANT, tenantJson);
+
+        JsonObject userPreference = PreferenceSettingsUtil.getDefaultPreference();
+        result.put(AJEntityUserPreference.PREFERENCE_SETTINGS, userPreference);
+        
         int accessTokenValidity = (partner != null) ? partner.getInteger(AJEntityPartner.ACCESS_TOKEN_VALIDITY) :
             tenant.getInteger(AJEntityTenant.ACCESS_TOKEN_VALIDITY);
 
