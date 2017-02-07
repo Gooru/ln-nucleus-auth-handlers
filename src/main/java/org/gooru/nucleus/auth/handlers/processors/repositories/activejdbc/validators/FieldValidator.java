@@ -138,7 +138,7 @@ public interface FieldValidator {
         return USERNAME_PATTERN.matcher(username).matches();
     }
 
-    static boolean validateUsernameIfPresent(String o) {
+    static boolean validateUsernameIfPresent(Object o) {
         return o == null || validateUsername(o);
     }
 

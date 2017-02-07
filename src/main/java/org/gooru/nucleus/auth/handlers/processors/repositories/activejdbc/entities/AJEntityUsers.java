@@ -125,6 +125,7 @@ public class AJEntityUsers extends Model {
         validatorMap.put(PASSWORD, (FieldValidator::validatePassword));
         validatorMap.put(FIRST_NAME, (FieldValidator::validateFirstName));
         validatorMap.put(LAST_NAME, (FieldValidator::validateLastName));
+        validatorMap.put(USERNAME, (FieldValidator::validateUsername));
         validatorMap.put(BIRTH_DATE, (FieldValidator::validateDateofBirth));
         validatorMap.put(TENANT_ID, (FieldValidator::validateUuid));
         validatorMap.put(GENDER, (FieldValidator::validateGenderIfPresent));
