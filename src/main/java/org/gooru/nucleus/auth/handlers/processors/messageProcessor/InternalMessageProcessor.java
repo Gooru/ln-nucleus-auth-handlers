@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 public class InternalMessageProcessor implements MessageProcessorHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InternalMessageProcessor.class);
-    
+
     @Override
     public MessageResponse process(MessageContext messageContext) {
         MessageResponse result = null;
@@ -18,11 +18,13 @@ public class InternalMessageProcessor implements MessageProcessorHandler {
         case CommandConstants.INTERNAL_AUTHENTICATE:
             result = RepoFactory.getInternalRepo(messageContext).authenticate();
             break;
-            
+
         case CommandConstants.INTERNAL_IMPERSONATE:
             result = RepoFactory.getInternalRepo(messageContext).impersonate();
             break;
-            
+        case CommandConstants.INTERNAL_LTI_SSO:
+            result = RepoFactory.getInternalRepo(messageContext).sso();
+            break;
         default:
             LOGGER.error("Invalid command type passed in, not able to handle");
             throw new InvalidRequestException();

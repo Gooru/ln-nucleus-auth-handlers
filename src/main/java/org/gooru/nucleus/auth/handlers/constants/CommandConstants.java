@@ -29,5 +29,6 @@ public class CommandConstants {
     
     public static final String INTERNAL_AUTHENTICATE = "internal.authenticate";
     public static final String INTERNAL_IMPERSONATE = "internal.impersonate";
+    public static final String INTERNAL_LTI_SSO = "internal.lti.sso";
 
 }

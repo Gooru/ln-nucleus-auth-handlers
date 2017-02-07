@@ -5,12 +5,15 @@ import org.gooru.nucleus.auth.handlers.processors.messageProcessor.MessageContex
 
 public final class InternalExecutorFactory {
 
-	public static DBExecutor authenticate(MessageContext messageContext) {
-		return new AuthenticateExecutor(messageContext);
-	}
+    public static DBExecutor authenticate(MessageContext messageContext) {
+        return new AuthenticateExecutor(messageContext);
+    }
 
-	public static DBExecutor impersonate(MessageContext messageContext) {
-		return new ImpersonateExecutor(messageContext);
-	}
+    public static DBExecutor impersonate(MessageContext messageContext) {
+        return new ImpersonateExecutor(messageContext);
+    }
 
+    public static DBExecutor sso(MessageContext messageContext) {
+        return new SSOExecutor(messageContext);
+    }
 }
