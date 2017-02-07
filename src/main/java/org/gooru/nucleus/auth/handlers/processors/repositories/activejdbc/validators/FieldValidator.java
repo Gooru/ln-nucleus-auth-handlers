@@ -200,11 +200,12 @@ public interface FieldValidator {
         if (o == null) {
             return true;
         }
-        // TODO: Fix this statement as it will always return true. In case object does not match the enum constant, this
-        // code will result in IllegalArgumentException and thus making the below code redundant without a catch
-        // block for IllegalArgumentException in place
-        return HelperConstants.UserGender.valueOf(o.toString()) != null;
 
+        try {
+            return HelperConstants.UserGender.valueOf(o.toString()) != null;
+        } catch (IllegalArgumentException iae) {
+            return false;
+        }
     }
 
     static boolean validateUserCategoryIfPresent(Object o) {
@@ -212,11 +213,11 @@ public interface FieldValidator {
             return true;
         }
 
-        // TODO: Fix this statement as it will always return true. In case object does not match the enum constant, this
-        // code will result in IllegalArgumentException and thus making the below code redundant without a catch
-        // block for IllegalArgumentException in place
-        return HelperConstants.UserCategories.valueOf(o.toString()) != null;
-
+        try {
+            return HelperConstants.UserCategories.valueOf(o.toString()) != null;
+        } catch (IllegalArgumentException iae) {
+            return false;
+        }
     }
 
     static boolean validateUserGrantType(Object o) {
@@ -224,10 +225,11 @@ public interface FieldValidator {
             return false;
         }
 
-        // TODO: Fix this statement as it will always return true. In case object does not match the enum constant, this
-        // code will result in IllegalArgumentException and thus making the below code redundant without a catch
-        // block for IllegalArgumentException in place
-        return HelperConstants.GrantTypes.valueOf(o.toString()) != null;
+        try {
+            return HelperConstants.GrantTypes.valueOf(o.toString()) != null;
+        } catch (IllegalArgumentException iae) {
+            return false;
+        }
     }
 
     boolean validateField(Object value);

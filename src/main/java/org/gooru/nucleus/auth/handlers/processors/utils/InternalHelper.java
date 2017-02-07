@@ -8,20 +8,27 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.ResourceBundle;
 
+import org.gooru.nucleus.auth.handlers.app.components.AppHttpClient;
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
+import org.gooru.nucleus.auth.handlers.constants.HttpConstants;
 import org.gooru.nucleus.auth.handlers.processors.exceptions.InvalidRequestException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.vertx.core.http.HttpClientRequest;
 
 /**
- * @author szgooru
- *         Created On: 02-Jan-2017
+ * @author szgooru Created On: 02-Jan-2017
  */
 public final class InternalHelper {
 
-    private static final String CLIENT_KEY_HASH = "$GooruCLIENTKeyHash$";
-    private static final String COLON = ":";
+    private static final Logger LOGGER = LoggerFactory.getLogger(InternalHelper.class);
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
+
     private static final String TOKEN_VERSION = "2";
     private static final String RESET_PASSWORD_TOKEN = "RESET_PASSWORD_TOKEN";
+    private static final String CLIENT_KEY_HASH = "$GooruCLIENTKeyHash$";
+    private static final String COLON = ":";
 
     private InternalHelper() {
         throw new AssertionError();
@@ -43,9 +50,8 @@ public final class InternalHelper {
     }
 
     public static String generateToken(String userId, String partnerId, String clientId) {
-        String result =
-            TOKEN_VERSION + COLON + System.currentTimeMillis() + COLON + userId + COLON + (partnerId != null ?
-                partnerId : "") + COLON + clientId;
+        String result = TOKEN_VERSION + COLON + System.currentTimeMillis() + COLON + userId + COLON
+            + (partnerId != null ? partnerId : "") + COLON + clientId;
 
         return Base64.getEncoder().encodeToString(result.getBytes());
     }
@@ -99,7 +105,26 @@ public final class InternalHelper {
         }
     }
 
-    public static void executeHTTPClientPost(String url, String data, String authHeader) {
-        // TODO: Need to provide implementation to post USER events to Event processor
+    public static void executeHTTPClientPost(String data, String authHeader) {
+        try {
+            AppHttpClient httpClient = AppHttpClient.getInstance();
+            HttpClientRequest eventRequest = httpClient.getHttpClient().post(httpClient.endpoint(), responseHandler -> {
+                if (responseHandler.statusCode() == HttpConstants.HttpStatus.SUCCESS.getCode()) {
+                    LOGGER.info("event posted successfully");
+                } else {
+                    LOGGER.warn("event post failed with status code: {}, event data: {}", responseHandler.statusCode(),
+                        data);
+                }
+            });
+            
+            eventRequest.putHeader(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON);
+            eventRequest.putHeader(HttpConstants.HEADER_CONTENT_LENGTH, String.valueOf(data.getBytes().length));
+            eventRequest.putHeader(HttpConstants.HEADER_AUTH, authHeader);
+            eventRequest.write(data);
+            eventRequest.end();
+        } catch (Throwable t) {
+            LOGGER.error("error while posting event", t);
+        }
+        LOGGER.info("request end");
     }
 }

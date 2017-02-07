@@ -26,7 +26,6 @@ public enum CommandProcessorBuilder {
             };
         }
     },
-    // TODO: Need to create instances of Internal Processors as well
     ANONYMOUS_SIGNIN(MessageConstants.MSG_OP_ANONYMOUS_SIGNIN) {
         @Override
         public Processor build(ProcessorContext context) {
@@ -91,6 +90,24 @@ public enum CommandProcessorBuilder {
         @Override
         public Processor build(ProcessorContext context) {
             return new ChangePasswordProcessor(context);
+        }
+    },
+    INTERNAL_AUTHENTICATE(MessageConstants.MSG_OP_INTERNAL_AUTHENTICATE) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new InternalAuthenticateProcessor(context);
+        }
+    },
+    INTERNAL_IMPERSONATE(MessageConstants.MSG_OP_INTERNAL_IMPERSONATE) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new InternalImpersonateProcessor(context);
+        }
+    },
+    INTERNAL_LTI_SSO(MessageConstants.MSG_OP_INTERNAL_LTI_SSO) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new InternalLtiSSOProcessor(context);
         }
     };
 
