@@ -98,9 +98,9 @@ public class AuthorizeUserHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
         String identityId =
-            context.requestBody().getJsonObject(ParameterConstants.PARAM_USER).getString(AJEntityUsers.REFERENCE_ID);
+            context.requestBody().getJsonObject(ParameterConstants.PARAM_USER).getString(ParameterConstants.PARAM_IDENTITY_ID);
         LazyList<AJEntityUsers> users = AJEntityUsers
-            .findBySQL(AJEntityUsers.SELECT_BY_EMAIL_REFERENCE_ID_TENANT_ID, identityId, identityId, clientId);
+            .findBySQL(AJEntityUsers.SELECT_BY_EMAIL_TENANT_ID, identityId, clientId);
         if (users.isEmpty()) {
             LOGGER
                 .debug("user not found in database for email or reference_id: {}, client_id: {}", identityId, clientId);

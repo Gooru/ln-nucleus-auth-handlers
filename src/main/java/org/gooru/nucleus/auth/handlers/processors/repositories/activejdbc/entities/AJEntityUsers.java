@@ -95,11 +95,6 @@ public class AJEntityUsers extends Model {
             + "tenant_root FROM users WHERE"
             + " reference_id = ? AND tenant_id = ?::uuid AND is_deleted = false";
 
-    public static final String SELECT_BY_EMAIL_REFERENCE_ID_TENANT_ID =
-        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
-            + "tenant_root FROM users WHERE"
-            + " email = ? OR reference_id = ? AND tenant_id = ?::uuid AND is_deleted = false";
-
     public static final String SELECT_BY_EMAIL =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
             + "tenant_root FROM users WHERE"
