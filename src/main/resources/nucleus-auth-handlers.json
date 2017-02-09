@@ -12,7 +12,8 @@
     "autoCommit": false,
     "maximumPoolSize": 5
   },
-  "mail.rest.api.url": "http://127.0.0.1:8081/api/nucleus-utils/v1/emails",
-  "event.rest.api.url": "http://127.0.0.1:8081/api/nucleus/api/internal/v1/events",
-  "send.confirmation.email": false
+  "event.config" : {
+    "api.host" : "localhost:8080",
+    "api.endpoint" : "/api/internal/v1/eventprocessor"
+  }
 }

@@ -1,6 +1,5 @@
 package org.gooru.nucleus.auth.handlers.bootstrap;
 
-import org.gooru.nucleus.auth.handlers.app.components.AppConfigRegistry;
 import org.gooru.nucleus.auth.handlers.bootstrap.shutdown.Finalizer;
 import org.gooru.nucleus.auth.handlers.bootstrap.shutdown.Finalizers;
 import org.gooru.nucleus.auth.handlers.bootstrap.startup.Initializer;
@@ -38,7 +37,6 @@ public class AuthHandlerVerticle extends AbstractVerticle {
         }, startApplicationFuture -> {
             if (startApplicationFuture.succeeded()) {
                 final EventBus eb = vertx.eventBus();
-                final AppConfigRegistry appConfigRegistry = AppConfigRegistry.instance();
                 eb.consumer(MessagebusEndpoints.MBEP_AUTH_HANDLER, message -> {
                     LOGGER.debug("Received message: " + message.body());
                     vertx.executeBlocking(future -> {
@@ -53,8 +51,7 @@ public class AuthHandlerVerticle extends AbstractVerticle {
                             LOGGER.debug("event data to be posted: {}", eventData.toString());
                             final String accessToken = getAccessToken(message, response);
                             InternalHelper
-                                .executeHTTPClientPost(appConfigRegistry.getEventRestApiUrl(), eventData.toString(),
-                                    accessToken);
+                                .executeHTTPClientPost(eventData.toString(), accessToken);
                         }
                     });
                 }).completionHandler(result -> {
