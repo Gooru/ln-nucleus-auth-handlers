@@ -50,16 +50,16 @@ public enum CommandProcessorBuilder {
             return new UpdateUserProcessor(context);
         }
     },
-    USER_TOKEN_CHECK(MessageConstants.MSG_OP_USER_TOKEN_CHECK) {
+    USER_TOKEN_CHECK(MessageConstants.MSG_OP_ACCESS_TOKEN_CHECK) {
         @Override
         public Processor build(ProcessorContext context) {
-            return new CheckUserTokenProcessor(context);
+            return new CheckAccessTokenProcessor(context);
         }
     },
-    USER_TOKEN_DETAILS(MessageConstants.MSG_OP_USER_TOKEN_DETAILS) {
+    USER_TOKEN_DETAILS(MessageConstants.MSG_OP_ACCESS_TOKEN_DETAILS) {
         @Override
         public Processor build(ProcessorContext context) {
-            return new GetUserTokenDetailsProcessor(context);
+            return new GetAccessTokenDetailsProcessor(context);
         }
     },
     USER_SIGNOUT(MessageConstants.MSG_OP_USER_SIGNOUT) {

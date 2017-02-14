@@ -4,6 +4,7 @@ import java.util.ResourceBundle;
 import java.util.UUID;
 
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
+import org.gooru.nucleus.auth.handlers.constants.MessageConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
@@ -20,24 +21,22 @@ import io.vertx.core.json.JsonObject;
 /**
  * @author szgooru Created On: 05-Jan-2017
  */
-public class GetUserTokenDetailsHandler implements DBHandler {
+public class GetAccessTokenDetailsHandler implements DBHandler {
 
     private final ProcessorContext context;
-    private static final Logger LOGGER = LoggerFactory.getLogger(GetUserTokenDetailsHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GetAccessTokenDetailsHandler.class);
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
 
     private AJEntityUsers user;
-    private UUID userId;
     private UUID tenantId;
 
-    public GetUserTokenDetailsHandler(ProcessorContext context) {
+    public GetAccessTokenDetailsHandler(ProcessorContext context) {
         this.context = context;
     }
 
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
         try {
-            userId = UUID.fromString(context.user().getString(ParameterConstants.PARAM_USER_ID));
             tenantId = UUID.fromString(context.user().getJsonObject(ParameterConstants.PARAM_TENANT)
                 .getString(ParameterConstants.PARAM_TENANT_ID));
         } catch (IllegalArgumentException iae) {
@@ -50,6 +49,13 @@ public class GetUserTokenDetailsHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
+        String strUserId = context.user().getString(ParameterConstants.PARAM_USER_ID);
+        if (strUserId.equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS)) {
+            LOGGER.debug("request to get anonymous token details");
+            return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+        }
+        
+        UUID userId = UUID.fromString(strUserId);
         LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_ID_TENANT_ID, userId, tenantId);
         if (users.isEmpty()) {
             LOGGER.warn("user not found in database for id: {}, tenant_id:{}", userId.toString(), tenantId.toString());
@@ -66,10 +72,12 @@ public class GetUserTokenDetailsHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
         JsonObject result = context.user().copy();
-        result.put(AJEntityUsers.FIRST_NAME, user.getString(AJEntityUsers.FIRST_NAME));
-        result.put(AJEntityUsers.LAST_NAME, user.getString(AJEntityUsers.LAST_NAME));
-        result.put(AJEntityUsers.USER_CATEGORY, user.getString(AJEntityUsers.USER_CATEGORY));
-        result.put(AJEntityUsers.THUMBNAIL, user.getString(AJEntityUsers.THUMBNAIL));
+        if (user != null) {
+            result.put(AJEntityUsers.FIRST_NAME, user.getString(AJEntityUsers.FIRST_NAME));
+            result.put(AJEntityUsers.LAST_NAME, user.getString(AJEntityUsers.LAST_NAME));
+            result.put(AJEntityUsers.USER_CATEGORY, user.getString(AJEntityUsers.USER_CATEGORY));
+            result.put(AJEntityUsers.THUMBNAIL, user.getString(AJEntityUsers.THUMBNAIL));
+        }
 
         LOGGER.debug("user token details fetched successfully");
         return new ExecutionResult<>(MessageResponseFactory.createGetResponse(result),

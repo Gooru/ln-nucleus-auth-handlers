@@ -24,7 +24,7 @@ abstract class AbstractCommandProcessor implements Processor {
     @Override
     public MessageResponse process() {
         setDeprecatedVersions();
-        if (!context.operation().equalsIgnoreCase(MessageConstants.MSG_OP_USER_TOKEN_CHECK)) {
+        if (!context.operation().equalsIgnoreCase(MessageConstants.MSG_OP_ACCESS_TOKEN_CHECK)) {
             version = VersionValidationUtils.validateVersion(deprecatedVersions, context.headers());
         }
         return processCommand();

@@ -29,7 +29,7 @@ public class AJAuthenticationRepo implements AuthenticationRepo {
     }
 
     @Override
-    public MessageResponse getUserTokenDetails() {
-        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildGetUserTokenDetailsHandler(context));
+    public MessageResponse getAccessTokenDetails() {
+        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildGetAccessTokenDetailsHandler(context));
     }
 }

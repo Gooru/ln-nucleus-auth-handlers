@@ -52,8 +52,8 @@ public final class DBHandlerBuilder {
         return new InternalLtiSSOHandler(context);
     }
 
-    public static DBHandler buildGetUserTokenDetailsHandler(ProcessorContext context) {
-        return new GetUserTokenDetailsHandler(context);
+    public static DBHandler buildGetAccessTokenDetailsHandler(ProcessorContext context) {
+        return new GetAccessTokenDetailsHandler(context);
     }
 
     public static DBHandler buildChangePasswordHandler(ProcessorContext context) {
