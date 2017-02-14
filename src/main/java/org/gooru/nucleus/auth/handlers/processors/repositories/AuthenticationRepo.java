@@ -4,7 +4,7 @@ import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 
 public interface AuthenticationRepo {
 
-    MessageResponse getUserTokenDetails();
+    MessageResponse getAccessTokenDetails();
 
     MessageResponse signinAnonymous();
 

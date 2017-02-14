@@ -11,11 +11,11 @@ import org.slf4j.LoggerFactory;
  * @author szgooru
  *         Created On: 02-Jan-2017
  */
-public class GetUserTokenDetailsProcessor extends AbstractCommandProcessor {
+public class GetAccessTokenDetailsProcessor extends AbstractCommandProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GetUserTokenDetailsProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GetAccessTokenDetailsProcessor.class);
 
-    GetUserTokenDetailsProcessor(ProcessorContext context) {
+    GetAccessTokenDetailsProcessor(ProcessorContext context) {
         super(context);
     }
 
@@ -27,9 +27,9 @@ public class GetUserTokenDetailsProcessor extends AbstractCommandProcessor {
     @Override
     protected MessageResponse processCommand() {
         try {
-            return RepoBuilder.buildAuthenticationRepo(context).getUserTokenDetails();
+            return RepoBuilder.buildAuthenticationRepo(context).getAccessTokenDetails();
         } catch (Throwable t) {
-            LOGGER.error("exception while getting user token details", t);
+            LOGGER.error("exception while getting access token details", t);
             return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
         }
     }
