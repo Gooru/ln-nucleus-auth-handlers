@@ -1,5 +1,6 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities;
 
+import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -11,6 +12,9 @@ import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.valida
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.validators.ValidatorRegistry;
 import org.javalite.activejdbc.Model;
 import org.javalite.activejdbc.annotations.Table;
+import org.postgresql.util.PGobject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author szgooru Created On: 03-Jan-2017
@@ -19,6 +23,7 @@ import org.javalite.activejdbc.annotations.Table;
 @Table("users")
 public class AJEntityUsers extends Model {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AJEntityUsers.class);
     public static final String TABLE = "users";
 
     public static final String ID = "id";
@@ -53,6 +58,8 @@ public class AJEntityUsers extends Model {
     public static final String TENANT_ID = "tenant_id";
     public static final String PARENT_ID = "partner_id";
     public static final String IS_DELETED = "is_deleted";
+    
+    private static final String UUID_TYPE = "uuid";
 
     private static final Set<String> CREATABLE_FIELDS = new HashSet<>(
         Arrays.asList(USERNAME, EMAIL, PASSWORD, BIRTH_DATE, FIRST_NAME, LAST_NAME, TENANT_ID, GENDER, USER_CATEGORY));
@@ -62,7 +69,7 @@ public class AJEntityUsers extends Model {
 
     private static final Set<String> UPDATABLE_FIELDS = new HashSet<>(Arrays
         .asList(ABOUT, FIRST_NAME, LAST_NAME, COUNTRY, COUNTRY_ID, GRADE, ROSTER_GLOBAL_USERID, SCHOOL_DISTRICT_ID,
-            STATE, STATE_ID, THUMBNAIL, USER_CATEGORY, USERNAME));
+            SCHOOL_DISTRICT, STATE, STATE_ID, THUMBNAIL, USER_CATEGORY, USERNAME));
 
     private static final Set<String> TRG_RESET_PASSWORD_FIELDS = new HashSet<>(Arrays.asList(EMAIL, TENANT_ID));
 
@@ -112,7 +119,7 @@ public class AJEntityUsers extends Model {
         validatorRegistry = initializeValidators();
         converterRegistry = initializeConverters();
     }
-
+    
     private static Map<String, FieldValidator> initializeValidators() {
         Map<String, FieldValidator> validatorMap = new HashMap<>();
         validatorMap.put(ID, (FieldValidator::validateUuid));
@@ -128,6 +135,14 @@ public class AJEntityUsers extends Model {
         validatorMap.put(ParameterConstants.PARAM_TOKEN, (FieldValidator::validateString));
         validatorMap.put(ParameterConstants.PARAM_OLD_PASSWORD, (FieldValidator::validatePassword));
         validatorMap.put(ParameterConstants.PARAM_NEW_PASSWORD, (FieldValidator::validatePassword));
+        validatorMap.put(COUNTRY_ID, (FieldValidator::validateUuidIfPresent));
+        validatorMap.put(STATE_ID, (FieldValidator::validateUuidIfPresent));
+        validatorMap.put(SCHOOL_DISTRICT_ID, (FieldValidator::validateUuidIfPresent));
+        validatorMap.put(STATE, (fieldValue -> FieldValidator.validateStringIfPresent(fieldValue, 2000)));
+        validatorMap.put(COUNTRY, (fieldValue -> FieldValidator.validateStringIfPresent(fieldValue, 2000)));
+        validatorMap.put(ABOUT, (fieldValue -> FieldValidator.validateStringIfPresent(fieldValue, 5000)));
+        validatorMap.put(THUMBNAIL, (fieldValue -> FieldValidator.validateStringIfPresent(fieldValue, 1000)));
+        validatorMap.put(ROSTER_GLOBAL_USERID, (fieldValue -> FieldValidator.validateStringIfPresent(fieldValue, 512)));
         return validatorMap;
     }
 
@@ -143,6 +158,7 @@ public class AJEntityUsers extends Model {
         converterMap.put(GRADE, (fieldValue -> FieldConverter.convertFieldToJson(fieldValue)));
         converterMap.put(COUNTRY_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
         converterMap.put(STATE_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
+        converterMap.put(SCHOOL_DISTRICT_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
         return converterMap;
     }
 
@@ -195,6 +211,22 @@ public class AJEntityUsers extends Model {
         @Override
         public FieldConverter lookupConverter(String fieldName) {
             return converterRegistry.get(fieldName);
+        }
+    }
+    
+    public void setTenantId(String value) {
+        setPGObject(TENANT_ID, UUID_TYPE, value);
+    }
+    
+    private void setPGObject(String field, String type, String value) {
+        PGobject pgObject = new PGobject();
+        pgObject.setType(type);
+        try {
+            pgObject.setValue(value);
+            this.set(field, pgObject);
+        } catch (SQLException e) {
+            LOGGER.error("Not able to set value for field: {}, type: {}, value: {}", field, type, value);
+            this.errors().put(field, value);
         }
     }
 }

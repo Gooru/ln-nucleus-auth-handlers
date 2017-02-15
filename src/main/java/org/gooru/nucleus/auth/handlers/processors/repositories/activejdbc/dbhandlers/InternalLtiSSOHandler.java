@@ -31,7 +31,7 @@ import io.vertx.core.json.JsonObject;
 public class InternalLtiSSOHandler implements DBHandler {
 
     private final ProcessorContext context;
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeUserHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InternalLtiSSOHandler.class);
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
 
     private static String basicCredentials;
@@ -129,15 +129,23 @@ public class InternalLtiSSOHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
-        String referenceId = context.requestBody().getString(AJEntityUsers.REFERENCE_ID);
+        JsonObject userObject = context.requestBody().getJsonObject(ParameterConstants.PARAM_USER);
+        String referenceId = userObject.getString(AJEntityUsers.REFERENCE_ID);
         LazyList<AJEntityUsers> users =
             AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_TENANT_ID, referenceId, clientId);
         if (users.isEmpty()) {
             LOGGER.debug("user not found in database for reference_id: {}, client_id: {}", referenceId, clientId);
             user = new AJEntityUsers();
             user.setString(AJEntityUsers.LOGIN_TYPE, HelperConstants.UserLoginType.ltisso.getType());
+            user.setTenantId(clientId);
             autoPopulate();
 
+            if (user.hasErrors()) {
+                LOGGER.warn("Validation errors while populating entity");
+                return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(getModelErrors()),
+                    ExecutionResult.ExecutionStatus.FAILED);
+            }
+            
             if (!user.insert()) {
                 LOGGER.debug("unable to create new user");
                 return new ExecutionResult<>(
@@ -172,4 +180,9 @@ public class InternalLtiSSOHandler implements DBHandler {
     private static class DefaultAJEntityUsersBuilder implements EntityBuilder<AJEntityUsers> {
     }
 
+    private JsonObject getModelErrors() {
+        JsonObject errors = new JsonObject();
+        user.errors().entrySet().forEach(entry -> errors.put(entry.getKey(), entry.getValue()));
+        return errors;
+    }
 }

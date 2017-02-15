@@ -119,7 +119,7 @@ public interface FieldValidator {
         }
     }
 
-    static boolean validateUuidIfPresent(String o) {
+    static boolean validateUuidIfPresent(Object o) {
         return o == null || validateUuid(o);
     }
 

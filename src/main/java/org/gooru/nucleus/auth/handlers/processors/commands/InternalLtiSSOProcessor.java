@@ -27,10 +27,10 @@ class InternalLtiSSOProcessor extends AbstractCommandProcessor {
     @Override
     protected MessageResponse processCommand() {
         try {
-            LOGGER.info("processing user authorize");
+            LOGGER.info("processing internal sso");
             return RepoBuilder.buildInternalRepo(context).ltisso();
         } catch (Throwable t) {
-            LOGGER.error("exception while authorizing user");
+            LOGGER.error("exception while internal sso", t);
             return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
         }
     }
