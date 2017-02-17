@@ -18,6 +18,11 @@ import io.vertx.core.json.JsonObject;
  * Created by ashish on 28/1/16.
  */
 public interface FieldValidator {
+
+    static boolean validateStringAllowNullOrEmpty(Object o, int len) {
+        return o == null || (o instanceof String && (((String) o).isEmpty() || ((String) o).length() <= len));
+    }
+
     static boolean validateStringIfPresent(Object o, int len) {
         return o == null || o instanceof String && !((String) o).isEmpty() && ((String) o).length() < len;
     }
@@ -123,7 +128,7 @@ public interface FieldValidator {
         return o == null || validateUuid(o);
     }
 
-    static final Pattern USERNAME_PATTERN = Pattern.compile("[a-zA-Z0-9]+");
+    Pattern USERNAME_PATTERN = Pattern.compile("[a-zA-Z0-9]+");
 
     static boolean validateUsername(Object o) {
         if (o == null) {
@@ -131,11 +136,8 @@ public interface FieldValidator {
         }
 
         String username = o.toString();
-        if (username.length() < 4 || username.length() > 20) {
-            return false;
-        }
+        return !(username.length() < 4 || username.length() > 20) && USERNAME_PATTERN.matcher(username).matches();
 
-        return USERNAME_PATTERN.matcher(username).matches();
     }
 
     static boolean validateUsernameIfPresent(Object o) {
@@ -151,7 +153,7 @@ public interface FieldValidator {
         return !(password.length() < 5 || password.length() > 20);
     }
 
-    static final Pattern FIRSTNAME_PATTERN = Pattern.compile("[a-zA-Z0-9'. -]+");
+    Pattern FIRSTNAME_PATTERN = Pattern.compile("[a-zA-Z0-9'. -]+");
 
     static boolean validateFirstName(Object o) {
         if (o == null) {
@@ -159,14 +161,11 @@ public interface FieldValidator {
         }
 
         String firstname = o.toString();
-        if (firstname.isEmpty() || firstname.length() > 20) {
-            return false;
-        }
+        return !(firstname.isEmpty() || firstname.length() > 20) && FIRSTNAME_PATTERN.matcher(firstname).matches();
 
-        return FIRSTNAME_PATTERN.matcher(firstname).matches();
     }
 
-    static final Pattern LASTNAME_PATTERN = Pattern.compile("[a-zA-Z0-9'. -]+");
+    Pattern LASTNAME_PATTERN = Pattern.compile("[a-zA-Z0-9'. -]+");
 
     static boolean validateLastName(Object o) {
         if (o == null) {
@@ -174,11 +173,8 @@ public interface FieldValidator {
         }
 
         String lastname = o.toString();
-        if (lastname.isEmpty() || lastname.length() > 20) {
-            return false;
-        }
+        return !(lastname.isEmpty() || lastname.length() > 20) && LASTNAME_PATTERN.matcher(lastname).matches();
 
-        return LASTNAME_PATTERN.matcher(lastname).matches();
     }
 
     static boolean validateDateofBirth(Object o) {
@@ -202,7 +198,8 @@ public interface FieldValidator {
         }
 
         try {
-            return HelperConstants.UserGender.valueOf(o.toString()) != null;
+            HelperConstants.UserGender.valueOf(o.toString());
+            return true;
         } catch (IllegalArgumentException iae) {
             return false;
         }
@@ -214,7 +211,8 @@ public interface FieldValidator {
         }
 
         try {
-            return HelperConstants.UserCategories.valueOf(o.toString()) != null;
+            HelperConstants.UserCategories.valueOf(o.toString());
+            return true;
         } catch (IllegalArgumentException iae) {
             return false;
         }
@@ -226,7 +224,8 @@ public interface FieldValidator {
         }
 
         try {
-            return HelperConstants.GrantTypes.valueOf(o.toString()) != null;
+            HelperConstants.GrantTypes.valueOf(o.toString());
+            return true;
         } catch (IllegalArgumentException iae) {
             return false;
         }

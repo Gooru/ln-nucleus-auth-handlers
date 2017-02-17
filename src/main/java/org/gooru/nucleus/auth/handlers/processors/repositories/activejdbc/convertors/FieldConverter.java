@@ -94,5 +94,19 @@ public interface FieldConverter {
         }
     }
 
+    static PGobject convertEmptyStringToNull(String s) {
+        if (s != null && s.isEmpty()) {
+            return null;
+        }
+        PGobject pgObject = new PGobject();
+        pgObject.setType(TEXT_TYPE);
+        try {
+            pgObject.setValue(s);
+            return pgObject;
+        } catch (SQLException e) {
+            return null;
+        }
+    }
+
     PGobject convertField(Object fieldValue);
 }

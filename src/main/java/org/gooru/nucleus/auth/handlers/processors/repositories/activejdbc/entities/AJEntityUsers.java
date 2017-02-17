@@ -58,7 +58,7 @@ public class AJEntityUsers extends Model {
     public static final String TENANT_ID = "tenant_id";
     public static final String PARENT_ID = "partner_id";
     public static final String IS_DELETED = "is_deleted";
-    
+
     private static final String UUID_TYPE = "uuid";
 
     private static final Set<String> CREATABLE_FIELDS = new HashSet<>(
@@ -119,7 +119,7 @@ public class AJEntityUsers extends Model {
         validatorRegistry = initializeValidators();
         converterRegistry = initializeConverters();
     }
-    
+
     private static Map<String, FieldValidator> initializeValidators() {
         Map<String, FieldValidator> validatorMap = new HashMap<>();
         validatorMap.put(ID, (FieldValidator::validateUuid));
@@ -159,6 +159,7 @@ public class AJEntityUsers extends Model {
         converterMap.put(COUNTRY_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
         converterMap.put(STATE_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
         converterMap.put(SCHOOL_DISTRICT_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
+        converterMap.put(THUMBNAIL, (fieldValue -> FieldConverter.convertEmptyStringToNull((String)fieldValue)));
         return converterMap;
     }
 
@@ -213,11 +214,11 @@ public class AJEntityUsers extends Model {
             return converterRegistry.get(fieldName);
         }
     }
-    
+
     public void setTenantId(String value) {
         setPGObject(TENANT_ID, UUID_TYPE, value);
     }
-    
+
     private void setPGObject(String field, String type, String value) {
         PGobject pgObject = new PGobject();
         pgObject.setType(type);
