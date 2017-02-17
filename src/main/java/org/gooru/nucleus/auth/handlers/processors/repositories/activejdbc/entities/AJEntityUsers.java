@@ -86,31 +86,26 @@ public class AJEntityUsers extends Model {
 
     public static final String SELECT_BY_ID =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
-            + "tenant_id, tenant_root FROM users WHERE"
-            + " id = ?::uuid AND is_deleted = false";
+            + "tenant_id, tenant_root FROM users WHERE" + " id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_BY_ID_TENANT_ID =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
-            + "tenant_root FROM users WHERE"
-            + " id = ?::uuid AND tenant_id = ?::uuid AND is_deleted = false";
+            + "tenant_root FROM users WHERE" + " id = ?::uuid AND tenant_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_FOR_SIGNUP =
         "SELECT id FROM users WHERE (email = ? OR username = ?) AND tenant_id = ?::uuid";
 
     public static final String SELECT_BY_REFERENCE_ID_TENANT_ID =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
-            + "tenant_root FROM users WHERE"
-            + " reference_id = ? AND tenant_id = ?::uuid AND is_deleted = false";
+            + "tenant_root FROM users WHERE" + " reference_id = ? AND tenant_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_BY_EMAIL =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
-            + "tenant_root FROM users WHERE"
-            + " email = ? AND is_deleted = false";
+            + "tenant_root FROM users WHERE" + " email = ? AND is_deleted = false";
 
     public static final String SELECT_BY_EMAIL_TENANT_ID =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
-            + "tenant_root FROM users WHERE"
-            + " email = ? AND tenant_id = ?::uuid AND is_deleted = false";
+            + "tenant_root FROM users WHERE" + " email = ? AND tenant_id = ?::uuid AND is_deleted = false";
 
     private static final Map<String, FieldValidator> validatorRegistry;
     private static final Map<String, FieldConverter> converterRegistry;
@@ -141,7 +136,7 @@ public class AJEntityUsers extends Model {
         validatorMap.put(STATE, (fieldValue -> FieldValidator.validateStringIfPresent(fieldValue, 2000)));
         validatorMap.put(COUNTRY, (fieldValue -> FieldValidator.validateStringIfPresent(fieldValue, 2000)));
         validatorMap.put(ABOUT, (fieldValue -> FieldValidator.validateStringIfPresent(fieldValue, 5000)));
-        validatorMap.put(THUMBNAIL, (fieldValue -> FieldValidator.validateStringIfPresent(fieldValue, 1000)));
+        validatorMap.put(THUMBNAIL, (fieldValue -> FieldValidator.validateStringAllowNullOrEmpty(fieldValue, 1000)));
         validatorMap.put(ROSTER_GLOBAL_USERID, (fieldValue -> FieldValidator.validateStringIfPresent(fieldValue, 512)));
         return validatorMap;
     }
@@ -159,7 +154,7 @@ public class AJEntityUsers extends Model {
         converterMap.put(COUNTRY_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
         converterMap.put(STATE_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
         converterMap.put(SCHOOL_DISTRICT_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
-        converterMap.put(THUMBNAIL, (fieldValue -> FieldConverter.convertEmptyStringToNull((String)fieldValue)));
+        converterMap.put(THUMBNAIL, (fieldValue -> FieldConverter.convertEmptyStringToNull((String) fieldValue)));
         return converterMap;
     }
 
