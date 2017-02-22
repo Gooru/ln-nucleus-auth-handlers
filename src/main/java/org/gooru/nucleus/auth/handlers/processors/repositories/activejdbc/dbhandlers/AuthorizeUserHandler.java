@@ -97,8 +97,8 @@ public class AuthorizeUserHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
-        String identityId =
-            context.requestBody().getJsonObject(ParameterConstants.PARAM_USER).getString(ParameterConstants.PARAM_IDENTITY_ID);
+        JsonObject userJson = context.requestBody().getJsonObject(ParameterConstants.PARAM_USER);
+        String identityId = userJson.getString(ParameterConstants.PARAM_IDENTITY_ID);
         LazyList<AJEntityUsers> users = AJEntityUsers
             .findBySQL(AJEntityUsers.SELECT_BY_EMAIL_TENANT_ID, identityId, clientId);
         if (users.isEmpty()) {
@@ -106,8 +106,7 @@ public class AuthorizeUserHandler implements DBHandler {
                 .debug("user not found in database for email or reference_id: {}, client_id: {}", identityId, clientId);
             user = new AJEntityUsers();
             user.set(AJEntityUsers.TENANT_ID, getPGObject(clientId));
-            user.setString(AJEntityUsers.LOGIN_TYPE,
-                context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE));
+            user.setString(AJEntityUsers.LOGIN_TYPE, userJson.getString(ParameterConstants.PARAM_GRANT_TYPE));
             autoPopulate();
 
             if (!user.insert()) {
