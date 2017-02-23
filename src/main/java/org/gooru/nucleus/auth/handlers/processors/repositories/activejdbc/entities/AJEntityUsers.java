@@ -106,6 +106,8 @@ public class AJEntityUsers extends Model {
     public static final String SELECT_BY_EMAIL_TENANT_ID =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
             + "tenant_root FROM users WHERE" + " email = ? AND tenant_id = ?::uuid AND is_deleted = false";
+    
+    public static final String SELECT_BY_USERNAME_TENANT_ID = "username = ? AND tenant_id = ?::uuid";
 
     private static final Map<String, FieldValidator> validatorRegistry;
     private static final Map<String, FieldConverter> converterRegistry;

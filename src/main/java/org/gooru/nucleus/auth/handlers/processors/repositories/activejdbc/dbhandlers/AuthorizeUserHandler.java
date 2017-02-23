@@ -1,6 +1,7 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhandlers;
 
 import java.sql.SQLException;
+import java.util.Random;
 import java.util.ResourceBundle;
 
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
@@ -97,7 +98,7 @@ public class AuthorizeUserHandler implements DBHandler {
         JsonObject userJson = context.requestBody().getJsonObject(ParameterConstants.PARAM_USER);
         String identityId = userJson.getString(ParameterConstants.PARAM_IDENTITY_ID);
         LazyList<AJEntityUsers> users =
-            AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_TENANT_ID, identityId, clientId);
+            AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_TENANT_ID, identityId.toLowerCase(), clientId);
         if (users.isEmpty()) {
             LOGGER.debug("user not found in database for email or reference_id: {}, client_id: {}", identityId,
                 clientId);
@@ -105,8 +106,10 @@ public class AuthorizeUserHandler implements DBHandler {
             user.set(AJEntityUsers.TENANT_ID, getPGObject(clientId));
             user.setString(AJEntityUsers.FIRST_NAME, userJson.getString(AJEntityUsers.FIRST_NAME, null));
             user.setString(AJEntityUsers.LAST_NAME, userJson.getString(AJEntityUsers.LAST_NAME, null));
-            user.setString(AJEntityUsers.REFERENCE_ID, userJson.getString(ParameterConstants.PARAM_IDENTITY_ID));
-            user.setString(AJEntityUsers.LOGIN_TYPE, context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE));
+            user.setString(AJEntityUsers.EMAIL, userJson.getString(ParameterConstants.PARAM_IDENTITY_ID).toLowerCase());
+            user.setString(AJEntityUsers.LOGIN_TYPE,
+                context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE));
+            populateUsername(user);
 
             if (!user.insert()) {
                 LOGGER.debug("unable to create new user");
@@ -124,6 +127,30 @@ public class AuthorizeUserHandler implements DBHandler {
             MessageResponseFactory.createPostResponse(result,
                 EventBuilderFactory.getAuthorizeUserEventBuilder(user.getString(AJEntityUsers.ID))),
             ExecutionStatus.SUCCESSFUL);
+    }
+
+    private void populateUsername(AJEntityUsers user) {
+        String firstName = user.getString(AJEntityUsers.FIRST_NAME);
+        if (firstName != null && !firstName.isEmpty()) {
+            StringBuilder username = new StringBuilder(firstName.replaceAll("\\s+", ""));
+            String lastName = user.getString(AJEntityUsers.LAST_NAME);
+            if (lastName != null && !lastName.isEmpty()) {
+                username.append(lastName.substring(0, lastName.length() > 5 ? 5 : lastName.length()));
+            }
+
+            if (username.toString().length() > 29) {
+                username = new StringBuilder(username.substring(0, 28));
+            }
+
+            AJEntityUsers existingUser = AJEntityUsers.findFirst(AJEntityUsers.SELECT_BY_USERNAME_TENANT_ID,
+                username.toString().toLowerCase(), clientId);
+            if (existingUser != null) {
+                final Random randomNumber = new Random();
+                username.append(randomNumber.nextInt(999));
+            }
+
+            user.setString(AJEntityUsers.USERNAME, username.toString());
+        }
     }
 
     @Override

@@ -125,6 +125,5 @@ public final class InternalHelper {
         } catch (Throwable t) {
             LOGGER.error("error while posting event", t);
         }
-        LOGGER.info("request end");
     }
 }
