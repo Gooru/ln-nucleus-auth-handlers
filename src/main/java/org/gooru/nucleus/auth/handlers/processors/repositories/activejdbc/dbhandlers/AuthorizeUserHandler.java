@@ -106,7 +106,7 @@ public class AuthorizeUserHandler implements DBHandler {
             user.setString(AJEntityUsers.FIRST_NAME, userJson.getString(AJEntityUsers.FIRST_NAME, null));
             user.setString(AJEntityUsers.LAST_NAME, userJson.getString(AJEntityUsers.LAST_NAME, null));
             user.setString(AJEntityUsers.REFERENCE_ID, userJson.getString(ParameterConstants.PARAM_IDENTITY_ID));
-            user.setString(AJEntityUsers.LOGIN_TYPE, userJson.getString(ParameterConstants.PARAM_GRANT_TYPE));
+            user.setString(AJEntityUsers.LOGIN_TYPE, context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE));
 
             if (!user.insert()) {
                 LOGGER.debug("unable to create new user");
