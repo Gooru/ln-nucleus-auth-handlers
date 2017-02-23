@@ -149,7 +149,7 @@ public class AuthorizeUserHandler implements DBHandler {
                 username.append(randomNumber.nextInt(999));
             }
 
-            user.setString(AJEntityUsers.USERNAME, username.toString());
+            user.setString(AJEntityUsers.USERNAME, username.toString().toLowerCase());
         }
     }
 
