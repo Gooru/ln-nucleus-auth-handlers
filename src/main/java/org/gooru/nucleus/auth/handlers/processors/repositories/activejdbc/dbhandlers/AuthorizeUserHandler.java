@@ -10,7 +10,6 @@ import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
-import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entitybuilders.EntityBuilder;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.validators.PayloadValidator;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.validators.RequestValidator;
 import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult;
@@ -47,9 +46,8 @@ public class AuthorizeUserHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
-        JsonObject errors = new DefaultPayloadValidator()
-            .validatePayload(context.requestBody(), RequestValidator.authorizeFieldSelector(),
-                RequestValidator.getValidatorRegistry());
+        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
+            RequestValidator.authorizeFieldSelector(), RequestValidator.getValidatorRegistry());
         if (errors != null && !errors.isEmpty()) {
             LOGGER.warn("Validation errors for request");
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
@@ -70,12 +68,11 @@ public class AuthorizeUserHandler implements DBHandler {
         LazyList<AJEntityTenant> tenants;
 
         // First lookup in partner if not found, fall back on tenant
-        LazyList<AJEntityPartner> partners = AJEntityPartner
-            .findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey));
+        LazyList<AJEntityPartner> partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
+            InternalHelper.encryptClientKey(clientKey));
         if (partners.isEmpty()) {
-            tenants = AJEntityTenant
-                .findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey),
-                    HelperConstants.GrantTypes.google.getType());
+            tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
+                InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.google.getType());
         } else {
             partner = partners.get(0);
             tenants =
@@ -99,15 +96,17 @@ public class AuthorizeUserHandler implements DBHandler {
     public ExecutionResult<MessageResponse> executeRequest() {
         JsonObject userJson = context.requestBody().getJsonObject(ParameterConstants.PARAM_USER);
         String identityId = userJson.getString(ParameterConstants.PARAM_IDENTITY_ID);
-        LazyList<AJEntityUsers> users = AJEntityUsers
-            .findBySQL(AJEntityUsers.SELECT_BY_EMAIL_TENANT_ID, identityId, clientId);
+        LazyList<AJEntityUsers> users =
+            AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_TENANT_ID, identityId, clientId);
         if (users.isEmpty()) {
-            LOGGER
-                .debug("user not found in database for email or reference_id: {}, client_id: {}", identityId, clientId);
+            LOGGER.debug("user not found in database for email or reference_id: {}, client_id: {}", identityId,
+                clientId);
             user = new AJEntityUsers();
             user.set(AJEntityUsers.TENANT_ID, getPGObject(clientId));
+            user.setString(AJEntityUsers.FIRST_NAME, userJson.getString(AJEntityUsers.FIRST_NAME, null));
+            user.setString(AJEntityUsers.LAST_NAME, userJson.getString(AJEntityUsers.LAST_NAME, null));
+            user.setString(AJEntityUsers.REFERENCE_ID, userJson.getString(ParameterConstants.PARAM_IDENTITY_ID));
             user.setString(AJEntityUsers.LOGIN_TYPE, userJson.getString(ParameterConstants.PARAM_GRANT_TYPE));
-            autoPopulate();
 
             if (!user.insert()) {
                 LOGGER.debug("unable to create new user");
@@ -121,8 +120,9 @@ public class AuthorizeUserHandler implements DBHandler {
 
         final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
 
-        return new ExecutionResult<>(MessageResponseFactory.createPostResponse(result,
-            EventBuilderFactory.getAuthorizeUserEventBuilder(user.getString(AJEntityUsers.ID))),
+        return new ExecutionResult<>(
+            MessageResponseFactory.createPostResponse(result,
+                EventBuilderFactory.getAuthorizeUserEventBuilder(user.getString(AJEntityUsers.ID))),
             ExecutionStatus.SUCCESSFUL);
     }
 
@@ -131,16 +131,7 @@ public class AuthorizeUserHandler implements DBHandler {
         return false;
     }
 
-    private void autoPopulate() {
-        new DefaultAJEntityUsersBuilder()
-            .build(user, context.requestBody().getJsonObject(ParameterConstants.PARAM_USER),
-                AJEntityUsers.getConverterRegistry());
-    }
-
     private static class DefaultPayloadValidator implements PayloadValidator {
-    }
-
-    private static class DefaultAJEntityUsersBuilder implements EntityBuilder<AJEntityUsers> {
     }
 
     private PGobject getPGObject(String value) {
