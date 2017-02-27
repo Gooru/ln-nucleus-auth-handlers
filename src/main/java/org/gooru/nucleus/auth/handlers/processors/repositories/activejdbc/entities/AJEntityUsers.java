@@ -135,11 +135,11 @@ public class AJEntityUsers extends Model {
         validatorMap.put(COUNTRY_ID, (FieldValidator::validateUuidIfPresent));
         validatorMap.put(STATE_ID, (FieldValidator::validateUuidIfPresent));
         validatorMap.put(SCHOOL_DISTRICT_ID, (FieldValidator::validateUuidIfPresent));
-        validatorMap.put(STATE, (fieldValue -> FieldValidator.validateStringIfPresent(fieldValue, 2000)));
-        validatorMap.put(COUNTRY, (fieldValue -> FieldValidator.validateStringIfPresent(fieldValue, 2000)));
-        validatorMap.put(ABOUT, (fieldValue -> FieldValidator.validateStringIfPresent(fieldValue, 5000)));
+        validatorMap.put(STATE, (fieldValue -> FieldValidator.validateStringAllowNullOrEmpty(fieldValue, 2000)));
+        validatorMap.put(COUNTRY, (fieldValue -> FieldValidator.validateStringAllowNullOrEmpty(fieldValue, 2000)));
+        validatorMap.put(ABOUT, (fieldValue -> FieldValidator.validateStringAllowNullOrEmpty(fieldValue, 5000)));
         validatorMap.put(THUMBNAIL, (fieldValue -> FieldValidator.validateStringAllowNullOrEmpty(fieldValue, 1000)));
-        validatorMap.put(ROSTER_GLOBAL_USERID, (fieldValue -> FieldValidator.validateStringIfPresent(fieldValue, 512)));
+        validatorMap.put(ROSTER_GLOBAL_USERID, (fieldValue -> FieldValidator.validateStringAllowNullOrEmpty(fieldValue, 512)));
         return validatorMap;
     }
 
@@ -157,6 +157,11 @@ public class AJEntityUsers extends Model {
         converterMap.put(STATE_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
         converterMap.put(SCHOOL_DISTRICT_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
         converterMap.put(THUMBNAIL, (fieldValue -> FieldConverter.convertEmptyStringToNull((String) fieldValue)));
+        converterMap.put(ABOUT, (fieldValue -> FieldConverter.convertEmptyStringToNull((String) fieldValue)));
+        converterMap.put(STATE, (fieldValue -> FieldConverter.convertEmptyStringToNull((String) fieldValue)));
+        converterMap.put(COUNTRY, (fieldValue -> FieldConverter.convertEmptyStringToNull((String) fieldValue)));
+        converterMap.put(ROSTER_GLOBAL_USERID, (fieldValue -> FieldConverter.convertEmptyStringToNull((String) fieldValue)));
+        
         return converterMap;
     }
 
