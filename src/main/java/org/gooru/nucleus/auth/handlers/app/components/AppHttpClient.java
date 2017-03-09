@@ -26,10 +26,13 @@ public final class AppHttpClient implements Initializer, Finalizer {
     
     private static final String KEY_ENDPOINT = "api.endpoint";
     private static final String KEY_HOST = "api.host";
+    private static final String KEY_PORT = "api.port";
     private static final String KEY_EVENT_CONFIG = "event.config";
+    private static final int DEFAULT_PORT = 8080;
     
     private Vertx vertx;
     private String host;
+    private int port;
     private String endpoint;
     
     private AppHttpClient() {
@@ -55,6 +58,19 @@ public final class AppHttpClient implements Initializer, Finalizer {
             throw new AssertionError(RESOURCE_BUNDLE.getString("api.host.missing"));
         }
         
+        String strPort = eventConfig.getString(KEY_PORT);
+        if (strPort == null || strPort.isEmpty()) {
+            LOGGER.warn(RESOURCE_BUNDLE.getString("api.port.missing"));
+            throw new AssertionError(RESOURCE_BUNDLE.getString("api.port.missing"));
+        }
+        
+        try {
+            this.port = Integer.parseInt(strPort);
+        } catch (NumberFormatException ex) {
+            LOGGER.warn("error while parsing port, setting to default");
+            this.port = DEFAULT_PORT;
+        }
+        
         this.endpoint = eventConfig.getString(KEY_ENDPOINT);
         if (this.endpoint == null || this.endpoint.isEmpty()) {
             LOGGER.warn(RESOURCE_BUNDLE.getString("api.endpoint.missing"));
@@ -64,7 +80,7 @@ public final class AppHttpClient implements Initializer, Finalizer {
     }
     
     public HttpClient getHttpClient() {
-        return vertx.createHttpClient(new HttpClientOptions().setDefaultHost(this.host));
+        return vertx.createHttpClient(new HttpClientOptions().setDefaultHost(this.host).setDefaultPort(this.port));
     }
     
     public String host() {

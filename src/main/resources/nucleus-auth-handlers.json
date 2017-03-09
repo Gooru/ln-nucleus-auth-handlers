@@ -13,7 +13,8 @@
     "maximumPoolSize": 5
   },
   "event.config" : {
-    "api.host" : "localhost:8080",
+    "api.host" : "localhost",
+    "api.port" : "8080",
     "api.endpoint" : "/api/internal/v1/eventprocessor"
   }
 }
