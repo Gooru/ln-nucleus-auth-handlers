@@ -110,11 +110,11 @@ public class SigninUserHandler implements DBHandler {
         final String password = InternalHelper.encryptPassword(credentials[1]);
 
         LazyList<AJEntityUsers> users = AJEntityUsers
-            .findBySQL(AJEntityUsers.SELECT_FOR_SIGNIN, username, username, tenant.getString(AJEntityTenant.ID));
+            .findBySQL(AJEntityUsers.SELECT_FOR_SIGNIN, username.toLowerCase(), username.toLowerCase(), tenant.getString(AJEntityTenant.ID));
         if (users.isEmpty()) {
             LOGGER.warn("user not found in database for username/email: {}", username);
             return new ExecutionResult<>(
-                MessageResponseFactory.createUnauthorizedResponse((RESOURCE_BUNDLE.getString("user.not.found"))),
+                MessageResponseFactory.createNotFoundResponse((RESOURCE_BUNDLE.getString("user.not.found"))),
                 ExecutionStatus.FAILED);
         }
 
