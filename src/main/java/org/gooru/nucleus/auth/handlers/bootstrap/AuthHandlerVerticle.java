@@ -50,9 +50,9 @@ public class AuthHandlerVerticle extends AbstractVerticle {
                         if (eventData != null) {
                             LOGGER.debug("event data to be posted: {}", eventData.toString());
                             final String accessToken = getAccessToken(message, response);
-                            eventData.put(MessageConstants.MSG_HEADER_SEESION_TOKEN, accessToken);
-                            InternalHelper
-                                .executeHTTPClientPost(eventData.toString(), accessToken);
+                            eventData.put(MessageConstants.MSG_HEADER_SEESION_TOKEN,
+                                accessToken.substring(MessageConstants.TOKEN.length()).trim());
+                            InternalHelper.executeHTTPClientPost(eventData.toString(), accessToken);
                         }
                     });
                 }).completionHandler(result -> {

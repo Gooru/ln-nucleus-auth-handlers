@@ -24,6 +24,7 @@ public final class MessageConstants {
     public static final String MSG_HEADER_REQUEST_DOMAIN = "http.request.domain";
     public static final String MSG_HEADER_API_KEY = "http.api.key";
     public static final String MSG_HEADER_SEESION_TOKEN = "session.token";
+    public static final String TOKEN = "Token";
 
     // Containers for different responses
     public static final String RESP_CONTAINER_MBUS = "mb.container";
