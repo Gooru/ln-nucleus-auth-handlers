@@ -77,6 +77,11 @@ public final class MessageResponseFactory {
     public static MessageResponse createConflictRespose() {
         return new MessageResponse.Builder().failed().setStatusHttpCode(HttpStatus.CONFLICT).build();
     }
+    
+    public static MessageResponse createConflictRespose(JsonObject errors) {
+        return new MessageResponse.Builder().failed().setStatusHttpCode(HttpStatus.CONFLICT).setResponseBody(errors)
+            .build();
+    }
 
     public static MessageResponse createPostResponse(String location) {
         return new MessageResponse.Builder().successful().setHeader("Location", location).setStatusCreated().build();
