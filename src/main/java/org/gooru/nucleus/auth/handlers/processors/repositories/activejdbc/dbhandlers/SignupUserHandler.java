@@ -65,8 +65,20 @@ public class SignupUserHandler implements DBHandler {
             AJEntityUsers.findBySQL(AJEntityUsers.SELECT_FOR_SIGNUP, email, username, tenantId);
 
         if (!users.isEmpty()) {
-            LOGGER.error("user already exists with username: '{}' OR email: '{}'", username, email);
-            return new ExecutionResult<>(MessageResponseFactory.createConflictRespose(), ExecutionStatus.FAILED);
+            user = users.get(0);
+            String usernameFromDB = user.getString(AJEntityUsers.USERNAME);
+            String emailFromDB = user.getString(AJEntityUsers.EMAIL);
+            JsonObject errors = new JsonObject();
+            if (usernameFromDB.equalsIgnoreCase(username)) {
+                LOGGER.error("user already exists with username: '{}'", username);
+                errors.put(AJEntityUsers.USERNAME, "'" + username + "'" + " is already taken");
+            }
+
+            if (emailFromDB.equalsIgnoreCase(email)) {
+                LOGGER.error("user already exists with email: '{}'", email);
+                errors.put(AJEntityUsers.EMAIL, "'" + email + "'" + " is already taken");
+            }
+            return new ExecutionResult<>(MessageResponseFactory.createConflictRespose(errors), ExecutionStatus.FAILED);
         }
 
         tenant = AJEntityTenant.findById(UUID.fromString(tenantId));

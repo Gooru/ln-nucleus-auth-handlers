@@ -93,7 +93,7 @@ public class AJEntityUsers extends Model {
             + "tenant_root FROM users WHERE" + " id = ?::uuid AND tenant_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_FOR_SIGNUP =
-        "SELECT id FROM users WHERE (email = ? OR username = ?) AND tenant_id = ?::uuid";
+        "SELECT id, username, email FROM users WHERE (email = ? OR username = ?) AND tenant_id = ?::uuid";
 
     public static final String SELECT_BY_REFERENCE_ID_TENANT_ID =
         "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
