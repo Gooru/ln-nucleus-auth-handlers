@@ -18,7 +18,7 @@ public final class RedisClient implements Initializer, Finalizer {
     public void initializeComponent(Vertx vertx, JsonObject config) {
         JsonObject redisConfig = config.getJsonObject(ConfigConstants.REDIS);
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
-        jedisPoolConfig.setMaxTotal(1000);
+        jedisPoolConfig.setMaxTotal(40);
         jedisPoolConfig.setMaxIdle(10);
         jedisPoolConfig.setMinIdle(1);
         jedisPoolConfig.setMaxWaitMillis(30000);
