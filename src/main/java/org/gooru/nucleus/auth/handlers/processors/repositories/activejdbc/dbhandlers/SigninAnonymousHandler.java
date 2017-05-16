@@ -2,14 +2,13 @@ package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhan
 
 import java.util.ResourceBundle;
 
-import org.gooru.nucleus.auth.handlers.app.components.AppConfiguration;
 import org.gooru.nucleus.auth.handlers.app.components.RedisClient;
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.MessageConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
-import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityApp;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
@@ -51,9 +50,8 @@ public class SigninAnonymousHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
-        JsonObject errors = new DefaultPayloadValidator()
-            .validatePayload(context.requestBody(), RequestValidator.authorizeFieldSelector(),
-                RequestValidator.getValidatorRegistry());
+        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
+            RequestValidator.authorizeFieldSelector(), RequestValidator.getValidatorRegistry());
         if (errors != null && !errors.isEmpty()) {
             LOGGER.warn("Validation errors for request");
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
@@ -77,26 +75,19 @@ public class SigninAnonymousHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
         // validate app id if required
-        if (AppConfiguration.getInstance().isAppIdRequired()) {
-            String appId = context.requestBody().getString(ParameterConstants.PARAM_APP_ID);
-            LazyList<AJEntityApp> apps = AJEntityApp.findBySQL(AJEntityApp.VALIDATE_EXISTANCE, appId);
-            if (apps.isEmpty()) {
-                LOGGER.warn("app id '{}' not found", appId);
-                return new ExecutionResult<>(
-                    MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("appid.not.found")),
-                    ExecutionStatus.FAILED);
-            }
+        ExecutionResult<MessageResponse> result = AuthorizerBuilder.buildAppAuthorizer(context).authorize(null);
+        if (!result.continueProcessing()) {
+            return result;
         }
-        
+
         LazyList<AJEntityTenant> tenants;
 
         // First lookup in partner if not found, fall back on tenant
-        LazyList<AJEntityPartner> partners = AJEntityPartner
-            .findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey));
+        LazyList<AJEntityPartner> partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
+            InternalHelper.encryptClientKey(clientKey));
         if (partners.isEmpty()) {
-            tenants = AJEntityTenant
-                .findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey),
-                    HelperConstants.GrantTypes.anonymous.getType());
+            tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
+                InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.anonymous.getType());
         } else {
             partner = partners.get(0);
             tenants =
@@ -127,15 +118,15 @@ public class SigninAnonymousHandler implements DBHandler {
 
         JsonObject tenantJson = new JsonObject();
         tenantJson.put(AJEntityUsers.TENANT_ID, tenant.getString(AJEntityTenant.ID));
-        //TODO: Fetch tenant root from the tenant table
+        // TODO: Fetch tenant root from the tenant table
         tenantJson.putNull(AJEntityUsers.TENANT_ROOT);
         result.put(ParameterConstants.PARAM_TENANT, tenantJson);
 
         JsonObject userPreference = PreferenceSettingsUtil.getDefaultPreference();
         result.put(AJEntityUserPreference.PREFERENCE_SETTINGS, userPreference);
-        
-        int accessTokenValidity = (partner != null) ? partner.getInteger(AJEntityPartner.ACCESS_TOKEN_VALIDITY) :
-            tenant.getInteger(AJEntityTenant.ACCESS_TOKEN_VALIDITY);
+
+        int accessTokenValidity = (partner != null) ? partner.getInteger(AJEntityPartner.ACCESS_TOKEN_VALIDITY)
+            : tenant.getInteger(AJEntityTenant.ACCESS_TOKEN_VALIDITY);
 
         // Save access token with details in redis
         saveAccessToken(accessToken, result, accessTokenValidity);
@@ -143,8 +134,9 @@ public class SigninAnonymousHandler implements DBHandler {
         result.put(ParameterConstants.PARAM_ACCESS_TOKEN, accessToken);
 
         LOGGER.debug("anonymous token generated successfully");
-        return new ExecutionResult<>(MessageResponseFactory
-            .createGetResponse(result, EventBuilderFactory.getAnonymousSigninEventBuilder(clientId)),
+        return new ExecutionResult<>(
+            MessageResponseFactory.createGetResponse(result,
+                EventBuilderFactory.getAnonymousSigninEventBuilder(clientId)),
             ExecutionResult.ExecutionStatus.SUCCESSFUL);
     }
 

@@ -8,6 +8,7 @@ import org.gooru.nucleus.auth.handlers.constants.MessageConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityApp;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
@@ -48,9 +49,8 @@ public class SigninUserHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
-        JsonObject errors = new DefaultPayloadValidator()
-            .validatePayload(context.requestBody(), RequestValidator.authorizeFieldSelector(),
-                RequestValidator.getValidatorRegistry());
+        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
+            RequestValidator.authorizeFieldSelector(), RequestValidator.getValidatorRegistry());
         if (errors != null && !errors.isEmpty()) {
             LOGGER.warn("Validation errors for request");
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
@@ -83,26 +83,19 @@ public class SigninUserHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
         // validate app id if required
-        if (AppConfiguration.getInstance().isAppIdRequired()) {
-            String appId = context.requestBody().getString(ParameterConstants.PARAM_APP_ID);
-            LazyList<AJEntityApp> apps = AJEntityApp.findBySQL(AJEntityApp.VALIDATE_EXISTANCE, appId);
-            if (apps.isEmpty()) {
-                LOGGER.warn("app id '{}' not found", appId);
-                return new ExecutionResult<>(
-                    MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("appid.not.found")),
-                    ExecutionStatus.FAILED);
-            }
+        ExecutionResult<MessageResponse> result = AuthorizerBuilder.buildAppAuthorizer(context).authorize(null);
+        if (!result.continueProcessing()) {
+            return result;
         }
-        
+
         LazyList<AJEntityTenant> tenants;
 
         // First lookup in partner if not found, fall back on tenant
-        LazyList<AJEntityPartner> partners = AJEntityPartner
-            .findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey));
+        LazyList<AJEntityPartner> partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
+            InternalHelper.encryptClientKey(clientKey));
         if (partners.isEmpty()) {
-            tenants = AJEntityTenant
-                .findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey),
-                    HelperConstants.GrantTypes.credential.getType());
+            tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
+                InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.credential.getType());
         } else {
             partner = partners.get(0);
             tenants =
@@ -123,8 +116,8 @@ public class SigninUserHandler implements DBHandler {
         final String username = credentials[0];
         final String password = InternalHelper.encryptPassword(credentials[1]);
 
-        LazyList<AJEntityUsers> users = AJEntityUsers
-            .findBySQL(AJEntityUsers.SELECT_FOR_SIGNIN, username.toLowerCase(), username.toLowerCase(), tenant.getString(AJEntityTenant.ID));
+        LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_FOR_SIGNIN, username.toLowerCase(),
+            username.toLowerCase(), tenant.getString(AJEntityTenant.ID));
         if (users.isEmpty()) {
             LOGGER.warn("user not found in database for username/email: {}", username);
             return new ExecutionResult<>(
@@ -133,7 +126,7 @@ public class SigninUserHandler implements DBHandler {
         }
 
         user = users.get(0);
-        //Check whether user is allowed to login using credentials
+        // Check whether user is allowed to login using credentials
         String loginType = user.getString(AJEntityUsers.LOGIN_TYPE);
         if (!loginType.equals(HelperConstants.GrantTypes.credential.getType())) {
             LOGGER.warn("user is not allowed to login via this mode, user login_type: {}", loginType);
@@ -142,7 +135,7 @@ public class SigninUserHandler implements DBHandler {
                 ExecutionStatus.FAILED);
         }
 
-        //Check if provided password matches with what stored in DB
+        // Check if provided password matches with what stored in DB
         if (!password.equals(user.getString(AJEntityUsers.PASSWORD))) {
             LOGGER.warn("Invalid password provided while login");
             return new ExecutionResult<>(
@@ -158,8 +151,9 @@ public class SigninUserHandler implements DBHandler {
         final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
 
         LOGGER.debug("user token generated successfully");
-        return new ExecutionResult<>(MessageResponseFactory
-            .createGetResponse(result, EventBuilderFactory.getSigninUserEventBuilder(user.getString(AJEntityUsers.ID))),
+        return new ExecutionResult<>(
+            MessageResponseFactory.createGetResponse(result,
+                EventBuilderFactory.getSigninUserEventBuilder(user.getString(AJEntityUsers.ID))),
             ExecutionResult.ExecutionStatus.SUCCESSFUL);
     }
 
