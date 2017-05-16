@@ -2,11 +2,13 @@ package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhan
 
 import java.util.ResourceBundle;
 
+import org.gooru.nucleus.auth.handlers.app.components.AppConfiguration;
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.MessageConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityApp;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
@@ -83,6 +85,18 @@ public class InternalLtiSSOHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
+        // validate app id if required
+        if (AppConfiguration.getInstance().isAppIdRequired()) {
+            String appId = context.requestBody().getString(ParameterConstants.PARAM_APP_ID);
+            LazyList<AJEntityApp> apps = AJEntityApp.findBySQL(AJEntityApp.VALIDATE_EXISTANCE, appId);
+            if (apps.isEmpty()) {
+                LOGGER.warn("app id '{}' not found", appId);
+                return new ExecutionResult<>(
+                    MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("appid.not.found")),
+                    ExecutionStatus.FAILED);
+            }
+        }
+        
         LazyList<AJEntityTenant> tenants;
 
         // First lookup in partner if not found, fall back on tenant

@@ -16,5 +16,8 @@
     "api.host" : "localhost",
     "api.port" : "8080",
     "api.endpoint" : "/api/internal/v1/eventprocessor"
+  },
+  "app.config" : {
+  	"appid.required" : true
   }
 }

@@ -116,6 +116,9 @@ public interface FieldValidator {
     }
 
     static boolean validateUuid(Object o) {
+        if (o == null) {
+            return false;
+        }
         try {
             UUID uuid = UUID.fromString((String) o);
             return true;

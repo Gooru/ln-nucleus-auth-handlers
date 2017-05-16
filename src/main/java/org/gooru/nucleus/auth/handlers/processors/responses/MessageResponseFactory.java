@@ -33,7 +33,7 @@ public final class MessageResponseFactory {
     }
 
     public static MessageResponse createForbiddenResponse(String message) {
-        return new MessageResponse.Builder().failed().setStatusForbidden()
+        return new MessageResponse.Builder().failed().setStatusForbidden().setContentTypeJson()
             .setResponseBody(new JsonObject().put(MessageConstants.MSG_MESSAGE, message)).build();
     }
 
