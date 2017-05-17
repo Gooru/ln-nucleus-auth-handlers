@@ -30,7 +30,7 @@ class SigninUserProcessor extends AbstractCommandProcessor {
             LOGGER.info("signing in user");
             return RepoBuilder.buildAuthenticationRepo(context).signinUser();
         } catch (Throwable t) {
-            LOGGER.error("exception while user signin", t.getMessage());
+            LOGGER.error("exception while user signin", t);
             return MessageResponseFactory.createInvalidRequestResponse(t.getMessage());
         }
     }

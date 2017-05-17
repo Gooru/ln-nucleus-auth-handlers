@@ -2,11 +2,14 @@ package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhan
 
 import java.util.ResourceBundle;
 
+import org.gooru.nucleus.auth.handlers.app.components.AppConfiguration;
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.MessageConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityApp;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
@@ -83,6 +86,12 @@ public class InternalLtiSSOHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
+        // validate app id if required
+        ExecutionResult<MessageResponse> result = AuthorizerBuilder.buildAppAuthorizer(context).authorize(null);
+        if (!result.continueProcessing()) {
+            return result;
+        }
+        
         LazyList<AJEntityTenant> tenants;
 
         // First lookup in partner if not found, fall back on tenant

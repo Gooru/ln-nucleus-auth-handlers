@@ -58,11 +58,13 @@ public class AJEntityUsers extends Model {
     public static final String TENANT_ID = "tenant_id";
     public static final String PARENT_ID = "partner_id";
     public static final String IS_DELETED = "is_deleted";
+    
+    private static final String APP_ID = "app_id";
 
     private static final String UUID_TYPE = "uuid";
 
     private static final Set<String> CREATABLE_FIELDS = new HashSet<>(
-        Arrays.asList(USERNAME, EMAIL, PASSWORD, BIRTH_DATE, FIRST_NAME, LAST_NAME, TENANT_ID, GENDER, USER_CATEGORY));
+        Arrays.asList(USERNAME, EMAIL, PASSWORD, BIRTH_DATE, FIRST_NAME, LAST_NAME, TENANT_ID, GENDER, USER_CATEGORY, APP_ID));
 
     private static final Set<String> MANDATORY_FIELDS =
         new HashSet<>(Arrays.asList(USERNAME, EMAIL, PASSWORD, BIRTH_DATE, FIRST_NAME, LAST_NAME, TENANT_ID));

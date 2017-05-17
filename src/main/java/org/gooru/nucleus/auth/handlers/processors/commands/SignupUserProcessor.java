@@ -30,7 +30,7 @@ class SignupUserProcessor extends AbstractCommandProcessor {
             LOGGER.info("Creating new user");
             return RepoBuilder.buildUserRepo(context).signupUser();
         } catch (Throwable t) {
-            LOGGER.error("exception while creating new user", t.getMessage());
+            LOGGER.error("exception while creating new user", t);
             return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
         }
     }

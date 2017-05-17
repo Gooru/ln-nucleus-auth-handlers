@@ -17,4 +17,6 @@ public class AJEntityApp extends Model {
     public static final String URL = "url";
     public static final String DESCRIPTION = "description";
     public static final String email = "email";
+    
+    public static final String VALIDATE_EXISTANCE = "SELECT id, name FROM app WHERE id = ?::uuid";
 }
