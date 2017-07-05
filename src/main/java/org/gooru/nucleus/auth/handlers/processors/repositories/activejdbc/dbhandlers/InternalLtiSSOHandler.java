@@ -128,7 +128,7 @@ public class InternalLtiSSOHandler implements DBHandler {
             LOGGER.debug("user not found in database for reference_id: {}, client_id: {}", referenceId, clientId);
             user = new AJEntityUsers();
             user.setString(AJEntityUsers.LOGIN_TYPE, HelperConstants.UserLoginType.ltisso.getType());
-            user.setTenantId(clientId);
+            user.setTenantId(tenant.getString(AJEntityTenant.ID));
             autoPopulate();
 
             if (user.hasErrors()) {
