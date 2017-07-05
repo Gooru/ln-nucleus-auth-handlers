@@ -2,14 +2,12 @@ package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhan
 
 import java.util.ResourceBundle;
 
-import org.gooru.nucleus.auth.handlers.app.components.AppConfiguration;
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.MessageConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
-import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityApp;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
@@ -37,7 +35,6 @@ public class InternalLtiSSOHandler implements DBHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(InternalLtiSSOHandler.class);
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
 
-    private static String basicCredentials;
     private static String clientId;
     private static String clientKey;
     private static AJEntityPartner partner;
@@ -67,19 +64,20 @@ public class InternalLtiSSOHandler implements DBHandler {
                 MessageResponseFactory.createUnauthorizedResponse(RESOURCE_BUNDLE.getString("invalid.granttype")),
                 ExecutionStatus.FAILED);
         }
-
-        clientId = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_ID);
-        clientKey = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_KEY);
         // TODO:
         // Validate user payload from request
 
-        basicCredentials = context.headers().get(MessageConstants.MSG_HEADER_BASIC_AUTH);
+        final String basicCredentials = context.headers().get(MessageConstants.MSG_HEADER_BASIC_AUTH);
         if (basicCredentials == null || basicCredentials.isEmpty()) {
             LOGGER.warn("invalid credentials in request");
             return new ExecutionResult<>(
                 MessageResponseFactory.createUnauthorizedResponse(RESOURCE_BUNDLE.getString("invalid.credential")),
                 ExecutionStatus.FAILED);
         }
+        
+        final String credentials[] = InternalHelper.getClientIdAndSecret(basicCredentials);
+        clientId = credentials[0];
+        clientKey = credentials[1];
 
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
@@ -116,22 +114,6 @@ public class InternalLtiSSOHandler implements DBHandler {
         }
 
         tenant = tenants.get(0);
-
-        final String credentials[] = InternalHelper.getClientIdAndSecret(basicCredentials);
-        final String consumerClientId = credentials[0];
-        final String consumerSecret = credentials[1];
-
-        LazyList<AJEntityTenant> consumerTenant = AJEntityTenant
-            .findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, consumerClientId,
-                InternalHelper.encryptClientKey(consumerSecret), HelperConstants.GrantTypes.ltisso.getType());
-
-        if (consumerTenant.isEmpty()) {
-            LOGGER.warn("No matching partner or tenant found for client_id '{}' and client_key '{}'", clientId,
-                clientKey);
-            return new ExecutionResult<>(
-                MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("tenant.not.found")),
-                ExecutionStatus.FAILED);
-        }
 
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
