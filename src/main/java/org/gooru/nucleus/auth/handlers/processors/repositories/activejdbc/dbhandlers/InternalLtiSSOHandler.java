@@ -122,13 +122,14 @@ public class InternalLtiSSOHandler implements DBHandler {
     public ExecutionResult<MessageResponse> executeRequest() {
         JsonObject userObject = context.requestBody().getJsonObject(ParameterConstants.PARAM_USER);
         String referenceId = userObject.getString(AJEntityUsers.REFERENCE_ID);
+        String tenantId = tenant.getString(AJEntityTenant.ID);
         LazyList<AJEntityUsers> users =
-            AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_TENANT_ID, referenceId, clientId);
+            AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_TENANT_ID, referenceId, tenantId);
         if (users.isEmpty()) {
-            LOGGER.debug("user not found in database for reference_id: {}, client_id: {}", referenceId, clientId);
+            LOGGER.debug("user not found in database for reference_id: {}, client_id: {}", referenceId, tenantId);
             user = new AJEntityUsers();
             user.setString(AJEntityUsers.LOGIN_TYPE, HelperConstants.UserLoginType.ltisso.getType());
-            user.setTenantId(tenant.getString(AJEntityTenant.ID));
+            user.setTenantId(tenantId);
             autoPopulate();
 
             if (user.hasErrors()) {
