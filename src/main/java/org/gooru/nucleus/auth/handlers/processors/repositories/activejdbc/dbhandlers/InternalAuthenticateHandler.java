@@ -43,8 +43,8 @@ public class InternalAuthenticateHandler implements DBHandler {
     private static AJEntityUsers user;
 
     private static final List<String> USER_DEMOGRAPHIC_FIELDS = Arrays
-        .asList("firstname", "lastname", "user_category", "birth_date", "grade", "course", "thumbnail_path", "gender",
-            "about_me", "school_id", "school", "school_district_id", "school_district", "email_id", "country_id",
+        .asList("first_name", "last_name", "user_category", "birth_date", "grade", "course", "thumbnail", "gender",
+            "about", "school_id", "school", "school_district_id", "school_district", "email", "country_id",
             "country", "state_id", "state", "metadata", "roster_id", "roster_global_userid");
 
     public InternalAuthenticateHandler(ProcessorContext context) {
