@@ -13,4 +13,6 @@ public interface InternalRepo {
     MessageResponse impersonate();
 
     MessageResponse ltisso();
+    
+    MessageResponse wsfedsso();
 }

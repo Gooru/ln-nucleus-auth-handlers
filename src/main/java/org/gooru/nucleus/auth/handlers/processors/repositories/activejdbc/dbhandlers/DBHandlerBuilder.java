@@ -60,4 +60,8 @@ public final class DBHandlerBuilder {
         return new ChangePassowrdHandler(context);
     }
 
+    public static DBHandler buildInternalWSFedSSOHandler(ProcessorContext context) {
+        return new InternalWSFedSSOHandler(context);
+    }
+
 }

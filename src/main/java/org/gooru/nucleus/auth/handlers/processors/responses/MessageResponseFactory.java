@@ -42,7 +42,7 @@ public final class MessageResponseFactory {
     }
 
     public static MessageResponse createUnauthorizedResponse(String message) {
-        return new MessageResponse.Builder().failed().setStatusUnauthorized()
+        return new MessageResponse.Builder().failed().setStatusUnauthorized().setContentTypeJson()
             .setResponseBody(new JsonObject().put(MessageConstants.MSG_MESSAGE, message)).build();
     }
 

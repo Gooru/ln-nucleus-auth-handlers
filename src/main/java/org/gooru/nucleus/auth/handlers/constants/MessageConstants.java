@@ -51,6 +51,7 @@ public final class MessageConstants {
     public static final String MSG_OP_INTERNAL_AUTHENTICATE = "internal.authenticate";
     public static final String MSG_OP_INTERNAL_IMPERSONATE = "internal.impersonate";
     public static final String MSG_OP_INTERNAL_LTI_SSO = "internal.lti.sso";
+    public static final String MSG_OP_INTERNAL_WSFED_SSO = "internal.lti.sso.wsfed";
 
     // --------------------------------------------------------------------
     // Authentication command

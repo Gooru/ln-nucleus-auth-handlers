@@ -19,6 +19,7 @@ public final class RequestValidator {
     private static final Map<String, FieldValidator> validatorRegistry;
 
     private static final Set<String> LTISSO_FIELDS = new HashSet<>(Arrays.asList(GRANT_TYPE, USER));
+    private static final Set<String> WSFEDSSO_FIELDS = new HashSet<>(Arrays.asList(GRANT_TYPE, USER));
 
     private static final Set<String> AUTHORIZE_ALLOWED_FIELDS =
         new HashSet<>(Arrays.asList(CLIENT_ID, CLIENT_KEY, GRANT_TYPE, USER, APP_ID));
@@ -43,6 +44,10 @@ public final class RequestValidator {
 
     public static FieldSelector ltissoFieldSelector() {
         return () -> Collections.unmodifiableSet(LTISSO_FIELDS);
+    }
+    
+    public static FieldSelector wsfedssoFieldSelector() {
+        return () -> Collections.unmodifiableSet(WSFEDSSO_FIELDS);
     }
 
     public static FieldSelector authorizeFieldSelector() {

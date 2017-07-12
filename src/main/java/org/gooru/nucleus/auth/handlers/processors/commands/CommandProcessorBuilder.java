@@ -109,6 +109,12 @@ public enum CommandProcessorBuilder {
         public Processor build(ProcessorContext context) {
             return new InternalLtiSSOProcessor(context);
         }
+    },
+    INTERNAL_WSFED_SSO(MessageConstants.MSG_OP_INTERNAL_WSFED_SSO) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new InternalWSFedSSOProcessor(context);
+        }
     };
 
     private String name;

@@ -23,6 +23,7 @@ public final class EventBuilderFactory {
     private static final String EVT_INTERNAL_AUTHENTICATE = "event.internal.authenticate";
     private static final String EVT_INTERNAL_IMPERSONATE = "event.internal.impersonate";
     private static final String EVT_INTERNAL_LTI_SSO = "event.internal.lti.sso";
+    private static final String EVT_INTERNAL_WSFED_SSO = "event.internal.wsfed.sso";
 
     private static final String EVENT_NAME = "event.name";
     private static final String EVENT_BODY = "event.body";
@@ -65,6 +66,11 @@ public final class EventBuilderFactory {
 
     public static EventBuilder getLTISSOEventBuilder(String userId) {
         return () -> new JsonObject().put(EVENT_NAME, EVT_INTERNAL_LTI_SSO)
+            .put(EVENT_BODY, new JsonObject().put(ID, userId));
+    }
+    
+    public static EventBuilder getWSFedSSOEventBuilder(String userId) {
+        return () -> new JsonObject().put(EVENT_NAME, EVT_INTERNAL_WSFED_SSO)
             .put(EVENT_BODY, new JsonObject().put(ID, userId));
     }
 
