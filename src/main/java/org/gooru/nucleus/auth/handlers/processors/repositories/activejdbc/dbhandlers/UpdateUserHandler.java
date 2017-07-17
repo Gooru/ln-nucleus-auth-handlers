@@ -30,6 +30,7 @@ public class UpdateUserHandler implements DBHandler {
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
 
     private AJEntityUsers user;
+    private String tenantId;
 
     public UpdateUserHandler(ProcessorContext context) {
         this.context = context;
@@ -46,18 +47,19 @@ public class UpdateUserHandler implements DBHandler {
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
                 ExecutionResult.ExecutionStatus.FAILED);
         }
+        
+        this.tenantId =
+            context.user().getJsonObject(ParameterConstants.PARAM_TENANT).getString(ParameterConstants.PARAM_TENANT_ID);
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
         String userId = context.user().getString(ParameterConstants.PARAM_USER_ID);
-        String tenantId =
-            context.user().getJsonObject(ParameterConstants.PARAM_TENANT).getString(ParameterConstants.PARAM_TENANT_ID);
 
-        user = DBHelper.getUserByIdAndTenantId(userId, tenantId);
+        user = DBHelper.getUserByIdAndTenantId(userId, this.tenantId);
         if (user == null) {
-            LOGGER.warn("user not found for id:{}, tenant_id:{}", userId, tenantId);
+            LOGGER.warn("user not found for id:{}, tenant_id:{}", userId, this.tenantId);
             return new ExecutionResult<>(
                 MessageResponseFactory.createUnauthorizedResponse((RESOURCE_BUNDLE.getString("user.not.found"))),
                 ExecutionStatus.FAILED);
@@ -68,6 +70,22 @@ public class UpdateUserHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
+        // If username present in the request body, verify its uniqueness
+        if (context.requestBody().containsKey(AJEntityUsers.USERNAME)) {
+            String usernameFromRequest = context.requestBody().getString(AJEntityUsers.USERNAME);
+            String usernameFromDB = user.getString(AJEntityUsers.USERNAME);
+            
+            if(!(usernameFromDB != null && usernameFromDB.equalsIgnoreCase(usernameFromRequest))) {
+                AJEntityUsers existingUser = AJEntityUsers.findFirst(AJEntityUsers.SELECT_BY_USERNAME_TENANT_ID,
+                    usernameFromRequest.toLowerCase(), this.tenantId);
+                if (existingUser != null) {
+                    JsonObject errors = new JsonObject();
+                    errors.put(AJEntityUsers.USERNAME, "'" + usernameFromRequest + "'" + " is already taken");
+                    return new ExecutionResult<>(MessageResponseFactory.createConflictRespose(errors), ExecutionStatus.FAILED);
+                }
+            }
+        }
+        
         // TODO: Do we need to update the Redis session if the username is
         // udpated?
         autoPopulate();
@@ -91,6 +109,12 @@ public class UpdateUserHandler implements DBHandler {
 
     private void autoPopulate() {
         new DefaultAJEntityUsersBuilder().build(user, context.requestBody(), AJEntityUsers.getConverterRegistry());
+        
+        // set username in lowercase 
+        user.setString(AJEntityUsers.USERNAME, context.requestBody().getString(AJEntityUsers.USERNAME).toLowerCase());
+        
+        // set incoming username as is which can used as display name.
+        user.setString(AJEntityUsers.DISPLAY_NAME, context.requestBody().getString(AJEntityUsers.USERNAME));
     }
 
     private static class DefaultPayloadValidator implements PayloadValidator {

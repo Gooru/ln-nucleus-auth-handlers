@@ -28,6 +28,7 @@ public class AJEntityUsers extends Model {
 
     public static final String ID = "id";
     public static final String USERNAME = "username";
+    public static final String DISPLAY_NAME = "display_name";
     public static final String REFERENCE_ID = "reference_id";
     public static final String EMAIL = "email";
     public static final String PASSWORD = "password";
@@ -82,31 +83,31 @@ public class AJEntityUsers extends Model {
         new HashSet<>(Arrays.asList(ParameterConstants.PARAM_OLD_PASSWORD, ParameterConstants.PARAM_NEW_PASSWORD));
 
     public static final String SELECT_FOR_SIGNIN =
-        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+        "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
             + "tenant_root FROM users WHERE"
             + " email = ? OR username = ? AND tenant_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_BY_ID =
-        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+        "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
             + "tenant_id, tenant_root FROM users WHERE" + " id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_BY_ID_TENANT_ID =
-        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+        "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
             + "tenant_root FROM users WHERE" + " id = ?::uuid AND tenant_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_FOR_SIGNUP =
         "SELECT id, username, email FROM users WHERE (email = ? OR username = ?) AND tenant_id = ?::uuid";
 
     public static final String SELECT_BY_REFERENCE_ID_TENANT_ID =
-        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+        "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
             + "tenant_root FROM users WHERE" + " reference_id = ? AND tenant_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_BY_EMAIL =
-        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+        "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
             + "tenant_root FROM users WHERE" + " email = ? AND is_deleted = false";
 
     public static final String SELECT_BY_EMAIL_TENANT_ID =
-        "SELECT id, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+        "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
             + "tenant_root FROM users WHERE" + " email = ? AND tenant_id = ?::uuid AND is_deleted = false";
     
     public static final String SELECT_BY_USERNAME_TENANT_ID = "username = ? AND tenant_id = ?::uuid";
