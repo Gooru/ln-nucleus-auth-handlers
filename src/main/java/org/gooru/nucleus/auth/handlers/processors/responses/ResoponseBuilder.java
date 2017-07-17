@@ -40,7 +40,7 @@ public class ResoponseBuilder {
             context.requestBody().getString(ParameterConstants.PARAM_APP_ID, null));
         result
             .put(ParameterConstants.PARAM_PARTNER_ID, (partner != null) ? partner.getString(AJEntityPartner.ID) : null);
-        result.put(AJEntityUsers.USERNAME, user.getString(AJEntityUsers.USERNAME));
+        result.put(AJEntityUsers.USERNAME, user.getString(AJEntityUsers.DISPLAY_NAME));
         result.put(ParameterConstants.PARAM_PROVIDED_AT, System.currentTimeMillis());
         result.put(AJEntityUsers.EMAIL, user.getString(AJEntityUsers.EMAIL));
         result.put(ParameterConstants.PARAM_CDN_URLS, new JsonObject(tenant.getString(AJEntityTenant.CDN_URLS)));

@@ -4,13 +4,14 @@ import java.sql.SQLException;
 import java.util.Random;
 import java.util.ResourceBundle;
 
-import org.gooru.nucleus.auth.handlers.app.components.AppConfiguration;
+import org.gooru.nucleus.auth.handlers.constants.EmailTemplateConstants;
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
+import org.gooru.nucleus.auth.handlers.processors.emails.EmailNotificationBuilder;
+import org.gooru.nucleus.auth.handlers.processors.events.EventBuilder;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
-import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityApp;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
@@ -107,6 +108,7 @@ public class AuthorizeUserHandler implements DBHandler {
         String identityId = userJson.getString(ParameterConstants.PARAM_IDENTITY_ID);
         LazyList<AJEntityUsers> users =
             AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_TENANT_ID, identityId.toLowerCase(), clientId);
+        EventBuilder eb;
         if (users.isEmpty()) {
             LOGGER.debug("user not found in database for email or reference_id: {}, client_id: {}", identityId,
                 clientId);
@@ -117,7 +119,8 @@ public class AuthorizeUserHandler implements DBHandler {
             user.setString(AJEntityUsers.EMAIL, userJson.getString(ParameterConstants.PARAM_IDENTITY_ID).toLowerCase());
             user.setString(AJEntityUsers.LOGIN_TYPE,
                 context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE));
-            populateUsername(user);
+            
+            // To make all SSO flows consistent, removed the population of the username. 
 
             if (!user.insert()) {
                 LOGGER.debug("unable to create new user");
@@ -125,40 +128,19 @@ public class AuthorizeUserHandler implements DBHandler {
                     MessageResponseFactory.createInvalidRequestResponse("Unable to create user"),
                     ExecutionStatus.FAILED);
             }
+            EmailNotificationBuilder emailNotificationBuilder = new EmailNotificationBuilder();
+            emailNotificationBuilder.setTemplateName(EmailTemplateConstants.WELCOME_MAIL)
+                .addToAddress(user.getString(AJEntityUsers.EMAIL));
+            eb = EventBuilderFactory.getSignupUserEventBuilder(user.getString(AJEntityUsers.ID),
+                emailNotificationBuilder);
         } else {
             user = users.get(0);
+            eb = EventBuilderFactory.getSigninUserEventBuilder(user.getString(AJEntityUsers.ID));
         }
 
         final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
 
-        return new ExecutionResult<>(
-            MessageResponseFactory.createPostResponse(result,
-                EventBuilderFactory.getAuthorizeUserEventBuilder(user.getString(AJEntityUsers.ID))),
-            ExecutionStatus.SUCCESSFUL);
-    }
-
-    private void populateUsername(AJEntityUsers user) {
-        String firstName = user.getString(AJEntityUsers.FIRST_NAME);
-        if (firstName != null && !firstName.isEmpty()) {
-            StringBuilder username = new StringBuilder(firstName.replaceAll("\\s+", ""));
-            String lastName = user.getString(AJEntityUsers.LAST_NAME);
-            if (lastName != null && !lastName.isEmpty()) {
-                username.append(lastName.substring(0, lastName.length() > 5 ? 5 : lastName.length()));
-            }
-
-            if (username.toString().length() > 29) {
-                username = new StringBuilder(username.substring(0, 28));
-            }
-
-            AJEntityUsers existingUser = AJEntityUsers.findFirst(AJEntityUsers.SELECT_BY_USERNAME_TENANT_ID,
-                username.toString().toLowerCase(), clientId);
-            if (existingUser != null) {
-                final Random randomNumber = new Random();
-                username.append(randomNumber.nextInt(999));
-            }
-
-            user.setString(AJEntityUsers.USERNAME, username.toString().toLowerCase());
-        }
+        return new ExecutionResult<>(MessageResponseFactory.createPostResponse(result, eb), ExecutionStatus.SUCCESSFUL);
     }
 
     @Override

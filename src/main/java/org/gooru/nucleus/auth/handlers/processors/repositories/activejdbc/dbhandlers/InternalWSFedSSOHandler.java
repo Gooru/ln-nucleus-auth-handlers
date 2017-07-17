@@ -131,11 +131,13 @@ public class InternalWSFedSSOHandler implements DBHandler {
             autoPopulate();
 
             String username = user.getString(AJEntityUsers.USERNAME);
-            AJEntityUsers existingUser = AJEntityUsers.findFirst(AJEntityUsers.SELECT_BY_USERNAME_TENANT_ID,
-                username.toString().toLowerCase(), tenantId);
-            if (existingUser != null) {
-                LOGGER.info("username '{}' already taken, setting it to null", username);
-                user.setString(AJEntityUsers.USERNAME, null);
+            if (username != null) {
+                AJEntityUsers existingUser = AJEntityUsers.findFirst(AJEntityUsers.SELECT_BY_USERNAME_TENANT_ID,
+                    username.toString().toLowerCase(), tenantId);
+                if (existingUser != null) {
+                    LOGGER.info("username '{}' already taken, setting it to null", username);
+                    user.setString(AJEntityUsers.USERNAME, null);
+                }
             }
 
             if (user.hasErrors()) {
