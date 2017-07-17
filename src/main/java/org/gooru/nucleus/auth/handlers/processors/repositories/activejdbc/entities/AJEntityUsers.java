@@ -153,6 +153,7 @@ public class AJEntityUsers extends Model {
         converterMap.put(BIRTH_DATE,
             (fieldValue -> FieldConverter.convertFieldToDateWithFormat(fieldValue, DateTimeFormatter.ISO_LOCAL_DATE)));
         converterMap.put(PASSWORD, (fieldValue -> FieldConverter.convertPasswordToEncryted(fieldValue)));
+        converterMap.put(USERNAME, (fieldValue -> FieldConverter.convertFieldToLowercase(fieldValue)));
         converterMap.put(EMAIL, (fieldValue -> FieldConverter.convertFieldToLowercase(fieldValue)));
         converterMap.put(GRADE, (fieldValue -> FieldConverter.convertFieldToJson(fieldValue)));
         converterMap.put(COUNTRY_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));

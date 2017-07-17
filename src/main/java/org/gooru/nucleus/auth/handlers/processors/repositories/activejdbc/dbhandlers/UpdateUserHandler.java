@@ -1,6 +1,5 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhandlers;
 
-import java.util.Random;
 import java.util.ResourceBundle;
 
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
@@ -85,7 +84,6 @@ public class UpdateUserHandler implements DBHandler {
                     return new ExecutionResult<>(MessageResponseFactory.createConflictRespose(errors), ExecutionStatus.FAILED);
                 }
             }
-            
         }
         
         // TODO: Do we need to update the Redis session if the username is
