@@ -31,6 +31,7 @@ public class UpdateUserHandler implements DBHandler {
 
     private AJEntityUsers user;
     private String tenantId;
+    private  boolean setUsername = false;
 
     public UpdateUserHandler(ProcessorContext context) {
         this.context = context;
@@ -75,14 +76,19 @@ public class UpdateUserHandler implements DBHandler {
             String usernameFromRequest = context.requestBody().getString(AJEntityUsers.USERNAME);
             String usernameFromDB = user.getString(AJEntityUsers.USERNAME);
             
-            if(!(usernameFromDB != null && usernameFromDB.equalsIgnoreCase(usernameFromRequest))) {
+            if (usernameFromDB == null) {
+                this.setUsername = true;
+            } else if(!usernameFromDB.equalsIgnoreCase(usernameFromRequest)) {
                 AJEntityUsers existingUser = AJEntityUsers.findFirst(AJEntityUsers.SELECT_BY_USERNAME_TENANT_ID,
                     usernameFromRequest.toLowerCase(), this.tenantId);
                 if (existingUser != null) {
                     JsonObject errors = new JsonObject();
                     errors.put(AJEntityUsers.USERNAME, "'" + usernameFromRequest + "'" + " is already taken");
                     return new ExecutionResult<>(MessageResponseFactory.createConflictRespose(errors), ExecutionStatus.FAILED);
-                }
+                } 
+                this.setUsername = true;
+            } else {
+                this.setUsername = true;
             }
         }
         
@@ -110,11 +116,13 @@ public class UpdateUserHandler implements DBHandler {
     private void autoPopulate() {
         new DefaultAJEntityUsersBuilder().build(user, context.requestBody(), AJEntityUsers.getConverterRegistry());
         
-        // set username in lowercase 
-        user.setString(AJEntityUsers.USERNAME, context.requestBody().getString(AJEntityUsers.USERNAME).toLowerCase());
-        
-        // set incoming username as is which can used as display name.
-        user.setString(AJEntityUsers.DISPLAY_NAME, context.requestBody().getString(AJEntityUsers.USERNAME));
+        if (this.setUsername) {
+            // set username in lowercase 
+            user.setString(AJEntityUsers.USERNAME, context.requestBody().getString(AJEntityUsers.USERNAME).toLowerCase());
+            
+            // set incoming username as is which can used as display name.
+            user.setString(AJEntityUsers.DISPLAY_NAME, context.requestBody().getString(AJEntityUsers.USERNAME));
+        }
     }
 
     private static class DefaultPayloadValidator implements PayloadValidator {
