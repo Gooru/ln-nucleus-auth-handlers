@@ -76,9 +76,7 @@ public class UpdateUserHandler implements DBHandler {
             String usernameFromRequest = context.requestBody().getString(AJEntityUsers.USERNAME);
             String usernameFromDB = user.getString(AJEntityUsers.USERNAME);
             
-            if (usernameFromDB == null) {
-                this.setUsername = true;
-            } else if(!usernameFromDB.equalsIgnoreCase(usernameFromRequest)) {
+            if (usernameFromDB == null || !usernameFromDB.equalsIgnoreCase(usernameFromRequest)) {
                 AJEntityUsers existingUser = AJEntityUsers.findFirst(AJEntityUsers.SELECT_BY_USERNAME_TENANT_ID,
                     usernameFromRequest.toLowerCase(), this.tenantId);
                 if (existingUser != null) {
