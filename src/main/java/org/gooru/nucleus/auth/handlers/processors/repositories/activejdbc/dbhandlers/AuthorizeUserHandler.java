@@ -1,7 +1,6 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhandlers;
 
 import java.sql.SQLException;
-import java.util.Random;
 import java.util.ResourceBundle;
 
 import org.gooru.nucleus.auth.handlers.constants.EmailTemplateConstants;
@@ -44,6 +43,7 @@ public class AuthorizeUserHandler implements DBHandler {
     private static AJEntityPartner partner;
     private static AJEntityTenant tenant;
     private static AJEntityUsers user;
+    private boolean isPartner = false;
 
     public AuthorizeUserHandler(ProcessorContext context) {
         this.context = context;
@@ -85,6 +85,7 @@ public class AuthorizeUserHandler implements DBHandler {
                 InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.google.getType());
         } else {
             partner = partners.get(0);
+            isPartner = true;
             tenants =
                 AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID, partner.getString(AJEntityPartner.TENANT_ID));
         }
@@ -113,14 +114,16 @@ public class AuthorizeUserHandler implements DBHandler {
             LOGGER.debug("user not found in database for email or reference_id: {}, client_id: {}", identityId,
                 clientId);
             user = new AJEntityUsers();
-            user.set(AJEntityUsers.TENANT_ID, getPGObject(clientId));
+            user.set(AJEntityUsers.TENANT_ID, getPGObject(tenant.getString(AJEntityTenant.ID)));
+            user.set(AJEntityUsers.PARENT_ID, isPartner ? getPGObject(partner.getString(AJEntityPartner.ID)) : null);
             user.setString(AJEntityUsers.FIRST_NAME, userJson.getString(AJEntityUsers.FIRST_NAME, null));
             user.setString(AJEntityUsers.LAST_NAME, userJson.getString(AJEntityUsers.LAST_NAME, null));
             user.setString(AJEntityUsers.EMAIL, userJson.getString(ParameterConstants.PARAM_IDENTITY_ID).toLowerCase());
             user.setString(AJEntityUsers.LOGIN_TYPE,
                 context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE));
-            
-            // To make all SSO flows consistent, removed the population of the username. 
+
+            // To make all SSO flows consistent, removed the population of the
+            // username.
 
             if (!user.insert()) {
                 LOGGER.debug("unable to create new user");

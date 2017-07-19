@@ -40,6 +40,7 @@ public class InternalLtiSSOHandler implements DBHandler {
     private static AJEntityPartner partner;
     private static AJEntityTenant tenant;
     private static AJEntityUsers user;
+    private boolean isPartner = false;
 
     public InternalLtiSSOHandler(ProcessorContext context) {
         this.context = context;
@@ -101,6 +102,7 @@ public class InternalLtiSSOHandler implements DBHandler {
                     HelperConstants.GrantTypes.ltisso.getType());
         } else {
             partner = partners.get(0);
+            isPartner = true;
             tenants =
                 AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID, partner.getString(AJEntityPartner.TENANT_ID));
         }
@@ -130,6 +132,7 @@ public class InternalLtiSSOHandler implements DBHandler {
             user = new AJEntityUsers();
             user.setString(AJEntityUsers.LOGIN_TYPE, HelperConstants.UserLoginType.ltisso.getType());
             user.setTenantId(tenantId);
+            user.setPartnerId((isPartner ? partner.getString(AJEntityPartner.ID) : null));
             autoPopulate();
 
             if (user.hasErrors()) {
