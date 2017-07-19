@@ -40,6 +40,7 @@ public class InternalWSFedSSOHandler implements DBHandler {
     private static AJEntityPartner partner;
     private static AJEntityTenant tenant;
     private static AJEntityUsers user;
+    private boolean isPartner = false;
 
     public InternalWSFedSSOHandler(ProcessorContext context) {
         this.context = context;
@@ -99,6 +100,7 @@ public class InternalWSFedSSOHandler implements DBHandler {
                 InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.wsfed.getType());
         } else {
             partner = partners.get(0);
+            isPartner = true;
             tenants =
                 AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID, partner.getString(AJEntityPartner.TENANT_ID));
         }
@@ -128,6 +130,7 @@ public class InternalWSFedSSOHandler implements DBHandler {
             user = new AJEntityUsers();
             user.setString(AJEntityUsers.LOGIN_TYPE, HelperConstants.UserLoginType.wsfed.getType());
             user.setTenantId(tenantId);
+            user.setPartnerId((isPartner ? partner.getString(AJEntityPartner.ID) : null));
             autoPopulate();
 
             String username = user.getString(AJEntityUsers.USERNAME);
