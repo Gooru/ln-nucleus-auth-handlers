@@ -34,6 +34,7 @@ public class TriggerResetPasswordHandler implements DBHandler {
     private final RedisClient redisClient;
     private String email;
     private String tenantId;
+    private String partnerId;
     private AJEntityUsers user;
 
     public TriggerResetPasswordHandler(ProcessorContext context) {
@@ -54,14 +55,15 @@ public class TriggerResetPasswordHandler implements DBHandler {
 
         email = context.requestBody().getString(AJEntityUsers.EMAIL).toLowerCase();
         tenantId = context.requestBody().getString(AJEntityUsers.TENANT_ID);
+        partnerId = context.requestBody().getString(AJEntityUsers.PARTNER_ID);
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
-        user = DBHelper.getUserByEmailAndTenantId(email, tenantId);
+        user = DBHelper.getUserByEmailAndTenantId(email, tenantId, partnerId);
         if (user == null) {
-            LOGGER.warn("user not found in database for email: {} and Tenant: {}", email, tenantId);
+            LOGGER.warn("user not found in database for email: {} and Tenant: {}, Partner: {}", email, tenantId, partnerId);
             return new ExecutionResult<>(
                 MessageResponseFactory.createNotFoundResponse((RESOURCE_BUNDLE.getString("user.not.found"))),
                 ExecutionStatus.FAILED);
@@ -73,7 +75,8 @@ public class TriggerResetPasswordHandler implements DBHandler {
     public ExecutionResult<MessageResponse> executeRequest() {
         final String token = InternalHelper.generatePasswordResetToken(user.getString(AJEntityUsers.ID));
         JsonObject redisPacket =
-            new JsonObject().put(AJEntityUsers.EMAIL, email).put(AJEntityUsers.TENANT_ID, tenantId);
+            new JsonObject().put(AJEntityUsers.EMAIL, email).put(AJEntityUsers.TENANT_ID, tenantId)
+            .put(AJEntityUsers.PARTNER_ID, partnerId);
         this.redisClient.set(token, redisPacket.toString(), HelperConstants.RESET_PASS_TOKEN_EXPIRY);
 
         EmailNotificationBuilder emailNotificationBuilder = new EmailNotificationBuilder();

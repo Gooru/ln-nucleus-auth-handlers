@@ -37,6 +37,7 @@ public class ResetPasswordHandler implements DBHandler {
     private AJEntityUsers user;
     private String email;
     private String tenantId;
+    private String partnerId;
 
     public ResetPasswordHandler(ProcessorContext context) {
         this.context = context;
@@ -45,9 +46,8 @@ public class ResetPasswordHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
-        JsonObject errors = new DefaultPayloadValidator()
-            .validatePayload(context.requestBody(), AJEntityUsers.resetPasswordFieldSelector(),
-                AJEntityUsers.getValidatorRegistry());
+        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
+            AJEntityUsers.resetPasswordFieldSelector(), AJEntityUsers.getValidatorRegistry());
         if (errors != null && !errors.isEmpty()) {
             LOGGER.warn("Validation errors for request");
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
@@ -72,9 +72,11 @@ public class ResetPasswordHandler implements DBHandler {
 
         email = redisPacket.getString(AJEntityUsers.EMAIL);
         tenantId = redisPacket.getString(AJEntityUsers.TENANT_ID);
-        user = DBHelper.getUserByEmailAndTenantId(email, tenantId);
+        partnerId = redisPacket.getString(AJEntityUsers.PARTNER_ID);
+        user = DBHelper.getUserByEmailAndTenantId(email, tenantId, partnerId);
         if (user == null) {
-            LOGGER.warn("user not found in database for email: {} and Tenant: {}", email, tenantId);
+            LOGGER.warn("user not found in database for email: {} and Tenant: {}, Partner: {}", email, tenantId,
+                partnerId);
             return new ExecutionResult<>(
                 MessageResponseFactory.createNotFoundResponse((RESOURCE_BUNDLE.getString("user.not.found"))),
                 ExecutionStatus.FAILED);
@@ -97,8 +99,8 @@ public class ResetPasswordHandler implements DBHandler {
         redisClient.del(token);
 
         final String newToken = InternalHelper.generatePasswordResetToken(user.getString(AJEntityUsers.ID));
-        JsonObject redisPacket =
-            new JsonObject().put(AJEntityUsers.EMAIL, email).put(AJEntityUsers.TENANT_ID, tenantId);
+        JsonObject redisPacket = new JsonObject().put(AJEntityUsers.EMAIL, email).put(AJEntityUsers.TENANT_ID, tenantId)
+            .put(AJEntityUsers.PARTNER_ID, partnerId);
         this.redisClient.set(newToken, redisPacket.toString(), HelperConstants.RESET_PASS_TOKEN_EXPIRY);
 
         EmailNotificationBuilder emailNotificationBuilder = new EmailNotificationBuilder();
@@ -107,8 +109,9 @@ public class ResetPasswordHandler implements DBHandler {
             .putContext(ParameterConstants.PARAM_USER_ID, user.getString(AJEntityUsers.ID))
             .putContext(ParameterConstants.MAIL_USERNAME, user.getString(AJEntityUsers.USERNAME));
 
-        return new ExecutionResult<>(MessageResponseFactory.createNoContentResponse(EventBuilderFactory
-            .getResetPasswordEventBuilder(user.getString(AJEntityUsers.ID), emailNotificationBuilder)),
+        return new ExecutionResult<>(
+            MessageResponseFactory.createNoContentResponse(EventBuilderFactory
+                .getResetPasswordEventBuilder(user.getString(AJEntityUsers.ID), emailNotificationBuilder)),
             ExecutionStatus.SUCCESSFUL);
     }
 

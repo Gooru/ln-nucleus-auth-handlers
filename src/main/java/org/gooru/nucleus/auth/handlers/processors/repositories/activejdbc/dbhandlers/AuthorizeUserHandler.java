@@ -11,6 +11,7 @@ import org.gooru.nucleus.auth.handlers.processors.emails.EmailNotificationBuilde
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilder;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.DBHelper;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
@@ -107,23 +108,42 @@ public class AuthorizeUserHandler implements DBHandler {
     public ExecutionResult<MessageResponse> executeRequest() {
         JsonObject userJson = context.requestBody().getJsonObject(ParameterConstants.PARAM_USER);
         String identityId = userJson.getString(ParameterConstants.PARAM_IDENTITY_ID);
-        LazyList<AJEntityUsers> users =
-            AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_TENANT_ID, identityId.toLowerCase(), clientId);
+        String tenantId = tenant.getString(AJEntityTenant.ID);
+        String partnerId = isPartner ? partner.getString(AJEntityPartner.ID) : null;
+        
+        LazyList<AJEntityUsers> users;
+        if (isPartner) {
+            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_PARTNER_ID, identityId.toLowerCase(),
+                partnerId);
+        } else {
+            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_TENANT_ID, identityId.toLowerCase(),
+                tenantId);
+        }
+        
         EventBuilder eb;
         if (users.isEmpty()) {
-            LOGGER.debug("user not found in database for email or reference_id: {}, client_id: {}", identityId,
-                clientId);
+            LOGGER.debug("user not found in database for email '{}', tenant '{}', partner '{}'", identityId,
+                tenantId, partnerId);
             user = new AJEntityUsers();
-            user.set(AJEntityUsers.TENANT_ID, getPGObject(tenant.getString(AJEntityTenant.ID)));
-            user.set(AJEntityUsers.PARENT_ID, isPartner ? getPGObject(partner.getString(AJEntityPartner.ID)) : null);
+            user.set(AJEntityUsers.TENANT_ID, getPGObject(tenantId));
+            user.set(AJEntityUsers.PARTNER_ID, getPGObject(partnerId));
             user.setString(AJEntityUsers.FIRST_NAME, userJson.getString(AJEntityUsers.FIRST_NAME, null));
             user.setString(AJEntityUsers.LAST_NAME, userJson.getString(AJEntityUsers.LAST_NAME, null));
             user.setString(AJEntityUsers.EMAIL, userJson.getString(ParameterConstants.PARAM_IDENTITY_ID).toLowerCase());
             user.setString(AJEntityUsers.LOGIN_TYPE,
                 context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE));
 
-            // To make all SSO flows consistent, removed the population of the
+            // To make all SSO flows consistent, removed the auto population of the
             // username.
+            String username = userJson.getString(AJEntityUsers.USERNAME);
+            if (username != null) {
+                AJEntityUsers existingUser = DBHelper.getUserByUsername(username, tenantId, partnerId, isPartner);
+                if (existingUser != null) {
+                    LOGGER.info("username '{}' already taken, setting it to null", username);
+                    user.setString(AJEntityUsers.USERNAME, null);
+                }
+                user.setString(AJEntityUsers.DISPLAY_NAME, username);
+            }
 
             if (!user.insert()) {
                 LOGGER.debug("unable to create new user");

@@ -57,22 +57,22 @@ public class AJEntityUsers extends Model {
     private static final String ROSTER_GLOBAL_USERID = "roster_global_userid";
     public static final String TENANT_ROOT = "tenant_root";
     public static final String TENANT_ID = "tenant_id";
-    public static final String PARENT_ID = "partner_id";
+    public static final String PARTNER_ID = "partner_id";
     public static final String IS_DELETED = "is_deleted";
-    
+
     private static final String APP_ID = "app_id";
 
     private static final String UUID_TYPE = "uuid";
 
-    private static final Set<String> CREATABLE_FIELDS = new HashSet<>(
-        Arrays.asList(USERNAME, EMAIL, PASSWORD, BIRTH_DATE, FIRST_NAME, LAST_NAME, TENANT_ID, GENDER, USER_CATEGORY, APP_ID));
+    private static final Set<String> CREATABLE_FIELDS = new HashSet<>(Arrays.asList(USERNAME, EMAIL, PASSWORD,
+        BIRTH_DATE, FIRST_NAME, LAST_NAME, TENANT_ID, GENDER, USER_CATEGORY, APP_ID));
 
     private static final Set<String> MANDATORY_FIELDS =
         new HashSet<>(Arrays.asList(USERNAME, EMAIL, PASSWORD, BIRTH_DATE, FIRST_NAME, LAST_NAME, TENANT_ID));
 
-    private static final Set<String> UPDATABLE_FIELDS = new HashSet<>(Arrays
-        .asList(ABOUT, FIRST_NAME, LAST_NAME, COUNTRY, COUNTRY_ID, GRADE, ROSTER_GLOBAL_USERID, SCHOOL_DISTRICT_ID,
-            SCHOOL_DISTRICT, STATE, STATE_ID, THUMBNAIL, USER_CATEGORY, USERNAME));
+    private static final Set<String> UPDATABLE_FIELDS =
+        new HashSet<>(Arrays.asList(ABOUT, FIRST_NAME, LAST_NAME, COUNTRY, COUNTRY_ID, GRADE, ROSTER_GLOBAL_USERID,
+            SCHOOL_DISTRICT_ID, SCHOOL_DISTRICT, STATE, STATE_ID, THUMBNAIL, USER_CATEGORY, USERNAME));
 
     private static final Set<String> TRG_RESET_PASSWORD_FIELDS = new HashSet<>(Arrays.asList(EMAIL, TENANT_ID));
 
@@ -84,33 +84,45 @@ public class AJEntityUsers extends Model {
 
     public static final String SELECT_FOR_SIGNIN =
         "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
-            + "tenant_root FROM users WHERE"
-            + " email = ? OR username = ? AND tenant_id = ?::uuid AND is_deleted = false";
+            + "tenant_root FROM users WHERE email = ? OR username = ? AND tenant_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_BY_ID =
         "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
-            + "tenant_id, tenant_root FROM users WHERE" + " id = ?::uuid AND is_deleted = false";
+            + "tenant_id, tenant_root FROM users WHERE id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_BY_ID_TENANT_ID =
         "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
-            + "tenant_root FROM users WHERE" + " id = ?::uuid AND tenant_id = ?::uuid AND is_deleted = false";
+            + "tenant_root FROM users WHERE id = ?::uuid AND tenant_id = ?::uuid AND is_deleted = false";
+    
+    public static final String SELECT_BY_ID_PARTNER_ID =
+        "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+            + "tenant_root FROM users WHERE id = ?::uuid AND partner_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_FOR_SIGNUP =
         "SELECT id, username, email FROM users WHERE (email = ? OR username = ?) AND tenant_id = ?::uuid";
 
     public static final String SELECT_BY_REFERENCE_ID_TENANT_ID =
         "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
-            + "tenant_root FROM users WHERE" + " reference_id = ? AND tenant_id = ?::uuid AND is_deleted = false";
+            + "tenant_root FROM users WHERE reference_id = ? AND tenant_id = ?::uuid AND is_deleted = false";
+    
+    public static final String SELECT_BY_REFERENCE_ID_PARTNER_ID =
+        "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+            + "tenant_root FROM users WHERE reference_id = ? AND partner_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_BY_EMAIL =
         "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
-            + "tenant_root FROM users WHERE" + " email = ? AND is_deleted = false";
+            + "tenant_root FROM users WHERE email = ? AND is_deleted = false";
 
     public static final String SELECT_BY_EMAIL_TENANT_ID =
         "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
-            + "tenant_root FROM users WHERE" + " email = ? AND tenant_id = ?::uuid AND is_deleted = false";
+            + "tenant_root FROM users WHERE email = ? AND tenant_id = ?::uuid AND is_deleted = false";
     
+    public static final String SELECT_BY_EMAIL_PARTNER_ID =
+        "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "
+            + "tenant_root FROM users WHERE email = ? AND partner_id = ?::uuid AND is_deleted = false";
+
     public static final String SELECT_BY_USERNAME_TENANT_ID = "username = ? AND tenant_id = ?::uuid";
+    public static final String SELECT_BY_USERNAME_PARTNER_ID = "username = ? AND partner_id = ?::uuid";
 
     private static final Map<String, FieldValidator> validatorRegistry;
     private static final Map<String, FieldConverter> converterRegistry;
@@ -142,7 +154,8 @@ public class AJEntityUsers extends Model {
         validatorMap.put(COUNTRY, (fieldValue -> FieldValidator.validateStringAllowNullOrEmpty(fieldValue, 2000)));
         validatorMap.put(ABOUT, (fieldValue -> FieldValidator.validateStringAllowNullOrEmpty(fieldValue, 5000)));
         validatorMap.put(THUMBNAIL, (fieldValue -> FieldValidator.validateStringAllowNullOrEmpty(fieldValue, 1000)));
-        validatorMap.put(ROSTER_GLOBAL_USERID, (fieldValue -> FieldValidator.validateStringAllowNullOrEmpty(fieldValue, 512)));
+        validatorMap.put(ROSTER_GLOBAL_USERID,
+            (fieldValue -> FieldValidator.validateStringAllowNullOrEmpty(fieldValue, 512)));
         return validatorMap;
     }
 
@@ -150,6 +163,7 @@ public class AJEntityUsers extends Model {
         Map<String, FieldConverter> converterMap = new HashMap<>();
         converterMap.put(ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
         converterMap.put(TENANT_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
+        converterMap.put(PARTNER_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
         converterMap.put(BIRTH_DATE,
             (fieldValue -> FieldConverter.convertFieldToDateWithFormat(fieldValue, DateTimeFormatter.ISO_LOCAL_DATE)));
         converterMap.put(PASSWORD, (fieldValue -> FieldConverter.convertPasswordToEncryted(fieldValue)));
@@ -163,8 +177,9 @@ public class AJEntityUsers extends Model {
         converterMap.put(ABOUT, (fieldValue -> FieldConverter.convertEmptyStringToNull((String) fieldValue)));
         converterMap.put(STATE, (fieldValue -> FieldConverter.convertEmptyStringToNull((String) fieldValue)));
         converterMap.put(COUNTRY, (fieldValue -> FieldConverter.convertEmptyStringToNull((String) fieldValue)));
-        converterMap.put(ROSTER_GLOBAL_USERID, (fieldValue -> FieldConverter.convertEmptyStringToNull((String) fieldValue)));
-        
+        converterMap.put(ROSTER_GLOBAL_USERID,
+            (fieldValue -> FieldConverter.convertEmptyStringToNull((String) fieldValue)));
+
         return converterMap;
     }
 
@@ -223,9 +238,9 @@ public class AJEntityUsers extends Model {
     public void setTenantId(String value) {
         setPGObject(TENANT_ID, UUID_TYPE, value);
     }
-    
+
     public void setPartnerId(String value) {
-        setPGObject(PARENT_ID, UUID_TYPE, value);
+        setPGObject(PARTNER_ID, UUID_TYPE, value);
     }
 
     private void setPGObject(String field, String type, String value) {
