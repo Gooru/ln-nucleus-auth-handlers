@@ -31,6 +31,8 @@ public class UpdateUserHandler implements DBHandler {
 
     private AJEntityUsers user;
     private String tenantId;
+    private String partnerId;
+    private boolean isPartner = false;
     private  boolean setUsername = false;
 
     public UpdateUserHandler(ProcessorContext context) {
@@ -51,6 +53,10 @@ public class UpdateUserHandler implements DBHandler {
         
         this.tenantId =
             context.user().getJsonObject(ParameterConstants.PARAM_TENANT).getString(ParameterConstants.PARAM_TENANT_ID);
+        this.partnerId = context.user().getString(ParameterConstants.PARAM_PARTNER_ID);
+        if (this.partnerId != null) {
+            this.isPartner = true;
+        }
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
@@ -58,7 +64,12 @@ public class UpdateUserHandler implements DBHandler {
     public ExecutionResult<MessageResponse> validateRequest() {
         String userId = context.user().getString(ParameterConstants.PARAM_USER_ID);
 
-        user = DBHelper.getUserByIdAndTenantId(userId, this.tenantId);
+        if (isPartner) {
+            user = DBHelper.getUserByIdAndPartnerId(userId, this.partnerId);
+        } else {
+            user = DBHelper.getUserByIdAndTenantId(userId, this.tenantId);
+        }
+        
         if (user == null) {
             LOGGER.warn("user not found for id:{}, tenant_id:{}", userId, this.tenantId);
             return new ExecutionResult<>(
@@ -77,8 +88,7 @@ public class UpdateUserHandler implements DBHandler {
             String usernameFromDB = user.getString(AJEntityUsers.USERNAME);
             
             if (usernameFromDB == null || !usernameFromDB.equalsIgnoreCase(usernameFromRequest)) {
-                AJEntityUsers existingUser = AJEntityUsers.findFirst(AJEntityUsers.SELECT_BY_USERNAME_TENANT_ID,
-                    usernameFromRequest.toLowerCase(), this.tenantId);
+                AJEntityUsers existingUser = DBHelper.getUserByUsername(usernameFromRequest, tenantId, partnerId, isPartner);
                 if (existingUser != null) {
                     JsonObject errors = new JsonObject();
                     errors.put(AJEntityUsers.USERNAME, "'" + usernameFromRequest + "'" + " is already taken");

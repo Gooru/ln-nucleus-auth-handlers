@@ -8,6 +8,7 @@ import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.DBHelper;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
@@ -49,9 +50,8 @@ public class InternalLtiSSOHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
 
-        JsonObject errors = new DefaultPayloadValidator()
-            .validatePayload(context.requestBody(), RequestValidator.ltissoFieldSelector(),
-                RequestValidator.getValidatorRegistry());
+        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
+            RequestValidator.ltissoFieldSelector(), RequestValidator.getValidatorRegistry());
         if (errors != null && !errors.isEmpty()) {
             LOGGER.warn("Validation errors for request");
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
@@ -75,7 +75,7 @@ public class InternalLtiSSOHandler implements DBHandler {
                 MessageResponseFactory.createUnauthorizedResponse(RESOURCE_BUNDLE.getString("invalid.credential")),
                 ExecutionStatus.FAILED);
         }
-        
+
         final String credentials[] = InternalHelper.getClientIdAndSecret(basicCredentials);
         clientId = credentials[0];
         clientKey = credentials[1];
@@ -90,16 +90,15 @@ public class InternalLtiSSOHandler implements DBHandler {
         if (!result.continueProcessing()) {
             return result;
         }
-        
+
         LazyList<AJEntityTenant> tenants;
 
         // First lookup in partner if not found, fall back on tenant
-        LazyList<AJEntityPartner> partners = AJEntityPartner
-            .findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey));
+        LazyList<AJEntityPartner> partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
+            InternalHelper.encryptClientKey(clientKey));
         if (partners.isEmpty()) {
-            tenants = AJEntityTenant
-                .findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey),
-                    HelperConstants.GrantTypes.ltisso.getType());
+            tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
+                InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.ltisso.getType());
         } else {
             partner = partners.get(0);
             isPartner = true;
@@ -125,22 +124,40 @@ public class InternalLtiSSOHandler implements DBHandler {
         JsonObject userObject = context.requestBody().getJsonObject(ParameterConstants.PARAM_USER);
         String referenceId = userObject.getString(AJEntityUsers.REFERENCE_ID);
         String tenantId = tenant.getString(AJEntityTenant.ID);
-        LazyList<AJEntityUsers> users =
-            AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_TENANT_ID, referenceId, tenantId);
+        String partnerId = isPartner ? partner.getString(AJEntityPartner.ID) : null;
+
+        LazyList<AJEntityUsers> users;
+        if (isPartner) {
+            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_PARTNER_ID, referenceId, partnerId);
+        } else {
+            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_TENANT_ID, referenceId, tenantId);
+        }
+            
         if (users.isEmpty()) {
-            LOGGER.debug("user not found in database for reference_id: {}, client_id: {}", referenceId, tenantId);
+            LOGGER.debug("user not found in database for reference_id: {}, tenant: {}, partner: {}", referenceId,
+                tenantId, partnerId);
             user = new AJEntityUsers();
             user.setString(AJEntityUsers.LOGIN_TYPE, HelperConstants.UserLoginType.ltisso.getType());
             user.setTenantId(tenantId);
-            user.setPartnerId((isPartner ? partner.getString(AJEntityPartner.ID) : null));
+            user.setPartnerId(partnerId);
             autoPopulate();
+
+            String username = userObject.getString(AJEntityUsers.USERNAME);
+            if (username != null) {
+                AJEntityUsers existingUser = DBHelper.getUserByUsername(username, tenantId, partnerId, isPartner);
+                if (existingUser != null) {
+                    LOGGER.info("username '{}' already taken, setting it to null", username);
+                    user.setString(AJEntityUsers.USERNAME, null);
+                }
+                user.setString(AJEntityUsers.DISPLAY_NAME, username);
+            }
 
             if (user.hasErrors()) {
                 LOGGER.warn("Validation errors while populating entity");
                 return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(getModelErrors()),
                     ExecutionResult.ExecutionStatus.FAILED);
             }
-            
+
             if (!user.insert()) {
                 LOGGER.debug("unable to create new user");
                 return new ExecutionResult<>(
@@ -153,8 +170,9 @@ public class InternalLtiSSOHandler implements DBHandler {
 
         final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
 
-        return new ExecutionResult<>(MessageResponseFactory
-            .createPostResponse(result, EventBuilderFactory.getLTISSOEventBuilder(user.getString(AJEntityUsers.ID))),
+        return new ExecutionResult<>(
+            MessageResponseFactory.createPostResponse(result,
+                EventBuilderFactory.getLTISSOEventBuilder(user.getString(AJEntityUsers.ID))),
             ExecutionStatus.SUCCESSFUL);
     }
 
@@ -164,9 +182,8 @@ public class InternalLtiSSOHandler implements DBHandler {
     }
 
     private void autoPopulate() {
-        new DefaultAJEntityUsersBuilder()
-            .build(user, context.requestBody().getJsonObject(ParameterConstants.PARAM_USER),
-                AJEntityUsers.getConverterRegistry());
+        new DefaultAJEntityUsersBuilder().build(user,
+            context.requestBody().getJsonObject(ParameterConstants.PARAM_USER), AJEntityUsers.getConverterRegistry());
     }
 
     private static class DefaultPayloadValidator implements PayloadValidator {
