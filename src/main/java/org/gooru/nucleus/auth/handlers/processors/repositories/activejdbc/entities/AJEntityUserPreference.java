@@ -1,32 +1,24 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities;
 
-import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
-import org.gooru.nucleus.auth.handlers.constants.SchemaConstants;
+import java.util.Arrays;
+import java.util.List;
+
 import org.javalite.activejdbc.Model;
 import org.javalite.activejdbc.annotations.IdName;
 import org.javalite.activejdbc.annotations.Table;
 
-@Table(SchemaConstants.USER_PREFERENCE)
-@IdName(SchemaConstants.USER_ID)
+/**
+ * @author szgooru Created On: 02-Feb-2017
+ */
+@Table("user_preference")
+@IdName("user_id")
 public class AJEntityUserPreference extends Model {
 
-    public static final String GET_USER_PREFERENCE = "user_id = ?::uuid";
+    public static final String USER_ID = "user_id";
+    public static final String PREFERENCE_SETTINGS = "preference_settings";
 
-    public String getUserId() {
-        return getString(ParameterConstants.PARAM_USER_ID);
-    }
+    public static final String SELECT_BY_USERID = "user_id = ?::uuid";
 
-    public void setUserId(Object userId) {
-        setId(userId);
-        set(ParameterConstants.PARAM_USER_ID, userId);
-    }
-
-    public Boolean getProfileVisiblity(Boolean profileVisiblity) {
-        return getBoolean(ParameterConstants.PARAM_PROFILE_VISIBILITY);
-    }
-
-    public void setProfileVisiblity(Boolean profileVisiblity) {
-        set(ParameterConstants.PARAM_PROFILE_VISIBILITY, profileVisiblity);
-    }
+    public static final List<String> RESPONSE_FIELDS = Arrays.asList(PREFERENCE_SETTINGS);
 
 }

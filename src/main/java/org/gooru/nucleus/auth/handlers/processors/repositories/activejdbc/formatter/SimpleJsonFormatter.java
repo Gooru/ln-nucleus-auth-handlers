@@ -1,13 +1,9 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.formatter;
 
-import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.javalite.activejdbc.LazyList;
 import org.javalite.activejdbc.Model;
@@ -18,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.impl.StringEscapeUtils;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 /**
  * Created by ashish on 20/1/16. Simple Json formatter is not aware of any
@@ -110,8 +104,8 @@ class SimpleJsonFormatter implements JsonFormatter {
                 try {
                     sb.append(StringEscapeUtils.escapeJava(String.valueOf(v)));
                 } catch (Exception e) {
-                    LOGGER.warn("Failed to parse value of field '{}', will use default string without conversion ",
-                        name);
+                    LOGGER
+                        .warn("Failed to parse value of field '{}', will use default string without conversion ", name);
                     sb.append(Convert.toString(v));
                 }
                 sb.append('"');
@@ -134,42 +128,5 @@ class SimpleJsonFormatter implements JsonFormatter {
             array[i++] = elem.toLowerCase();
         }
         return array;
-    }
-
-    @Override
-    public JsonObject mapToJson(Map<String, Object> model) {
-        JsonObject result = new JsonObject();
-        if (model == null) {
-            return result;
-        }
-        Iterator<String> fieldNamesIterator = model.keySet().iterator();
-        while (fieldNamesIterator.hasNext()) {
-            String fieldName = fieldNamesIterator.next();
-            Object value = model.get(fieldName);
-            if (value == null) {
-                fieldNamesIterator.remove();
-            } else {
-                result.put(fieldName, getValue(value));
-            }
-        }
-        return result;
-    }
-
-    private static Object getValue(Object value) {
-        if (value instanceof PGobject) {
-            String data = ((PGobject) value).getValue();
-            if (data.startsWith("{")) {
-                value = new JsonObject(data);
-            } else if (data.startsWith("[")) {
-                value = new JsonArray(data);
-            }
-        } else if (value instanceof Timestamp) {
-            value = ((Timestamp) value).getTime();
-        } else if (value instanceof UUID) {
-            value = value.toString();
-        } else if (value instanceof Date) {
-            value = value.toString();
-        }
-        return value;
     }
 }

@@ -2,22 +2,15 @@ package org.gooru.nucleus.auth.handlers.processors;
 
 import io.vertx.core.eventbus.Message;
 
-import org.gooru.nucleus.auth.handlers.processors.messageProcessor.MessageProcessFactory;
-import org.gooru.nucleus.auth.handlers.processors.messageProcessor.MessageProcessor;
-import org.gooru.nucleus.auth.handlers.processors.messageProcessor.Processor;
-import org.gooru.nucleus.auth.handlers.processors.messageProcessor.ProcessorHandlerType;
-
 public class ProcessorBuilder {
+
     private final Message<Object> message;
 
-    private final ProcessorHandlerType handlerType;
-
-    public ProcessorBuilder(ProcessorHandlerType handlerType, Message<Object> message) {
+    public ProcessorBuilder(Message<Object> message) {
         this.message = message;
-        this.handlerType = handlerType;
     }
 
     public Processor build() {
-        return new MessageProcessor(MessageProcessFactory.getInstance(handlerType), message);
+        return new MessageProcessor(message);
     }
 }

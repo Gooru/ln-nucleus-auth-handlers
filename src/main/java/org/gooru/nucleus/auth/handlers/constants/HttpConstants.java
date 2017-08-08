@@ -1,6 +1,6 @@
 package org.gooru.nucleus.auth.handlers.constants;
 
-public class HttpConstants {
+public final class HttpConstants {
     public static final String HEADER_AUTH = "Authorization";
     public static final String HEADER_WWW_AUTHENTICATE = "WWW-Authenticate";
     public static final String HEADER_ACCEPT = "Accept";
@@ -11,6 +11,10 @@ public class HttpConstants {
     public static final String HEADER_LOCATION = "Location";
 
     public static final String CONTENT_TYPE_JSON = "application/json";
+
+    private HttpConstants() {
+        throw new AssertionError();
+    }
 
     public enum HttpStatus {
 

@@ -1,37 +1,35 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc;
 
-import org.gooru.nucleus.auth.handlers.processors.command.executor.MessageResponse;
-import org.gooru.nucleus.auth.handlers.processors.command.executor.authentication.AuthenticationExecutorFactory;
-import org.gooru.nucleus.auth.handlers.processors.messageProcessor.MessageContext;
+import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.repositories.AuthenticationRepo;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhandlers.DBHandlerBuilder;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.transactions.TransactionExecutor;
+import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 
+/**
+ * @author szgooru
+ *         Created On: 02-Jan-2017
+ */
 public class AJAuthenticationRepo implements AuthenticationRepo {
-    private final MessageContext messageContext;
 
-    public AJAuthenticationRepo(MessageContext messageContext) {
-        this.messageContext = messageContext;
+    private final ProcessorContext context;
+
+    public AJAuthenticationRepo(ProcessorContext context) {
+        this.context = context;
     }
 
     @Override
-    public MessageResponse createAnonymousAccessToken() {
-        return TransactionExecutor.executeTransaction(AuthenticationExecutorFactory
-            .createAnonymousAccessToken(messageContext));
+    public MessageResponse signinAnonymous() {
+        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildSigninAnonymousHandler(context));
     }
 
     @Override
-    public MessageResponse deleteAccessToken() {
-        return TransactionExecutor.executeTransaction(AuthenticationExecutorFactory.deleteAccessToken(messageContext));
+    public MessageResponse signinUser() {
+        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildSigninUserHandler(context));
     }
 
     @Override
-    public MessageResponse fetchAccessToken() {
-        return TransactionExecutor.executeTransaction(AuthenticationExecutorFactory.fetchAccessToken(messageContext));
-    }
-
-    @Override
-    public MessageResponse createBasicAuthAccessToken() {
-        return TransactionExecutor.executeTransaction(AuthenticationExecutorFactory
-            .createBasicAuthAccessToken(messageContext));
+    public MessageResponse getAccessTokenDetails() {
+        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildGetAccessTokenDetailsHandler(context));
     }
 }

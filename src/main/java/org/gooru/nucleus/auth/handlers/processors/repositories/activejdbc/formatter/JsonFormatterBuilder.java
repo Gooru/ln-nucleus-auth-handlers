@@ -12,7 +12,6 @@ public final class JsonFormatterBuilder {
     }
 
     public static JsonFormatter buildSimpleJsonFormatter(boolean pretty, List<String> attributes) {
-
         return new SimpleJsonFormatter(pretty, attributes);
     }
 }

@@ -2,26 +2,36 @@ package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.trans
 
 import java.sql.SQLException;
 
-import org.gooru.nucleus.auth.handlers.infra.DataSourceRegistry;
-import org.gooru.nucleus.auth.handlers.processors.command.executor.DBExecutor;
-import org.gooru.nucleus.auth.handlers.processors.command.executor.MessageResponse;
-import org.gooru.nucleus.auth.handlers.utils.ServerValidatorUtility;
+import org.gooru.nucleus.auth.handlers.app.components.DataSourceRegistry;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhandlers.DBHandler;
+import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult;
+import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
+import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponseFactory;
 import org.javalite.activejdbc.Base;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class TransactionExecutor {
+/**
+ * Created by ashish on 11/1/16.
+ */
+public class TransactionExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionExecutor.class);
 
-    public static MessageResponse executeTransaction(DBExecutor handler) {
+    public MessageResponse executeTransaction(DBHandler handler) {
         // First validations without any DB
-        handler.checkSanity();
+        ExecutionResult<MessageResponse> executionResult = handler.checkSanity();
         // Now we need to run with transaction, if we are going to continue
-        return executeWithTransaction(handler);
+        if (executionResult.continueProcessing()) {
+            executionResult = executeWithTransaction(handler);
+        }
+        return executionResult.result();
+
     }
 
-    private static MessageResponse executeWithTransaction(DBExecutor handler) {
+    private ExecutionResult<MessageResponse> executeWithTransaction(DBHandler handler) {
+        ExecutionResult<MessageResponse> executionResult;
+
         try {
             Base.open(DataSourceRegistry.getInstance().getDefaultDataSource());
             // If we need a read only transaction, then it is time to set up now
@@ -29,32 +39,35 @@ public final class TransactionExecutor {
                 Base.connection().setReadOnly(true);
             }
             Base.openTransaction();
-            handler.validateRequest();
-            MessageResponse executionResult = handler.executeRequest();
-            Base.commitTransaction();
+            executionResult = handler.validateRequest();
+            if (executionResult.continueProcessing()) {
+                executionResult = handler.executeRequest();
+                if (executionResult.isSuccessful()) {
+                    Base.commitTransaction();
+                } else {
+                    Base.rollbackTransaction();
+                }
+            } else {
+                Base.rollbackTransaction();
+            }
             return executionResult;
         } catch (Throwable e) {
             Base.rollbackTransaction();
-            LOGGER.error("Caught exeption, need to rollback and abort", e);
+            LOGGER.error("Caught exception, need to rollback and abort", e);
             // Most probably we do not know what to do with this, so send
-            // internal
-            // error
-            ServerValidatorUtility.reject(e);
+            // internal error
+            return new ExecutionResult<>(MessageResponseFactory.createInternalErrorResponse(e.getMessage()),
+                ExecutionResult.ExecutionStatus.FAILED);
         } finally {
             if (handler.handlerReadOnly()) {
                 // restore the settings
                 try {
                     Base.connection().setReadOnly(false);
                 } catch (SQLException e) {
-                    LOGGER.error("Exception while marking connetion to be read/write", e);
+                    LOGGER.error("Exception while marking connection to be read/write", e);
                 }
             }
             Base.close();
         }
-        return null;
-    }
-
-    private TransactionExecutor() {
-        throw new AssertionError();
     }
 }

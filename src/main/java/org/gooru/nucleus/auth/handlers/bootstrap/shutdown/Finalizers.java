@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.gooru.nucleus.auth.handlers.infra.DataSourceRegistry;
-import org.gooru.nucleus.auth.handlers.infra.RedisClient;
+import org.gooru.nucleus.auth.handlers.app.components.DataSourceRegistry;
+import org.gooru.nucleus.auth.handlers.app.components.RedisClient;
 
 public class Finalizers implements Iterable<Finalizer> {
 
