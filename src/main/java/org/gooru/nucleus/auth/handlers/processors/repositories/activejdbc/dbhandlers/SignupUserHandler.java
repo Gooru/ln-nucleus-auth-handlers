@@ -75,12 +75,12 @@ public class SignupUserHandler implements DBHandler {
             String usernameFromDB = user.getString(AJEntityUsers.USERNAME);
             String emailFromDB = user.getString(AJEntityUsers.EMAIL);
             JsonObject errors = new JsonObject();
-            if (usernameFromDB.equalsIgnoreCase(username)) {
+            if (usernameFromDB != null && usernameFromDB.equalsIgnoreCase(username)) {
                 LOGGER.error("user already exists with username: '{}'", username);
                 errors.put(AJEntityUsers.USERNAME, "'" + username + "'" + " is already taken");
             }
 
-            if (emailFromDB.equalsIgnoreCase(email)) {
+            if (emailFromDB != null && emailFromDB.equalsIgnoreCase(email)) {
                 LOGGER.error("user already exists with email: '{}'", email);
                 errors.put(AJEntityUsers.EMAIL, "'" + email + "'" + " is already taken");
             }
