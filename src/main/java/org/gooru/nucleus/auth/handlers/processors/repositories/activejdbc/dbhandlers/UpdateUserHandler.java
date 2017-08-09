@@ -41,6 +41,15 @@ public class UpdateUserHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
+        
+        String userId = context.user().getString(ParameterConstants.PARAM_USER_ID);
+        if (userId == null || userId.equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS)) {
+            LOGGER.warn("anonymous user trying to update user record, aborting");
+            return new ExecutionResult<>(
+                MessageResponseFactory.createForbiddenResponse((RESOURCE_BUNDLE.getString("error.anonymous.user"))),
+                ExecutionStatus.FAILED);
+        }
+        
         // TODO: revisit the field validation for null/nullable fields
         JsonObject errors = new DefaultPayloadValidator()
             .validatePayload(context.requestBody(), AJEntityUsers.updateFieldSelector(),
