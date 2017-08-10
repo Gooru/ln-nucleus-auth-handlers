@@ -40,6 +40,7 @@ public class InternalImpersonateHandler implements DBHandler {
     private static AJEntityPartner partner;
     private static AJEntityTenant tenant;
     private static AJEntityUsers user;
+    private String grantType;
 
     public InternalImpersonateHandler(ProcessorContext context) {
         this.context = context;
@@ -56,8 +57,8 @@ public class InternalImpersonateHandler implements DBHandler {
                 ExecutionResult.ExecutionStatus.FAILED);
         }
 
-        String grantType = context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE);
-        if (!grantType.equalsIgnoreCase(HelperConstants.GrantTypes.credential.getType())) {
+        grantType = context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE);
+        if (grantType == null || grantType.isEmpty()) {
             LOGGER.warn("invalid grant type in request");
             return new ExecutionResult<>(
                 MessageResponseFactory.createUnauthorizedResponse(RESOURCE_BUNDLE.getString("invalid.granttype")),
@@ -88,7 +89,7 @@ public class InternalImpersonateHandler implements DBHandler {
         if (partners.isEmpty()) {
             tenants = AJEntityTenant
                 .findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey),
-                    HelperConstants.GrantTypes.credential.getType());
+                    grantType);
         } else {
             partner = partners.get(0);
             tenants =
