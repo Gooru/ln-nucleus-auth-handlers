@@ -84,7 +84,10 @@ public class AuthHandlerVerticle extends AbstractVerticle {
                 initializer.initializeComponent(vertx, config());
             }
         } catch (IllegalStateException ie) {
-            LOGGER.error("Error initializing application", ie);
+            LOGGER.error("IllegalStateException initializing application", ie);
+            Runtime.getRuntime().halt(1);
+        } catch (Throwable t) {
+            LOGGER.error("Exception initializing application", t);
             Runtime.getRuntime().halt(1);
         }
     }
