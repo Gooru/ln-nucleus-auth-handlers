@@ -16,7 +16,7 @@
     "api.host" : "localhost",
     "api.port" : 8080,
     "api.endpoint" : "/api/internal/v1/eventprocessor",
-    "http.conn.max.poolsize" : 20
+    "http.conn.poolsize" : 20
   },
   "app.config" : {
   	"appid.required" : false
