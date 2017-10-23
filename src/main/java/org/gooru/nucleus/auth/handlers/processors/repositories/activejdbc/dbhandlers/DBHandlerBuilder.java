@@ -64,4 +64,8 @@ public final class DBHandlerBuilder {
         return new InternalWSFedSSOHandler(context);
     }
 
+    public static DBHandler buildDomainBasedRedirectHandler(ProcessorContext context) {
+        return new DomainBasedRedirectHandler(context);
+    }
+
 }

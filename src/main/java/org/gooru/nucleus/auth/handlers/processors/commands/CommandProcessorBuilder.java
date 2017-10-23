@@ -92,6 +92,12 @@ public enum CommandProcessorBuilder {
             return new ChangePasswordProcessor(context);
         }
     },
+    DOMAIN_BASED_REDIRECT(MessageConstants.MSG_OP_DOMAIN_BASED_REDIRECT) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new DomainBasedRedirectProcessor(context);
+        }
+    },
     INTERNAL_AUTHENTICATE(MessageConstants.MSG_OP_INTERNAL_AUTHENTICATE) {
         @Override
         public Processor build(ProcessorContext context) {
