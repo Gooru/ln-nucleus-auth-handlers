@@ -9,4 +9,6 @@ public interface AuthenticationRepo {
     MessageResponse signinAnonymous();
 
     MessageResponse signinUser();
+    
+    MessageResponse domainBasedRedirect();
 }

@@ -32,4 +32,9 @@ public class AJAuthenticationRepo implements AuthenticationRepo {
     public MessageResponse getAccessTokenDetails() {
         return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildGetAccessTokenDetailsHandler(context));
     }
+
+    @Override
+    public MessageResponse domainBasedRedirect() {
+        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildDomainBasedRedirectHandler(context));
+    }
 }

@@ -23,6 +23,7 @@ public final class HttpConstants {
         ACCEPTED(202, "Accepted"),
         NO_CONTENT(204, "No Content"),
         MOVED_PERMANENTLY(302, "Moved Permanently"),
+        SEE_OTHER(303, "See Other"),
         NOT_MODIFIED(304, "Not Modified"),
         BAD_REQUEST(400, "Bad Request"),
         UNAUTHORIZED(401, "Unauthorized"),
