@@ -31,6 +31,8 @@ public class AJEntityDomainBasedRedirect extends Model {
     private static final Map<String, FieldConverter> converterRegistry;
     
     public static final String FIND_BY_DOMAIN = "domain = ?";
+    
+    public static final String RESP_STATUS_CODE = "status_code";
 
     static {
         validatorRegistry = initializeValidators();
