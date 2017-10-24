@@ -43,7 +43,7 @@ public class DomainBasedRedirectHandler implements DBHandler {
         String domain = context.requestBody().getString(AJEntityDomainBasedRedirect.DOMAIN);
         this.domainBasedRedirectURL = AJEntityDomainBasedRedirect.findFirst(AJEntityDomainBasedRedirect.FIND_BY_DOMAIN, domain);
         if (this.domainBasedRedirectURL == null) {
-            return new ExecutionResult<>(MessageResponseFactory.createGetResponse(),
+            return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
                 ExecutionResult.ExecutionStatus.FAILED);
         }
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
