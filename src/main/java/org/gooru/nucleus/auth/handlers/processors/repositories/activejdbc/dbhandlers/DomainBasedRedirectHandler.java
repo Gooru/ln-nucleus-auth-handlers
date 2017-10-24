@@ -1,5 +1,6 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhandlers;
 
+import org.gooru.nucleus.auth.handlers.constants.HttpConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityDomainBasedRedirect;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
@@ -40,8 +41,9 @@ public class DomainBasedRedirectHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
-        String domain = context.requestBody().getString(AJEntityDomainBasedRedirect.DOMAIN);
-        this.domainBasedRedirectURL = AJEntityDomainBasedRedirect.findFirst(AJEntityDomainBasedRedirect.FIND_BY_DOMAIN, domain);
+        String domain = getDomain();
+        this.domainBasedRedirectURL =
+            AJEntityDomainBasedRedirect.findFirst(AJEntityDomainBasedRedirect.FIND_BY_DOMAIN, domain);
         if (this.domainBasedRedirectURL == null) {
             return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
                 ExecutionResult.ExecutionStatus.FAILED);
@@ -53,7 +55,15 @@ public class DomainBasedRedirectHandler implements DBHandler {
     public ExecutionResult<MessageResponse> executeRequest() {
         String redirectUrl = this.domainBasedRedirectURL.getString(AJEntityDomainBasedRedirect.REDIRECT_URL);
 
-        return new ExecutionResult<>(MessageResponseFactory.createSeeOtherResponse(redirectUrl),
+        JsonObject response = new JsonObject();
+        if (redirectUrl == null ) {
+            response.put(AJEntityDomainBasedRedirect.RESP_STATUS_CODE, HttpConstants.HttpStatus.SUCCESS.getCode());
+        } else {
+            response.put(AJEntityDomainBasedRedirect.RESP_STATUS_CODE, HttpConstants.HttpStatus.SEE_OTHER.getCode());
+        }
+        response.put(AJEntityDomainBasedRedirect.REDIRECT_URL, redirectUrl);
+
+        return new ExecutionResult<>(MessageResponseFactory.createGetResponse(response),
             ExecutionResult.ExecutionStatus.SUCCESSFUL);
     }
 
@@ -63,5 +73,14 @@ public class DomainBasedRedirectHandler implements DBHandler {
     }
 
     private static class DefaultPayloadValidator implements PayloadValidator {
+    }
+
+    public String getDomain() {
+        String domain = context.requestBody().getString(AJEntityDomainBasedRedirect.DOMAIN);
+        if (domain.startsWith("www.") || domain.startsWith("WWW.")) {
+            domain = domain.substring(4);
+        }
+
+        return domain.toLowerCase();
     }
 }
