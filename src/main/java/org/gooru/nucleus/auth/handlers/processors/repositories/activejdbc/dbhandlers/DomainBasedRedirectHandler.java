@@ -41,30 +41,41 @@ public class DomainBasedRedirectHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
-        String domain = getDomain();
-        this.domainBasedRedirectURL =
-            AJEntityDomainBasedRedirect.findFirst(AJEntityDomainBasedRedirect.FIND_BY_DOMAIN, domain);
-        if (this.domainBasedRedirectURL == null) {
-            return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
-                ExecutionResult.ExecutionStatus.FAILED);
-        }
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
-        String redirectUrl = this.domainBasedRedirectURL.getString(AJEntityDomainBasedRedirect.REDIRECT_URL);
+        initializeDomainBasedRedirectModel();
 
-        JsonObject response = new JsonObject();
-        if (redirectUrl == null ) {
-            response.put(AJEntityDomainBasedRedirect.RESP_STATUS_CODE, HttpConstants.HttpStatus.SUCCESS.getCode());
-        } else {
-            response.put(AJEntityDomainBasedRedirect.RESP_STATUS_CODE, HttpConstants.HttpStatus.SEE_OTHER.getCode());
-        }
-        response.put(AJEntityDomainBasedRedirect.REDIRECT_URL, redirectUrl);
+        JsonObject response = generateResponse();
 
         return new ExecutionResult<>(MessageResponseFactory.createGetResponse(response),
             ExecutionResult.ExecutionStatus.SUCCESSFUL);
+    }
+
+    private JsonObject generateResponse() {
+        JsonObject response = new JsonObject();
+        if (this.domainBasedRedirectURL == null) {
+            response.put(AJEntityDomainBasedRedirect.RESP_STATUS_CODE, HttpConstants.HttpStatus.NOT_FOUND.getCode());
+            response.putNull(AJEntityDomainBasedRedirect.REDIRECT_URL);
+        } else {
+            String redirectUrl = this.domainBasedRedirectURL.getString(AJEntityDomainBasedRedirect.REDIRECT_URL);
+            if (redirectUrl == null ) {
+                response.putNull(AJEntityDomainBasedRedirect.REDIRECT_URL);
+                response.put(AJEntityDomainBasedRedirect.RESP_STATUS_CODE, HttpConstants.HttpStatus.SUCCESS.getCode());
+            } else {
+                response.put(AJEntityDomainBasedRedirect.RESP_STATUS_CODE, HttpConstants.HttpStatus.SEE_OTHER.getCode());
+                response.put(AJEntityDomainBasedRedirect.REDIRECT_URL, redirectUrl);
+            }
+        }
+        return response;
+    }
+
+    private void initializeDomainBasedRedirectModel() {
+        String domain = getDomain();
+        this.domainBasedRedirectURL =
+            AJEntityDomainBasedRedirect.findFirst(AJEntityDomainBasedRedirect.FIND_BY_DOMAIN, domain);
     }
 
     @Override
