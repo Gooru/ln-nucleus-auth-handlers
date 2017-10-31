@@ -63,6 +63,10 @@ public final class MessageResponseFactory {
         return new MessageResponse.Builder().failed().setStatusNotFound().setContentTypeJson()
             .setResponseBody(new JsonObject().put(MessageConstants.MSG_MESSAGE, message)).build();
     }
+    
+    public static MessageResponse createGetResponse() {
+        return new MessageResponse.Builder().successful().setStatusOkay().setContentTypeJson().build();
+    }
 
     public static MessageResponse createGetResponse(JsonObject responseBody) {
         return new MessageResponse.Builder().successful().setStatusOkay().setContentTypeJson()
@@ -118,5 +122,11 @@ public final class MessageResponseFactory {
 
     public static MessageResponse createGoneResponse() {
         return new MessageResponse.Builder().failed().setStatusHttpCode(HttpStatus.GONE).build();
+    }
+    
+    public static MessageResponse createSeeOtherResponse(String redirectUrl) {
+        return new MessageResponse.Builder().successful().setStatusHttpCode(HttpStatus.SEE_OTHER)
+            .setHeader(HttpConstants.HEADER_CONTENT_LENGTH, "0").setHeader(HttpConstants.HEADER_LOCATION, redirectUrl)
+            .build();
     }
 }
