@@ -238,6 +238,10 @@ public class AJEntityUsers extends Model {
     public void setTenantId(String value) {
         setPGObject(TENANT_ID, UUID_TYPE, value);
     }
+    
+    public void setTenantRoot(String tenantRoot) {
+        setPGObject(TENANT_ROOT, UUID_TYPE, tenantRoot);
+    }
 
     public void setPartnerId(String value) {
         setPGObject(PARTNER_ID, UUID_TYPE, value);
