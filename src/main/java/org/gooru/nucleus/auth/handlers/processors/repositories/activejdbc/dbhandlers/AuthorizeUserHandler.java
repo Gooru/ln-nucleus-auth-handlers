@@ -12,6 +12,7 @@ import org.gooru.nucleus.auth.handlers.processors.events.EventBuilder;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.DBHelper;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.TenantHelper;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
@@ -126,6 +127,7 @@ public class AuthorizeUserHandler implements DBHandler {
                 tenantId, partnerId);
             user = new AJEntityUsers();
             user.set(AJEntityUsers.TENANT_ID, getPGObject(tenantId));
+            user.setTenantRoot(TenantHelper.getTenantRoot(tenantId));
             user.set(AJEntityUsers.PARTNER_ID, getPGObject(partnerId));
             user.setString(AJEntityUsers.FIRST_NAME, userJson.getString(AJEntityUsers.FIRST_NAME, null));
             user.setString(AJEntityUsers.LAST_NAME, userJson.getString(AJEntityUsers.LAST_NAME, null));
