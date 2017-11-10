@@ -37,17 +37,25 @@ public final class DBHelper {
     }
 
     public static AJEntityUsers getUserByEmailAndTenantId(String email, String tenantId, String partnerId) {
+        if (email == null || email.isEmpty()) {
+            return null;
+        }
+
         LazyList<AJEntityUsers> users;
         if (partnerId != null) {
-            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_PARTNER_ID, email, partnerId);
+            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_PARTNER_ID, email.toLowerCase(), partnerId);
         } else {
-            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_TENANT_ID, email, tenantId);
+            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_TENANT_ID, email.toLowerCase(), tenantId);
         }
         return users.isEmpty() ? null : users.get(0);
     }
 
     public static AJEntityUsers getUserByUsername(String username, String tenantId, String partnerId,
         boolean isPartner) {
+        if (username == null || username.isEmpty()) {
+            return null;
+        }
+        
         AJEntityUsers user;
         if (isPartner) {
             user =
