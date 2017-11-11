@@ -126,16 +126,24 @@ public class InternalWSFedSSOHandler implements DBHandler {
         String referenceId = userObject.getString(AJEntityUsers.REFERENCE_ID);
         String tenantId = tenant.getString(AJEntityTenant.ID);
         String partnerId = isPartner ? partner.getString(AJEntityPartner.ID) : null;
-        
+
+        if (referenceId == null || referenceId.isEmpty()) {
+            LOGGER.warn("reference id is missing in request");
+            return new ExecutionResult<>(
+                MessageResponseFactory.createInvalidRequestResponse(RESOURCE_BUNDLE.getString("missing.referenceid")),
+                ExecutionResult.ExecutionStatus.FAILED);
+        }
+
         LazyList<AJEntityUsers> users;
         if (isPartner) {
-            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_PARTNER_ID, referenceId, partnerId);
+            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_PARTNER_ID, referenceId.toLowerCase(), partnerId);
         } else {
-            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_TENANT_ID, referenceId, tenantId);
+            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_TENANT_ID, referenceId.toLowerCase(), tenantId);
         }
-        
+
         if (users.isEmpty()) {
-            LOGGER.debug("user not found in database for reference_id: {}, tenant: {}, partner: {}", referenceId, tenantId, partnerId);
+            LOGGER.debug("user not found in database for reference_id: {}, tenant: {}, partner: {}", referenceId,
+                tenantId, partnerId);
             user = new AJEntityUsers();
             user.setString(AJEntityUsers.LOGIN_TYPE, HelperConstants.UserLoginType.wsfed.getType());
             user.setTenantId(tenantId);
@@ -143,14 +151,23 @@ public class InternalWSFedSSOHandler implements DBHandler {
             user.setPartnerId(partnerId);
             autoPopulate();
 
+            // Check if the username is already taken. If so, skip populating
+            // username and move ahead.
             String username = user.getString(AJEntityUsers.USERNAME);
-            if (username != null) {
-                AJEntityUsers existingUser = DBHelper.getUserByUsername(username, tenantId, partnerId, isPartner);
-                if (existingUser != null) {
-                    LOGGER.info("username '{}' already taken, setting it to null", username);
-                    user.setString(AJEntityUsers.USERNAME, null);
-                }
-                user.setString(AJEntityUsers.DISPLAY_NAME, username);
+            AJEntityUsers userByUsername = DBHelper.getUserByUsername(username, tenantId, partnerId, isPartner);
+            if (userByUsername != null) {
+                LOGGER.info("username '{}' already taken, setting it to null", username);
+                user.setString(AJEntityUsers.USERNAME, null);
+            }
+            user.setString(AJEntityUsers.DISPLAY_NAME, username);
+
+            // Check if the existing users have same email. If so, skip
+            // populating email and move ahead.
+            String email = user.getString(AJEntityUsers.EMAIL);
+            AJEntityUsers userByEmail = DBHelper.getUserByEmailAndTenantId(email, tenantId, partnerId);
+            if (userByEmail != null) {
+                LOGGER.info("email '{}' already taken, setting it to null", email);
+                user.setString(AJEntityUsers.EMAIL, null);
             }
 
             if (user.hasErrors()) {
