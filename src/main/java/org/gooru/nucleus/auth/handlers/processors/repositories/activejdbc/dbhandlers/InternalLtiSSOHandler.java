@@ -9,6 +9,7 @@ import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.DBHelper;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.TenantHelper;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
@@ -139,6 +140,7 @@ public class InternalLtiSSOHandler implements DBHandler {
             user = new AJEntityUsers();
             user.setString(AJEntityUsers.LOGIN_TYPE, HelperConstants.UserLoginType.ltisso.getType());
             user.setTenantId(tenantId);
+            user.setTenantRoot(TenantHelper.getTenantRoot(tenantId));
             user.setPartnerId(partnerId);
             autoPopulate();
 

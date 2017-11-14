@@ -53,7 +53,7 @@ public class TriggerResetPasswordHandler implements DBHandler {
                 ExecutionResult.ExecutionStatus.FAILED);
         }
 
-        email = context.requestBody().getString(AJEntityUsers.EMAIL).toLowerCase();
+        email = context.requestBody().getString(AJEntityUsers.EMAIL);
         tenantId = context.requestBody().getString(AJEntityUsers.TENANT_ID);
         partnerId = context.requestBody().getString(AJEntityUsers.PARTNER_ID);
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);

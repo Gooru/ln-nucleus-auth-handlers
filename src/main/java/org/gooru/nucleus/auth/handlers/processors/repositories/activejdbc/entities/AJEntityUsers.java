@@ -169,6 +169,7 @@ public class AJEntityUsers extends Model {
         converterMap.put(PASSWORD, (fieldValue -> FieldConverter.convertPasswordToEncryted(fieldValue)));
         converterMap.put(USERNAME, (fieldValue -> FieldConverter.convertFieldToLowercase(fieldValue)));
         converterMap.put(EMAIL, (fieldValue -> FieldConverter.convertFieldToLowercase(fieldValue)));
+        converterMap.put(REFERENCE_ID, (fieldValue -> FieldConverter.convertFieldToLowercase(fieldValue)));
         converterMap.put(GRADE, (fieldValue -> FieldConverter.convertFieldToJson(fieldValue)));
         converterMap.put(COUNTRY_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
         converterMap.put(STATE_ID, (fieldValue -> FieldConverter.convertFieldToUuid((String) fieldValue)));
@@ -237,6 +238,10 @@ public class AJEntityUsers extends Model {
 
     public void setTenantId(String value) {
         setPGObject(TENANT_ID, UUID_TYPE, value);
+    }
+    
+    public void setTenantRoot(String tenantRoot) {
+        setPGObject(TENANT_ROOT, UUID_TYPE, tenantRoot);
     }
 
     public void setPartnerId(String value) {
