@@ -48,7 +48,6 @@ public class AuthHandlerVerticle extends AbstractVerticle {
 
                         JsonObject eventData = response.event();
                         if (eventData != null) {
-                            LOGGER.debug("posting event data");
                             final String accessToken = getAccessToken(message, response);
                             eventData.put(MessageConstants.MSG_HEADER_SEESION_TOKEN,
                                 accessToken.substring(MessageConstants.TOKEN.length()).trim());
