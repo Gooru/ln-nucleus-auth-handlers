@@ -131,6 +131,8 @@ public interface FieldValidator {
         return o == null || validateUuid(o);
     }
 
+    Pattern USERNAME_PATTERN = Pattern.compile("[a-zA-Z0-9]+");
+    
     static boolean validateUsername(Object o) {
         if (o == null) {
             return false;
@@ -138,7 +140,7 @@ public interface FieldValidator {
 
         String username = o.toString();
         
-        return !(username.trim().isEmpty() || username.length() > 320);
+        return !(username.trim().isEmpty() || username.length() > 255) && USERNAME_PATTERN.matcher(username).matches();
 
     }
 
