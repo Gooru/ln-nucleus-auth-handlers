@@ -9,6 +9,7 @@ import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.TenantHelper;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
@@ -37,11 +38,11 @@ public class SigninAnonymousHandler implements DBHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SigninAnonymousHandler.class);
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
 
-    private static String clientId;
-    private static String clientKey;
+    private String clientId;
+    private String clientKey;
 
-    private static AJEntityPartner partner;
-    private static AJEntityTenant tenant;
+    private AJEntityPartner partner;
+    private AJEntityTenant tenant;
 
     public SigninAnonymousHandler(ProcessorContext context) {
         this.context = context;
@@ -109,17 +110,17 @@ public class SigninAnonymousHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
         JsonObject result = new JsonObject();
+        String tenantId = tenant.getString(AJEntityTenant.ID);
         String partnerId = (partner != null) ? partner.getString(AJEntityPartner.ID) : null;
         final String accessToken =
-            InternalHelper.generateToken(MessageConstants.MSG_USER_ANONYMOUS, partnerId, clientId);
+            InternalHelper.generateToken(MessageConstants.MSG_USER_ANONYMOUS, partnerId, tenantId);
         result.put(ParameterConstants.PARAM_USER_ID, MessageConstants.MSG_USER_ANONYMOUS);
         result.put(ParameterConstants.PARAM_PROVIDED_AT, System.currentTimeMillis());
         result.put(ParameterConstants.PARAM_CDN_URLS, new JsonObject(tenant.getString(AJEntityTenant.CDN_URLS)));
 
         JsonObject tenantJson = new JsonObject();
-        tenantJson.put(AJEntityUsers.TENANT_ID, tenant.getString(AJEntityTenant.ID));
-        // TODO: Fetch tenant root from the tenant table
-        tenantJson.putNull(AJEntityUsers.TENANT_ROOT);
+        tenantJson.put(AJEntityUsers.TENANT_ID, tenantId);
+        tenantJson.put(AJEntityUsers.TENANT_ROOT, TenantHelper.getTenantRoot(tenantId));
         result.put(ParameterConstants.PARAM_TENANT, tenantJson);
 
         JsonObject userPreference = PreferenceSettingsUtil.getDefaultPreference();
