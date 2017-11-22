@@ -120,7 +120,7 @@ public interface FieldValidator {
             return false;
         }
         try {
-            UUID uuid = UUID.fromString((String) o);
+            UUID.fromString((String) o);
             return true;
         } catch (IllegalArgumentException e) {
             return false;
@@ -131,15 +131,14 @@ public interface FieldValidator {
         return o == null || validateUuid(o);
     }
 
-    Pattern USERNAME_PATTERN = Pattern.compile("[a-zA-Z0-9]+");
-
     static boolean validateUsername(Object o) {
         if (o == null) {
             return false;
         }
 
         String username = o.toString();
-        return !(username.length() < 4 || username.length() > 20) && USERNAME_PATTERN.matcher(username).matches();
+        
+        return !(username.trim().isEmpty() || username.length() > 320);
 
     }
 
