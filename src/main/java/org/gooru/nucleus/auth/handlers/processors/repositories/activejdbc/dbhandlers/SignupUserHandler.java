@@ -48,7 +48,7 @@ public class SignupUserHandler implements DBHandler {
             .validatePayload(context.requestBody(), AJEntityUsers.signupFieldSelector(),
                 AJEntityUsers.getValidatorRegistry());
         if (errors != null && !errors.isEmpty()) {
-            LOGGER.warn("Validation errors for request");
+            LOGGER.warn("Validation errors for request :{}", errors.toString());
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
                 ExecutionResult.ExecutionStatus.FAILED);
         }

@@ -120,7 +120,7 @@ public interface FieldValidator {
             return false;
         }
         try {
-            UUID uuid = UUID.fromString((String) o);
+            UUID.fromString((String) o);
             return true;
         } catch (IllegalArgumentException e) {
             return false;
@@ -131,15 +131,14 @@ public interface FieldValidator {
         return o == null || validateUuid(o);
     }
 
-    Pattern USERNAME_PATTERN = Pattern.compile("[a-zA-Z0-9]+");
-
     static boolean validateUsername(Object o) {
         if (o == null) {
             return false;
         }
 
         String username = o.toString();
-        return !(username.length() < 4 || username.length() > 20) && USERNAME_PATTERN.matcher(username).matches();
+        
+        return !(username.trim().isEmpty() || username.length() > 320);
 
     }
 
@@ -156,19 +155,15 @@ public interface FieldValidator {
         return !(password.length() < 5 || password.length() > 20);
     }
 
-    Pattern FIRSTNAME_PATTERN = Pattern.compile("[a-zA-Z0-9'. -]+");
-
     static boolean validateFirstName(Object o) {
         if (o == null) {
             return false;
         }
 
         String firstname = o.toString();
-        return !(firstname.isEmpty() || firstname.length() > 20) && FIRSTNAME_PATTERN.matcher(firstname).matches();
+        return !(firstname.trim().isEmpty() || firstname.length() > 100);
 
     }
-
-    Pattern LASTNAME_PATTERN = Pattern.compile("[a-zA-Z0-9'. -]+");
 
     static boolean validateLastName(Object o) {
         if (o == null) {
@@ -176,7 +171,7 @@ public interface FieldValidator {
         }
 
         String lastname = o.toString();
-        return !(lastname.isEmpty() || lastname.length() > 20) && LASTNAME_PATTERN.matcher(lastname).matches();
+        return !(lastname.trim().isEmpty() || lastname.length() > 100);
 
     }
 
