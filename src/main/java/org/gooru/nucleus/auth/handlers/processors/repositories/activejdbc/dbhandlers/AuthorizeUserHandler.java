@@ -153,11 +153,12 @@ public class AuthorizeUserHandler implements DBHandler {
                     MessageResponseFactory.createInvalidRequestResponse("Unable to create user"),
                     ExecutionStatus.FAILED);
             }
-            EmailNotificationBuilder emailNotificationBuilder = new EmailNotificationBuilder();
-            emailNotificationBuilder.setTemplateName(EmailTemplateConstants.WELCOME_MAIL)
-                .addToAddress(user.getString(AJEntityUsers.EMAIL));
-            eb = EventBuilderFactory.getSignupUserEventBuilder(user.getString(AJEntityUsers.ID),
-                emailNotificationBuilder);
+            
+            // Store system state for user to send welcome email
+            String userId = user.getString(AJEntityUsers.ID);
+            DBHelper.storeUserSystemStateForSignup(userId);
+            
+            eb = EventBuilderFactory.getSignupUserEventBuilder(userId);
         } else {
             user = users.get(0);
             eb = EventBuilderFactory.getSigninUserEventBuilder(user.getString(AJEntityUsers.ID));

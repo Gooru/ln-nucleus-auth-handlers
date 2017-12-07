@@ -1,12 +1,14 @@
 package org.gooru.nucleus.auth.handlers.processors.responses;
 
 import org.gooru.nucleus.auth.handlers.app.components.RedisClient;
+import org.gooru.nucleus.auth.handlers.constants.MessageConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.DBHelper;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserState;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
 import org.gooru.nucleus.auth.handlers.processors.utils.InternalHelper;
 
@@ -35,7 +37,8 @@ public class ResoponseBuilder {
 
     public JsonObject build() {
         final JsonObject result = new JsonObject();
-        result.put(ParameterConstants.PARAM_USER_ID, user.getString(AJEntityUsers.ID));
+        String userId = user.getString(AJEntityUsers.ID);
+        result.put(ParameterConstants.PARAM_USER_ID, userId);
         result.put(ParameterConstants.PARAM_APP_ID,
             context.requestBody().getString(ParameterConstants.PARAM_APP_ID, null));
         result
@@ -50,7 +53,7 @@ public class ResoponseBuilder {
         tenantJson.put(AJEntityUsers.TENANT_ROOT, user.getString(AJEntityUsers.TENANT_ROOT));
         result.put(ParameterConstants.PARAM_TENANT, tenantJson);
 
-        JsonObject userPreference = DBHelper.getUserPreference(user.getString(AJEntityUsers.ID));
+        JsonObject userPreference = DBHelper.getUserPreference(userId);
         result.put(AJEntityUserPreference.PREFERENCE_SETTINGS, userPreference);
 
         int accessTokenValidity = (partner != null) ? partner.getInteger(AJEntityPartner.ACCESS_TOKEN_VALIDITY) :
@@ -65,7 +68,7 @@ public class ResoponseBuilder {
         result.put(AJEntityUsers.LAST_NAME, user.getString(AJEntityUsers.LAST_NAME));
         result.put(AJEntityUsers.USER_CATEGORY, user.getString(AJEntityUsers.USER_CATEGORY));
         result.put(AJEntityUsers.THUMBNAIL, user.getString(AJEntityUsers.THUMBNAIL));
-
+        
         return result;
     }
 
