@@ -93,10 +93,8 @@ public final class DBHelper {
         AJEntityUserState userState = new AJEntityUserState();
         userState.setUserId(userId);
         userState.setSystemState(AJEntityUserState.WELCOME_EMAIL_SENT_STATE);
-        LOGGER.info(userState.toInsert());
         if (!userState.insert()) {
             LOGGER.debug("unable to save welcome email state for user '{}'", userId);
-            LOGGER.debug(userState.errors().toString());
         }
     }
 }
