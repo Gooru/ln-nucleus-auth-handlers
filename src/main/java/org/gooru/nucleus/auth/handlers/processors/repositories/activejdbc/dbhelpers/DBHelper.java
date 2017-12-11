@@ -1,6 +1,9 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers;
 
+import java.util.UUID;
+
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserState;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
 import org.gooru.nucleus.auth.handlers.processors.utils.PreferenceSettingsUtil;
 import org.javalite.activejdbc.LazyList;
@@ -79,5 +82,19 @@ public final class DBHelper {
         }
 
         return userPreferenceJson;
+    }
+
+    public static JsonObject getUserClientState(String userId) {
+        AJEntityUserState userState = AJEntityUserState.findById(UUID.fromString(userId));
+        return userState != null ? userState.getClientState() : null;
+    }
+    
+    public static void storeUserSystemStateForSignup(String userId) {
+        AJEntityUserState userState = new AJEntityUserState();
+        userState.setUserId(userId);
+        userState.setSystemState(AJEntityUserState.WELCOME_EMAIL_SENT_STATE);
+        if (!userState.insert()) {
+            LOGGER.debug("unable to save welcome email state for user '{}'", userId);
+        }
     }
 }
