@@ -97,9 +97,17 @@ public class ChangePassowrdHandler implements DBHandler {
         JsonObject redisPacket = new JsonObject().put(AJEntityUsers.EMAIL, user.getString(AJEntityUsers.EMAIL))
             .put(AJEntityUsers.TENANT_ID, user.getString(AJEntityUsers.TENANT_ID));
         this.redisClient.set(newToken, redisPacket.toString(), HelperConstants.RESET_PASS_TOKEN_EXPIRY);
+        
+        EmailNotificationBuilder emailNotificationBuilder = new EmailNotificationBuilder();
+        emailNotificationBuilder.setTemplateName(EmailTemplateConstants.PASSWORD_CHANGED)
+            .addToAddress(user.getString(AJEntityUsers.EMAIL))
+            .putContext(ParameterConstants.MAIL_TOKEN, InternalHelper.encodeToken(newToken))
+            .putContext(ParameterConstants.PARAM_USER_ID, user.getString(AJEntityUsers.ID))
+            .putContext(ParameterConstants.MAIL_USERNAME, user.getString(AJEntityUsers.USERNAME));
 
-        return new ExecutionResult<>(MessageResponseFactory.createNoContentResponse(EventBuilderFactory
-            .getResetPasswordEventBuilder(user.getString(AJEntityUsers.ID))),
+        return new ExecutionResult<>(
+            MessageResponseFactory.createNoContentResponse(EventBuilderFactory
+                .getResetPasswordEventBuilder(user.getString(AJEntityUsers.ID), emailNotificationBuilder)),
             ExecutionStatus.SUCCESSFUL);
     }
 

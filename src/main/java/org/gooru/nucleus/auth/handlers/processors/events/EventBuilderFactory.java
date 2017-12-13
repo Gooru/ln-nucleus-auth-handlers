@@ -74,18 +74,18 @@ public final class EventBuilderFactory {
             new JsonObject().put(ID, userId));
     }
 
-    public static EventBuilder geTriggerResetPasswordEventBuilder(String userId) {
+    public static EventBuilder geTriggerResetPasswordEventBuilder(String userId, EmailNotificationBuilder emailNotification) {
         return () -> new JsonObject().put(EVENT_NAME, EVT_USER_PASSWORD_RESET_TRIGGER).put(EVENT_BODY,
-            new JsonObject().put(ID, userId));
+            new JsonObject().put(ID, userId).put(EMAIL_CONTEXT, emailNotification.build()));
     }
 
-    public static EventBuilder getResetPasswordEventBuilder(String userId) {
+    public static EventBuilder getResetPasswordEventBuilder(String userId, EmailNotificationBuilder emailNotification) {
         return () -> new JsonObject().put(EVENT_NAME, EVT_USER_PASSWORD_RESET).put(EVENT_BODY,
-            new JsonObject().put(ID, userId));
+            new JsonObject().put(ID, userId).put(EMAIL_CONTEXT, emailNotification.build()));
     }
 
-    public static EventBuilder getChangePasswordEventBuilder(String userId) {
+    public static EventBuilder getChangePasswordEventBuilder(String userId, EmailNotificationBuilder emailNotification) {
         return () -> new JsonObject().put(EVENT_NAME, EVT_USER_PASSWORD_CHANGE).put(EVENT_BODY,
-            new JsonObject().put(ID, userId));
+            new JsonObject().put(ID, userId).put(EMAIL_CONTEXT, emailNotification.build()));
     }
 }
