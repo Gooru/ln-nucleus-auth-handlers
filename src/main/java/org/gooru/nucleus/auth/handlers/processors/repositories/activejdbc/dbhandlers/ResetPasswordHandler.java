@@ -103,9 +103,15 @@ public class ResetPasswordHandler implements DBHandler {
             .put(AJEntityUsers.PARTNER_ID, partnerId);
         this.redisClient.set(newToken, redisPacket.toString(), HelperConstants.RESET_PASS_TOKEN_EXPIRY);
 
+        EmailNotificationBuilder emailNotificationBuilder = new EmailNotificationBuilder();
+        emailNotificationBuilder.setTemplateName(EmailTemplateConstants.PASSWORD_CHANGED).addToAddress(email)
+            .putContext(ParameterConstants.MAIL_TOKEN, InternalHelper.encodeToken(newToken))
+            .putContext(ParameterConstants.PARAM_USER_ID, user.getString(AJEntityUsers.ID))
+            .putContext(ParameterConstants.MAIL_USERNAME, user.getString(AJEntityUsers.USERNAME));
+
         return new ExecutionResult<>(
             MessageResponseFactory.createNoContentResponse(EventBuilderFactory
-                .getResetPasswordEventBuilder(user.getString(AJEntityUsers.ID))),
+                .getResetPasswordEventBuilder(user.getString(AJEntityUsers.ID), emailNotificationBuilder)),
             ExecutionStatus.SUCCESSFUL);
     }
 
