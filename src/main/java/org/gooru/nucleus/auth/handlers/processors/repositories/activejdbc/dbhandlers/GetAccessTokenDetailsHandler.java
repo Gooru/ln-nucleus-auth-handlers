@@ -7,6 +7,8 @@ import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.MessageConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.DBHelper;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserState;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
 import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult;
 import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult.ExecutionStatus;
@@ -40,7 +42,7 @@ public class GetAccessTokenDetailsHandler implements DBHandler {
             tenantId = UUID.fromString(context.user().getJsonObject(ParameterConstants.PARAM_TENANT)
                 .getString(ParameterConstants.PARAM_TENANT_ID));
         } catch (IllegalArgumentException iae) {
-            LOGGER.warn("invalid user id format");
+            LOGGER.warn("invalid token id format");
             return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse(), ExecutionStatus.FAILED);
         }
 
@@ -77,6 +79,7 @@ public class GetAccessTokenDetailsHandler implements DBHandler {
             result.put(AJEntityUsers.LAST_NAME, user.getString(AJEntityUsers.LAST_NAME));
             result.put(AJEntityUsers.USER_CATEGORY, user.getString(AJEntityUsers.USER_CATEGORY));
             result.put(AJEntityUsers.THUMBNAIL, user.getString(AJEntityUsers.THUMBNAIL));
+            result.put(AJEntityUserState.CLIENT_STATE, DBHelper.getUserClientState(user.getString(AJEntityUsers.ID)));
         }
 
         LOGGER.debug("user token details fetched successfully");

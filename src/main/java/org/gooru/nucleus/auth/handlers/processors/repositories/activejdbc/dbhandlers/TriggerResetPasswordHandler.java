@@ -78,14 +78,15 @@ public class TriggerResetPasswordHandler implements DBHandler {
             new JsonObject().put(AJEntityUsers.EMAIL, email).put(AJEntityUsers.TENANT_ID, tenantId)
             .put(AJEntityUsers.PARTNER_ID, partnerId);
         this.redisClient.set(token, redisPacket.toString(), HelperConstants.RESET_PASS_TOKEN_EXPIRY);
-
+        
         EmailNotificationBuilder emailNotificationBuilder = new EmailNotificationBuilder();
         emailNotificationBuilder.setTemplateName(EmailTemplateConstants.PASSWORD_CHANGE_REQUEST).addToAddress(email)
             .putContext(ParameterConstants.MAIL_TOKEN, InternalHelper.encodeToken(token))
             .putContext(ParameterConstants.PARAM_USER_ID, user.getString(AJEntityUsers.ID));
 
-        return new ExecutionResult<>(MessageResponseFactory.createPostResponse(EventBuilderFactory
-            .geTriggerResetPasswordEventBuilder(user.getString(AJEntityUsers.ID), emailNotificationBuilder)),
+        return new ExecutionResult<>(
+            MessageResponseFactory.createPostResponse(EventBuilderFactory
+                .geTriggerResetPasswordEventBuilder(user.getString(AJEntityUsers.ID), emailNotificationBuilder)),
             ExecutionStatus.SUCCESSFUL);
     }
 

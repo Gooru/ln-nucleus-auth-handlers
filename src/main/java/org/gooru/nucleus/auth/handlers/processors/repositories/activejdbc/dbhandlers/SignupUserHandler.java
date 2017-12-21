@@ -10,6 +10,7 @@ import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.emails.EmailNotificationBuilder;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.DBHelper;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entitybuilders.EntityBuilder;
@@ -44,11 +45,10 @@ public class SignupUserHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
 
-        JsonObject errors = new DefaultPayloadValidator()
-            .validatePayload(context.requestBody(), AJEntityUsers.signupFieldSelector(),
-                AJEntityUsers.getValidatorRegistry());
+        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
+            AJEntityUsers.signupFieldSelector(), AJEntityUsers.getValidatorRegistry());
         if (errors != null && !errors.isEmpty()) {
-            LOGGER.warn("Validation errors for request");
+            LOGGER.warn("Validation errors for request :{}", errors.toString());
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
                 ExecutionResult.ExecutionStatus.FAILED);
         }
@@ -62,7 +62,7 @@ public class SignupUserHandler implements DBHandler {
         if (!result.continueProcessing()) {
             return result;
         }
-        
+
         String tenantId = context.requestBody().getString(ParameterConstants.PARAM_TENANT_ID);
         String email = context.requestBody().getString(AJEntityUsers.EMAIL).toLowerCase();
         String username = context.requestBody().getString(AJEntityUsers.USERNAME).toLowerCase();
@@ -106,14 +106,15 @@ public class SignupUserHandler implements DBHandler {
     public ExecutionResult<MessageResponse> executeRequest() {
         if (user.insert()) {
             final JsonObject result = new ResoponseBuilder(context, user, tenant, null).build();
-
-            EmailNotificationBuilder emailNotificationBuilder = new EmailNotificationBuilder();
-            emailNotificationBuilder.setTemplateName(EmailTemplateConstants.WELCOME_MAIL)
-                .addToAddress(user.getString(AJEntityUsers.EMAIL));
-
+            
+            // Store system state for user to send welcome email
+            String userId = user.getString(AJEntityUsers.ID);
+            DBHelper.storeUserSystemStateForSignup(userId);
+            
             LOGGER.info("user created successfully");
-            return new ExecutionResult<>(MessageResponseFactory.createPostResponse(result, EventBuilderFactory
-                .getSignupUserEventBuilder(user.getString(AJEntityUsers.ID), emailNotificationBuilder)),
+            return new ExecutionResult<>(
+                MessageResponseFactory.createPostResponse(result,
+                    EventBuilderFactory.getSignupUserEventBuilder(userId)),
                 ExecutionStatus.SUCCESSFUL);
         }
 
@@ -129,9 +130,9 @@ public class SignupUserHandler implements DBHandler {
 
     private void autoPopulate() {
         new DefaultAJEntityUsersBuilder().build(user, context.requestBody(), AJEntityUsers.getConverterRegistry());
-        // set username in lowercase 
+        // set username in lowercase
         user.setString(AJEntityUsers.USERNAME, context.requestBody().getString(AJEntityUsers.USERNAME).toLowerCase());
-        
+
         // set incoming username as is which can used as display name.
         user.setString(AJEntityUsers.DISPLAY_NAME, context.requestBody().getString(AJEntityUsers.USERNAME));
     }

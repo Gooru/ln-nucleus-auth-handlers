@@ -35,59 +35,57 @@ public final class EventBuilderFactory {
     }
 
     public static EventBuilder getAnonymousSigninEventBuilder(String clientId) {
-        return () -> new JsonObject().put(EVENT_NAME, EVT_ANONYMOUS_SIGNIN)
-            .put(EVENT_BODY, new JsonObject().put(ID, clientId));
+        return () -> new JsonObject().put(EVENT_NAME, EVT_ANONYMOUS_SIGNIN).put(EVENT_BODY,
+            new JsonObject().put(ID, clientId));
     }
 
     public static EventBuilder getSigninUserEventBuilder(String userId) {
-        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_SIGNIN)
-            .put(EVENT_BODY, new JsonObject().put(ID, userId));
+        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_SIGNIN).put(EVENT_BODY,
+            new JsonObject().put(ID, userId));
     }
 
-    public static EventBuilder getSignupUserEventBuilder(String userId, EmailNotificationBuilder emailNotification) {
-        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_SIGNUP)
-            .put(EVENT_BODY, new JsonObject().put(ID, userId).put(EMAIL_CONTEXT, emailNotification.build()));
+    public static EventBuilder getSignupUserEventBuilder(String userId) {
+        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_SIGNUP).put(EVENT_BODY,
+            new JsonObject().put(ID, userId));
     }
 
     public static EventBuilder getSignoutUserEventBuilder(String userId) {
-        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_SIGNOUT)
-            .put(EVENT_BODY, new JsonObject().put(ID, userId));
+        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_SIGNOUT).put(EVENT_BODY,
+            new JsonObject().put(ID, userId));
     }
 
     public static EventBuilder getAuthorizeUserEventBuilder(String userId) {
-        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_AUTHORIZE)
-            .put(EVENT_BODY, new JsonObject().put(ID, userId));
+        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_AUTHORIZE).put(EVENT_BODY,
+            new JsonObject().put(ID, userId));
     }
 
     public static EventBuilder getUpdateUserEventBuilder(String userId) {
-        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_UPDATE)
-            .put(EVENT_BODY, new JsonObject().put(ID, userId));
+        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_UPDATE).put(EVENT_BODY,
+            new JsonObject().put(ID, userId));
     }
 
     public static EventBuilder getLTISSOEventBuilder(String userId) {
-        return () -> new JsonObject().put(EVENT_NAME, EVT_INTERNAL_LTI_SSO)
-            .put(EVENT_BODY, new JsonObject().put(ID, userId));
-    }
-    
-    public static EventBuilder getWSFedSSOEventBuilder(String userId) {
-        return () -> new JsonObject().put(EVENT_NAME, EVT_INTERNAL_WSFED_SSO)
-            .put(EVENT_BODY, new JsonObject().put(ID, userId));
+        return () -> new JsonObject().put(EVENT_NAME, EVT_INTERNAL_LTI_SSO).put(EVENT_BODY,
+            new JsonObject().put(ID, userId));
     }
 
-    public static EventBuilder geTriggerResetPasswordEventBuilder(String userId,
-        EmailNotificationBuilder emailNotification) {
-        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_PASSWORD_RESET_TRIGGER)
-            .put(EVENT_BODY, new JsonObject().put(ID, userId).put(EMAIL_CONTEXT, emailNotification.build()));
+    public static EventBuilder getWSFedSSOEventBuilder(String userId) {
+        return () -> new JsonObject().put(EVENT_NAME, EVT_INTERNAL_WSFED_SSO).put(EVENT_BODY,
+            new JsonObject().put(ID, userId));
+    }
+
+    public static EventBuilder geTriggerResetPasswordEventBuilder(String userId, EmailNotificationBuilder emailNotification) {
+        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_PASSWORD_RESET_TRIGGER).put(EVENT_BODY,
+            new JsonObject().put(ID, userId).put(EMAIL_CONTEXT, emailNotification.build()));
     }
 
     public static EventBuilder getResetPasswordEventBuilder(String userId, EmailNotificationBuilder emailNotification) {
-        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_PASSWORD_RESET)
-            .put(EVENT_BODY, new JsonObject().put(ID, userId).put(EMAIL_CONTEXT, emailNotification.build()));
+        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_PASSWORD_RESET).put(EVENT_BODY,
+            new JsonObject().put(ID, userId).put(EMAIL_CONTEXT, emailNotification.build()));
     }
 
-    public static EventBuilder getChangePasswordEventBuilder(String userId,
-        EmailNotificationBuilder emailNotification) {
-        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_PASSWORD_CHANGE)
-            .put(EVENT_BODY, new JsonObject().put(ID, userId).put(EMAIL_CONTEXT, emailNotification.build()));
+    public static EventBuilder getChangePasswordEventBuilder(String userId, EmailNotificationBuilder emailNotification) {
+        return () -> new JsonObject().put(EVENT_NAME, EVT_USER_PASSWORD_CHANGE).put(EVENT_BODY,
+            new JsonObject().put(ID, userId).put(EMAIL_CONTEXT, emailNotification.build()));
     }
 }
