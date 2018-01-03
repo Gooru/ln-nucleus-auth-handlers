@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.convertors.ConverterRegistry;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.convertors.FieldConverter;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.validators.FieldSelector;
@@ -25,7 +24,10 @@ public class AJEntityDomainBasedRedirect extends Model {
     public static final String DOMAIN = "domain";
     public static final String REDIRECT_URL = "redirect_url";
 
-    private static final Set<String> FIELDS = new HashSet<>(Arrays.asList(DOMAIN));
+    public static final String CONTEXT_URL = "context_url"; 
+    
+    private static final Set<String> CREATABLE_FIELDS = new HashSet<>(Arrays.asList(DOMAIN, CONTEXT_URL));
+    private static final Set<String> MANDATORY_FIELDS = new HashSet<>(Arrays.asList(DOMAIN));
 
     private static final Map<String, FieldValidator> validatorRegistry;
     private static final Map<String, FieldConverter> converterRegistry;
@@ -42,6 +44,7 @@ public class AJEntityDomainBasedRedirect extends Model {
     private static Map<String, FieldValidator> initializeValidators() {
         Map<String, FieldValidator> validatorMap = new HashMap<>();
         validatorMap.put(DOMAIN, (FieldValidator::validateString));
+        validatorMap.put(CONTEXT_URL, (FieldValidator::validateURLIfPresent));
         return validatorMap;
     }
 
@@ -51,7 +54,17 @@ public class AJEntityDomainBasedRedirect extends Model {
     }
 
     public static FieldSelector fieldSelector() {
-        return () -> Collections.unmodifiableSet(FIELDS);
+        return new FieldSelector() {
+            @Override
+            public Set<String> allowedFields() {
+                return Collections.unmodifiableSet(CREATABLE_FIELDS);
+            }
+
+            @Override
+            public Set<String> mandatoryFields() {
+                return Collections.unmodifiableSet(MANDATORY_FIELDS);
+            }
+        };
     }
 
     public static ValidatorRegistry getValidatorRegistry() {

@@ -22,6 +22,7 @@ public class DomainBasedRedirectHandler implements DBHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DomainBasedRedirectHandler.class);
     private final ProcessorContext context;
     AJEntityDomainBasedRedirect domainBasedRedirectURL;
+    private String contextUrl = null;
 
     public DomainBasedRedirectHandler(ProcessorContext context) {
         this.context = context;
@@ -36,6 +37,8 @@ public class DomainBasedRedirectHandler implements DBHandler {
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
                 ExecutionResult.ExecutionStatus.FAILED);
         }
+        
+        this.contextUrl = context.requestBody().getString(AJEntityDomainBasedRedirect.CONTEXT_URL);
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
@@ -65,6 +68,7 @@ public class DomainBasedRedirectHandler implements DBHandler {
                 response.putNull(AJEntityDomainBasedRedirect.REDIRECT_URL);
                 response.put(AJEntityDomainBasedRedirect.RESP_STATUS_CODE, HttpConstants.HttpStatus.SUCCESS.getCode());
             } else {
+                redirectUrl = redirectUrl.concat((this.contextUrl != null ? "?context=" + contextUrl : ""));
                 response.put(AJEntityDomainBasedRedirect.RESP_STATUS_CODE, HttpConstants.HttpStatus.SEE_OTHER.getCode());
                 response.put(AJEntityDomainBasedRedirect.REDIRECT_URL, redirectUrl);
             }
