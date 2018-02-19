@@ -1,5 +1,8 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.validators;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -33,6 +36,22 @@ public interface FieldValidator {
 
     static boolean validateString(Object o) {
         return !(o == null || !(o instanceof String) || ((String) o).isEmpty());
+    }
+    
+    static boolean validateURLIfPresent(Object o) {
+        if (o == null) {
+            return true;
+        }
+        
+        try {
+            new URL((String) o).toURI(); 
+        } catch (MalformedURLException e) {
+            return false;
+        } catch (URISyntaxException e) {
+            return false;
+        }
+        
+        return true;
     }
 
     static boolean validateInteger(Object o) {
