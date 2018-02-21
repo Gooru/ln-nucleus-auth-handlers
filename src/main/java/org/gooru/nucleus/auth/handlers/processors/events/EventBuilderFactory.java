@@ -65,13 +65,11 @@ public final class EventBuilderFactory {
     }
 
     public static EventBuilder getLTISSOEventBuilder(String userId) {
-        return () -> new JsonObject().put(EVENT_NAME, EVT_INTERNAL_LTI_SSO).put(EVENT_BODY,
-            new JsonObject().put(ID, userId));
+        return getSigninUserEventBuilder(userId);
     }
 
     public static EventBuilder getWSFedSSOEventBuilder(String userId) {
-        return () -> new JsonObject().put(EVENT_NAME, EVT_INTERNAL_WSFED_SSO).put(EVENT_BODY,
-            new JsonObject().put(ID, userId));
+        return getSigninUserEventBuilder(userId);
     }
 
     public static EventBuilder geTriggerResetPasswordEventBuilder(String userId, EmailNotificationBuilder emailNotification) {
