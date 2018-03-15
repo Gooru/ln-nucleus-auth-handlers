@@ -12,18 +12,12 @@ public final class EventBuilderFactory {
     private static final String EVT_ANONYMOUS_SIGNIN = "event.anonymous.signin";
     private static final String EVT_USER_SIGNIN = "event.user.signin";
     private static final String EVT_USER_SIGNOUT = "event.user.signout";
-    private static final String EVT_USER_TOKEN_CHECK = "event.user.token.check";
-    private static final String EVT_USER_TOKEN_DETAILS = "event.user.token.details";
     private static final String EVT_USER_AUTHORIZE = "event.user.authorize";
     private static final String EVT_USER_SIGNUP = "event.user.signup";
     private static final String EVT_USER_UPDATE = "event.user.update";
     private static final String EVT_USER_PASSWORD_RESET_TRIGGER = "event.user.password.reset.trigger";
     private static final String EVT_USER_PASSWORD_RESET = "event.user.password.reset";
     private static final String EVT_USER_PASSWORD_CHANGE = "event.user.password.change";
-    private static final String EVT_INTERNAL_AUTHENTICATE = "event.internal.authenticate";
-    private static final String EVT_INTERNAL_IMPERSONATE = "event.internal.impersonate";
-    private static final String EVT_INTERNAL_LTI_SSO = "event.internal.lti.sso";
-    private static final String EVT_INTERNAL_WSFED_SSO = "event.internal.wsfed.sso";
 
     private static final String EVENT_NAME = "event.name";
     private static final String EVENT_BODY = "event.body";
@@ -64,12 +58,20 @@ public final class EventBuilderFactory {
             new JsonObject().put(ID, userId));
     }
 
-    public static EventBuilder getLTISSOEventBuilder(String userId) {
+    public static EventBuilder getLTISSOSigninEventBuilder(String userId) {
         return getSigninUserEventBuilder(userId);
     }
+    
+    public static EventBuilder getLTISSOSignupEventBuilder(String userId) {
+    	return getSignupUserEventBuilder(userId);
+    }
 
-    public static EventBuilder getWSFedSSOEventBuilder(String userId) {
+    public static EventBuilder getWSFedSSOSigninEventBuilder(String userId) {
         return getSigninUserEventBuilder(userId);
+    }
+    
+    public static EventBuilder getWSFedSSOSignupEventBuilder(String userId) {
+    	return getSignupUserEventBuilder(userId);
     }
 
     public static EventBuilder geTriggerResetPasswordEventBuilder(String userId, EmailNotificationBuilder emailNotification) {
