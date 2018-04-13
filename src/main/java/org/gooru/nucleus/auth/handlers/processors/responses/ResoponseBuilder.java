@@ -52,7 +52,7 @@ public class ResoponseBuilder {
         tenantJson.put(AJEntityUsers.TENANT_ROOT, user.getString(AJEntityUsers.TENANT_ROOT));
         result.put(ParameterConstants.PARAM_TENANT, tenantJson);
 
-        result.put(AJEntityUserPreference.PREFERENCE_SETTINGS, DBHelper.getUserPreference(userId));
+        result.put(AJEntityUserPreference.PREFERENCE_SETTINGS, DBHelper.getUserPreference(userId, tenant.getString(AJEntityTenant.ID)));
 
         int accessTokenValidity = (partner != null) ? partner.getInteger(AJEntityPartner.ACCESS_TOKEN_VALIDITY) :
             tenant.getInteger(AJEntityTenant.ACCESS_TOKEN_VALIDITY);

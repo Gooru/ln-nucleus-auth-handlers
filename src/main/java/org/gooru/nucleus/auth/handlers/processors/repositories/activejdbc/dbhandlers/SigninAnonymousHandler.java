@@ -21,7 +21,6 @@ import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult.Exec
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponseFactory;
 import org.gooru.nucleus.auth.handlers.processors.utils.InternalHelper;
-import org.gooru.nucleus.auth.handlers.processors.utils.PreferenceSettingsUtil;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,7 +122,7 @@ public class SigninAnonymousHandler implements DBHandler {
         tenantJson.put(AJEntityUsers.TENANT_ROOT, TenantHelper.getTenantRoot(tenantId));
         result.put(ParameterConstants.PARAM_TENANT, tenantJson);
 
-        JsonObject userPreference = PreferenceSettingsUtil.getDefaultPreference();
+        JsonObject userPreference = TenantHelper.mergeDefaultPrefsWithTenantFrameworkPrefs(tenantId);
         result.put(AJEntityUserPreference.PREFERENCE_SETTINGS, userPreference);
 
         int accessTokenValidity = (partner != null) ? partner.getInteger(AJEntityPartner.ACCESS_TOKEN_VALIDITY)
