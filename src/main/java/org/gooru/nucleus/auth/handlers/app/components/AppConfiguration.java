@@ -24,7 +24,6 @@ public class AppConfiguration implements Initializer, Finalizer {
     private static final String KEY_APP_CONFIG = "app.config";
     private static final String KEY_APPID_REQUIRED = "appid.required";
     
-    private Vertx vertx;    
     private Boolean isAppIdRequired;
     
     private AppConfiguration() {
@@ -36,7 +35,6 @@ public class AppConfiguration implements Initializer, Finalizer {
 
     @Override
     public void initializeComponent(Vertx vertx, JsonObject config) {
-        this.vertx = vertx;
         
         JsonObject appConfig = config.getJsonObject(KEY_APP_CONFIG);
         if (appConfig == null || appConfig.isEmpty()) {
