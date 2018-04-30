@@ -166,16 +166,24 @@ public class InternalLtiSSOHandler implements DBHandler {
                     MessageResponseFactory.createInvalidRequestResponse("Unable to create user"),
                     ExecutionStatus.FAILED);
             }
+            
+            final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
+
+            return new ExecutionResult<>(
+                MessageResponseFactory.createPostResponse(result,
+                    EventBuilderFactory.getLTISSOSignupEventBuilder(user.getString(AJEntityUsers.ID))),
+                ExecutionStatus.SUCCESSFUL);
         } else {
             user = users.get(0);
+            final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
+
+            return new ExecutionResult<>(
+                MessageResponseFactory.createPostResponse(result,
+                    EventBuilderFactory.getLTISSOSigninEventBuilder(user.getString(AJEntityUsers.ID))),
+                ExecutionStatus.SUCCESSFUL);
         }
 
-        final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
-
-        return new ExecutionResult<>(
-            MessageResponseFactory.createPostResponse(result,
-                EventBuilderFactory.getLTISSOEventBuilder(user.getString(AJEntityUsers.ID))),
-            ExecutionStatus.SUCCESSFUL);
+        
     }
 
     @Override

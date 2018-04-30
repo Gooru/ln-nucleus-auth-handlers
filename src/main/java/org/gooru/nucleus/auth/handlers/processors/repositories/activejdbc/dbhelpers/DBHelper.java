@@ -5,7 +5,6 @@ import java.util.UUID;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserState;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
-import org.gooru.nucleus.auth.handlers.processors.utils.PreferenceSettingsUtil;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,13 +69,13 @@ public final class DBHelper {
         return user;
     }
 
-    public static JsonObject getUserPreference(String userId) {
+    public static JsonObject getUserPreference(String userId, String tenantId) {
         AJEntityUserPreference userPreference =
             AJEntityUserPreference.findFirst(AJEntityUserPreference.SELECT_BY_USERID, userId);
         JsonObject userPreferenceJson;
         if (userPreference == null) {
             LOGGER.warn("user preferences not found, returning default");
-            userPreferenceJson = PreferenceSettingsUtil.getDefaultPreference();
+            userPreferenceJson = TenantHelper.mergeDefaultPrefsWithTenantFrameworkPrefs(tenantId);
         } else {
             userPreferenceJson = new JsonObject(userPreference.getString(AJEntityUserPreference.PREFERENCE_SETTINGS));
         }

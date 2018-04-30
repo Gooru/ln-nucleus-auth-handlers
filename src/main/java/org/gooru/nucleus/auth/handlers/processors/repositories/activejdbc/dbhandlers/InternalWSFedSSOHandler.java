@@ -182,18 +182,27 @@ public class InternalWSFedSSOHandler implements DBHandler {
                     MessageResponseFactory.createInvalidRequestResponse("Unable to create user"),
                     ExecutionStatus.FAILED);
             }
+            
+			final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
+			return new ExecutionResult<>(
+					MessageResponseFactory.createPostResponse(result,
+							EventBuilderFactory.getWSFedSSOSignupEventBuilder(user.getString(AJEntityUsers.ID))),
+					ExecutionStatus.SUCCESSFUL);
+            
         } else {
             LOGGER.debug("user found in database for reference_id: '{}', client_id: '{}' No need to create",
                 referenceId, tenantId);
             user = users.get(0);
+            
+            final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
+
+			return new ExecutionResult<>(
+					MessageResponseFactory.createPostResponse(result,
+							EventBuilderFactory.getWSFedSSOSigninEventBuilder(user.getString(AJEntityUsers.ID))),
+					ExecutionStatus.SUCCESSFUL);
         }
 
-        final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
-
-        return new ExecutionResult<>(
-            MessageResponseFactory.createPostResponse(result,
-                EventBuilderFactory.getWSFedSSOEventBuilder(user.getString(AJEntityUsers.ID))),
-            ExecutionStatus.SUCCESSFUL);
+        
     }
 
     @Override
