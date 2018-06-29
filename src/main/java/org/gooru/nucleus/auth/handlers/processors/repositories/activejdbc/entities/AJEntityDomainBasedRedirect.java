@@ -26,6 +26,7 @@ public class AJEntityDomainBasedRedirect extends Model {
     public static final String TENANT = "tenant";
 
     public static final String CONTEXT_URL = "context_url"; 
+    public static final String CLASS_CODE = "class_code";
     
     private static final Set<String> CREATABLE_FIELDS = new HashSet<>(Arrays.asList(DOMAIN, CONTEXT_URL));
     private static final Set<String> MANDATORY_FIELDS = new HashSet<>(Arrays.asList(DOMAIN));
