@@ -23,8 +23,10 @@ public class AJEntityDomainBasedRedirect extends Model {
 
     public static final String DOMAIN = "domain";
     public static final String REDIRECT_URL = "redirect_url";
+    public static final String TENANT = "tenant";
 
     public static final String CONTEXT_URL = "context_url"; 
+    public static final String CLASS_CODE = "class_code";
     
     private static final Set<String> CREATABLE_FIELDS = new HashSet<>(Arrays.asList(DOMAIN, CONTEXT_URL));
     private static final Set<String> MANDATORY_FIELDS = new HashSet<>(Arrays.asList(DOMAIN));
@@ -33,6 +35,7 @@ public class AJEntityDomainBasedRedirect extends Model {
     private static final Map<String, FieldConverter> converterRegistry;
     
     public static final String FIND_BY_DOMAIN = "domain = ?";
+    public static final String FIND_BY_TENANT = "tenant = ?";
     
     public static final String RESP_STATUS_CODE = "status_code";
 
