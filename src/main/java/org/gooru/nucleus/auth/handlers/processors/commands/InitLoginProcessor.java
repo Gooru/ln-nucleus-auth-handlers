@@ -28,7 +28,7 @@ public class InitLoginProcessor extends AbstractCommandProcessor {
 		try {
 			return RepoBuilder.buildAuthenticationRepo(context).initLogin();
 		} catch (Throwable t) {
-			LOGGER.error("exception while domain based redirection", t);
+			LOGGER.error("exception while initialize login", t);
 			return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
 		}
 	}
