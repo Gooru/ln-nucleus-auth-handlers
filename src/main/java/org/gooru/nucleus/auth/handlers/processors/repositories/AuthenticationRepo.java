@@ -11,4 +11,6 @@ public interface AuthenticationRepo {
     MessageResponse signinUser();
     
     MessageResponse domainBasedRedirect();
+    
+    MessageResponse initLogin();
 }

@@ -23,6 +23,7 @@ public class AJEntityDomainBasedRedirect extends Model {
 
     public static final String DOMAIN = "domain";
     public static final String REDIRECT_URL = "redirect_url";
+    public static final String TENANT = "tenant";
 
     public static final String CONTEXT_URL = "context_url"; 
     
@@ -33,6 +34,7 @@ public class AJEntityDomainBasedRedirect extends Model {
     private static final Map<String, FieldConverter> converterRegistry;
     
     public static final String FIND_BY_DOMAIN = "domain = ?";
+    public static final String FIND_BY_TENANT = "tenant = ?";
     
     public static final String RESP_STATUS_CODE = "status_code";
 

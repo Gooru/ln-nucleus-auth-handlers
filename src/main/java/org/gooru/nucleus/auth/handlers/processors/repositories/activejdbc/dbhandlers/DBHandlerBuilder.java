@@ -68,4 +68,8 @@ public final class DBHandlerBuilder {
         return new DomainBasedRedirectHandler(context);
     }
 
+	public static DBHandler buildInitLoginHandler(ProcessorContext context) {
+		return new InitLoginHandler(context);
+	}
+
 }

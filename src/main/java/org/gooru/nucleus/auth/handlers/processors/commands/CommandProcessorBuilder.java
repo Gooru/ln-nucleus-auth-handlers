@@ -121,6 +121,12 @@ public enum CommandProcessorBuilder {
         public Processor build(ProcessorContext context) {
             return new InternalWSFedSSOProcessor(context);
         }
+    },
+    INIT_LOGIN(MessageConstants.MSG_OP_INIT_LOGIN) {
+		@Override
+		public Processor build(ProcessorContext context) {
+			return new InitLoginProcessor(context);
+		}
     };
 
     private String name;

@@ -37,4 +37,9 @@ public class AJAuthenticationRepo implements AuthenticationRepo {
     public MessageResponse domainBasedRedirect() {
         return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildDomainBasedRedirectHandler(context));
     }
+
+	@Override
+	public MessageResponse initLogin() {
+		return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildInitLoginHandler(context));
+	}
 }
