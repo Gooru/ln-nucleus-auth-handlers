@@ -38,6 +38,7 @@ public final class MessageConstants {
     public static final String MSG_OP_ACCESS_TOKEN_DETAILS = "access.token.details";
 
     public static final String MSG_OP_DOMAIN_BASED_REDIRECT = "domain.based.redirect";
+    public static final String MSG_OP_INIT_LOGIN = "init.login";
     
     // Authorize command
     public static final String MSG_OP_USER_AUTHORIZE = "user.authorize";
