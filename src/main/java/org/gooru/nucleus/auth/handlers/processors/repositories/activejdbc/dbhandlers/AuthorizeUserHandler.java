@@ -3,11 +3,9 @@ package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhan
 import java.sql.SQLException;
 import java.util.ResourceBundle;
 
-import org.gooru.nucleus.auth.handlers.constants.EmailTemplateConstants;
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
-import org.gooru.nucleus.auth.handlers.processors.emails.EmailNotificationBuilder;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilder;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
@@ -40,11 +38,11 @@ public class AuthorizeUserHandler implements DBHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeUserHandler.class);
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
 
-    private static String clientId;
-    private static String clientKey;
-    private static AJEntityPartner partner;
-    private static AJEntityTenant tenant;
-    private static AJEntityUsers user;
+    private String clientId;
+    private String clientKey;
+    private AJEntityPartner partner;
+    private AJEntityTenant tenant;
+    private AJEntityUsers user;
     private boolean isPartner = false;
 
     public AuthorizeUserHandler(ProcessorContext context) {
