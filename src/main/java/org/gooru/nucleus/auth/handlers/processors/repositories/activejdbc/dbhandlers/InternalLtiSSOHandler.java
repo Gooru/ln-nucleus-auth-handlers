@@ -37,11 +37,11 @@ public class InternalLtiSSOHandler implements DBHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(InternalLtiSSOHandler.class);
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
 
-    private static String clientId;
-    private static String clientKey;
-    private static AJEntityPartner partner;
-    private static AJEntityTenant tenant;
-    private static AJEntityUsers user;
+    private String clientId;
+    private String clientKey;
+    private AJEntityPartner partner;
+    private AJEntityTenant tenant;
+    private AJEntityUsers user;
     private boolean isPartner = false;
 
     public InternalLtiSSOHandler(ProcessorContext context) {

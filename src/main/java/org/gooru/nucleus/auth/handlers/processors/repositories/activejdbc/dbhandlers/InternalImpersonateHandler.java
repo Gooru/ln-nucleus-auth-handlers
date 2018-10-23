@@ -30,10 +30,10 @@ public class InternalImpersonateHandler implements DBHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(InternalImpersonateHandler.class);
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
 
-    private static String basicCredentials;
-    private static AJEntityPartner partner = null;
-    private static AJEntityTenant tenant;
-    private static AJEntityUsers user;
+    private String basicCredentials;
+    private AJEntityPartner partner = null;
+    private AJEntityTenant tenant;
+    private AJEntityUsers user;
 
     public InternalImpersonateHandler(ProcessorContext context) {
         this.context = context;

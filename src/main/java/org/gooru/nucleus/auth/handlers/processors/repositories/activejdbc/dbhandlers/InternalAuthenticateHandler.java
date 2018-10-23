@@ -35,12 +35,12 @@ public class InternalAuthenticateHandler implements DBHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(InternalAuthenticateHandler.class);
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
 
-    private static String basicCredentials;
-    private static String clientId;
-    private static String clientKey;
-    private static AJEntityPartner partner;
-    private static AJEntityTenant tenant;
-    private static AJEntityUsers user;
+    private String basicCredentials;
+    private String clientId;
+    private String clientKey;
+    private AJEntityPartner partner;
+    private AJEntityTenant tenant;
+    private AJEntityUsers user;
 
     private static final List<String> USER_DEMOGRAPHIC_FIELDS = Arrays
         .asList("first_name", "last_name", "user_category", "birth_date", "grade", "course", "thumbnail", "gender",
