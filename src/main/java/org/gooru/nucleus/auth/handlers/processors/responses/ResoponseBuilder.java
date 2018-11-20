@@ -5,6 +5,7 @@ import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.DBHelper;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityRole;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserState;
@@ -53,6 +54,7 @@ public class ResoponseBuilder {
         result.put(ParameterConstants.PARAM_TENANT, tenantJson);
 
         result.put(AJEntityUserPreference.PREFERENCE_SETTINGS, DBHelper.getUserPreference(userId, tenant.getString(AJEntityTenant.ID)));
+        result.put(AJEntityRole.ROLES_RESP_KEY, DBHelper.getUserRolesAndPermission(userId));
 
         int accessTokenValidity = (partner != null) ? partner.getInteger(AJEntityPartner.ACCESS_TOKEN_VALIDITY) :
             tenant.getInteger(AJEntityTenant.ACCESS_TOKEN_VALIDITY);

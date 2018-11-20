@@ -1,14 +1,24 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityRole;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityRolePermissionMapping;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserRoleMapping;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserState;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
+import org.gooru.nucleus.auth.handlers.processors.utils.InternalHelper;
+import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -96,4 +106,61 @@ public final class DBHelper {
             LOGGER.debug("unable to save welcome email state for user '{}'", userId);
         }
     }
+    
+	public static JsonArray getUserRolesAndPermission(String userId) {
+		LazyList<AJEntityUserRoleMapping> userRoles = AJEntityUserRoleMapping
+				.findBySQL(AJEntityUserRoleMapping.FETCH_USER_ROLE, userId);
+		if (userRoles.isEmpty()) {
+			LOGGER.debug("No role has been assigned to user '{}'", userId);
+			return null;
+		}
+
+		List<Integer> userRoleIds = new ArrayList<>();
+		userRoles.forEach(role -> {
+			userRoleIds.add(role.getInteger(AJEntityUserRoleMapping.ROLE_ID));
+		});
+
+		LazyList<AJEntityRole> roles = AJEntityRole.findBySQL(AJEntityRole.FETCH_ROLES,
+				InternalHelper.toPostgresArrayInt(userRoleIds));
+		if (roles.isEmpty()) {
+			LOGGER.warn("Roles assigned to user '{}' not present in master table", userId);
+			return null;
+		}
+
+		Map<Integer, AJEntityRole> roleMap = new HashMap<>();
+		List<Integer> roleIds = new ArrayList<>();
+		roles.forEach(role -> {
+			Integer roleId = role.getInteger(AJEntityRole.ID);
+			roleMap.put(roleId, role);
+			roleIds.add(roleId);
+		});
+
+		LazyList<AJEntityRolePermissionMapping> rolePermissions = AJEntityRolePermissionMapping.findBySQL(
+				AJEntityRolePermissionMapping.FETCH_PERMISSIONS_BY_MULTIPLE_ROLES,
+				InternalHelper.toPostgresArrayInt(roleIds));
+		Map<Integer, JsonArray> rolePermissionsMap = new HashMap<>();
+		rolePermissions.forEach(mapping -> {
+			Integer roleId = mapping.getInteger(AJEntityRolePermissionMapping.ROLE_ID);
+			if (rolePermissionsMap.containsKey(roleId)) {
+				rolePermissionsMap.get(roleId).add(mapping.getString(AJEntityRolePermissionMapping.PERMISSION_NAME));
+			} else {
+				JsonArray permissions = new JsonArray();
+				permissions.add(mapping.getString(AJEntityRolePermissionMapping.PERMISSION_NAME));
+				rolePermissionsMap.put(roleId, permissions);
+			}
+		});
+		
+		JsonArray rolesArray = new JsonArray();
+		rolePermissionsMap.forEach((k, v) -> {
+			JsonObject roleJson = new JsonObject();
+			AJEntityRole role = roleMap.get(k);
+			roleJson.put("id", role.getInteger("id"));
+			roleJson.put("name", role.getString("name"));
+			roleJson.put("permissions", v);
+			
+			rolesArray.add(roleJson);
+		});
+		
+		return rolesArray;
+	}
 }
