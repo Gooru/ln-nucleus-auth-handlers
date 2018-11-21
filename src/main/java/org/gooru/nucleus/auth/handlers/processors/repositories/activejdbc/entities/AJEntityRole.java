@@ -16,9 +16,6 @@ public class AJEntityRole extends Model {
 	public final static String ID = "id";
 	public final static String NAME = "name";
 
-	public final static String ROLES_RESP_KEY = "roles";
-	public final static String PERMISSIONS = "permissions";
-
 	public static final List<String> FETCH_ROLE_FIELDS = Arrays.asList(ID, NAME);
 
 	public static final String FETCH_ROLES = "SELECT id, name, description FROM role WHERE id = ANY(?::int[])";

@@ -18,6 +18,6 @@ public class AJEntityRolePermissionMapping extends Model {
 	public static final String PERMISSIONS_RESP_KEY = "permissions";
 
 	public final static String FETCH_PERMISSIONS_BY_ROLE = "SELECT permission_name FROM role_permission_mapping WHERE role_id = ?";
-	public final static String FETCH_PERMISSIONS_BY_MULTIPLE_ROLES = "SELECT role_id, permission_name FROM role_permission_mapping WHERE role_id = ANY(?::int[])";
+	public final static String FETCH_PERMISSIONS_BY_MULTIPLE_ROLES = "SELECT permission_name FROM role_permission_mapping WHERE role_id = ANY(?::int[])";
 
 }

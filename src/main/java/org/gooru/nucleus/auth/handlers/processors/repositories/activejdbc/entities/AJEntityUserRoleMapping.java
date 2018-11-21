@@ -14,6 +14,8 @@ public class AJEntityUserRoleMapping extends Model {
 
 	public final static String ROLE_ID = "role_id";
 	public final static String USER_ID = "user_id";
+	
+	public final static String PERMISSIONS_RESP_KEY = "permissions";
 
 	public static final String FETCH_USER_ROLE = "SELECT role_id FROM user_role_mapping WHERE user_id = ?::uuid";
 

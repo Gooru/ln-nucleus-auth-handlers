@@ -26,87 +26,87 @@ import io.vertx.core.json.JsonObject;
  */
 public final class DBHelper {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DBHelper.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DBHelper.class);
 
-    private DBHelper() {
-        throw new AssertionError();
-    }
+	private DBHelper() {
+		throw new AssertionError();
+	}
 
-    public static AJEntityUsers getUserByIdAndTenantId(String userId, String tenantId) {
-        LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_ID_TENANT_ID, userId, tenantId);
-        return users.isEmpty() ? null : users.get(0);
-    }
+	public static AJEntityUsers getUserByIdAndTenantId(String userId, String tenantId) {
+		LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_ID_TENANT_ID, userId, tenantId);
+		return users.isEmpty() ? null : users.get(0);
+	}
 
-    public static AJEntityUsers getUserByIdAndPartnerId(String userId, String partnerId) {
-        LazyList<AJEntityUsers> users =
-            AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_ID_PARTNER_ID, userId, partnerId);
-        return users.isEmpty() ? null : users.get(0);
-    }
+	public static AJEntityUsers getUserByIdAndPartnerId(String userId, String partnerId) {
+		LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_ID_PARTNER_ID, userId,
+				partnerId);
+		return users.isEmpty() ? null : users.get(0);
+	}
 
-    public static AJEntityUsers getUserById(String userId) {
-        LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_ID, userId);
-        return users.isEmpty() ? null : users.get(0);
-    }
+	public static AJEntityUsers getUserById(String userId) {
+		LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_ID, userId);
+		return users.isEmpty() ? null : users.get(0);
+	}
 
-    public static AJEntityUsers getUserByEmailAndTenantId(String email, String tenantId, String partnerId) {
-        if (email == null || email.isEmpty()) {
-            return null;
-        }
+	public static AJEntityUsers getUserByEmailAndTenantId(String email, String tenantId, String partnerId) {
+		if (email == null || email.isEmpty()) {
+			return null;
+		}
 
-        LazyList<AJEntityUsers> users;
-        if (partnerId != null) {
-            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_PARTNER_ID, email.toLowerCase(), partnerId);
-        } else {
-            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_TENANT_ID, email.toLowerCase(), tenantId);
-        }
-        return users.isEmpty() ? null : users.get(0);
-    }
+		LazyList<AJEntityUsers> users;
+		if (partnerId != null) {
+			users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_PARTNER_ID, email.toLowerCase(), partnerId);
+		} else {
+			users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_TENANT_ID, email.toLowerCase(), tenantId);
+		}
+		return users.isEmpty() ? null : users.get(0);
+	}
 
-    public static AJEntityUsers getUserByUsername(String username, String tenantId, String partnerId,
-        boolean isPartner) {
-        if (username == null || username.isEmpty()) {
-            return null;
-        }
-        
-        AJEntityUsers user;
-        if (isPartner) {
-            user =
-                AJEntityUsers.findFirst(AJEntityUsers.SELECT_BY_USERNAME_PARTNER_ID, username.toLowerCase(), partnerId);
-        } else {
-            user =
-                AJEntityUsers.findFirst(AJEntityUsers.SELECT_BY_USERNAME_TENANT_ID, username.toLowerCase(), tenantId);
-        }
-        return user;
-    }
+	public static AJEntityUsers getUserByUsername(String username, String tenantId, String partnerId,
+			boolean isPartner) {
+		if (username == null || username.isEmpty()) {
+			return null;
+		}
 
-    public static JsonObject getUserPreference(String userId, String tenantId) {
-        AJEntityUserPreference userPreference =
-            AJEntityUserPreference.findFirst(AJEntityUserPreference.SELECT_BY_USERID, userId);
-        JsonObject userPreferenceJson;
-        if (userPreference == null) {
-            LOGGER.warn("user preferences not found, returning default");
-            userPreferenceJson = TenantHelper.mergeDefaultPrefsWithTenantFrameworkPrefs(tenantId);
-        } else {
-            userPreferenceJson = new JsonObject(userPreference.getString(AJEntityUserPreference.PREFERENCE_SETTINGS));
-        }
+		AJEntityUsers user;
+		if (isPartner) {
+			user = AJEntityUsers.findFirst(AJEntityUsers.SELECT_BY_USERNAME_PARTNER_ID, username.toLowerCase(),
+					partnerId);
+		} else {
+			user = AJEntityUsers.findFirst(AJEntityUsers.SELECT_BY_USERNAME_TENANT_ID, username.toLowerCase(),
+					tenantId);
+		}
+		return user;
+	}
 
-        return userPreferenceJson;
-    }
+	public static JsonObject getUserPreference(String userId, String tenantId) {
+		AJEntityUserPreference userPreference = AJEntityUserPreference
+				.findFirst(AJEntityUserPreference.SELECT_BY_USERID, userId);
+		JsonObject userPreferenceJson;
+		if (userPreference == null) {
+			LOGGER.warn("user preferences not found, returning default");
+			userPreferenceJson = TenantHelper.mergeDefaultPrefsWithTenantFrameworkPrefs(tenantId);
+		} else {
+			userPreferenceJson = new JsonObject(userPreference.getString(AJEntityUserPreference.PREFERENCE_SETTINGS));
+		}
 
-    public static JsonObject getUserClientState(String userId) {
-        AJEntityUserState userState = AJEntityUserState.findById(UUID.fromString(userId));
-        return userState != null ? userState.getClientState() : null;
-    }
-    
-    public static void storeUserSystemStateForSignup(String userId) {
-        AJEntityUserState userState = new AJEntityUserState();
-        userState.setUserId(userId);
-        userState.setSystemState(AJEntityUserState.WELCOME_EMAIL_SENT_STATE);
-        if (!userState.insert()) {
-            LOGGER.debug("unable to save welcome email state for user '{}'", userId);
-        }
-    }
-    
+		return userPreferenceJson;
+	}
+
+	public static JsonObject getUserClientState(String userId) {
+		AJEntityUserState userState = AJEntityUserState.findById(UUID.fromString(userId));
+		return userState != null ? userState.getClientState() : null;
+	}
+
+	public static void storeUserSystemStateForSignup(String userId) {
+		AJEntityUserState userState = new AJEntityUserState();
+		userState.setUserId(userId);
+		userState.setSystemState(AJEntityUserState.WELCOME_EMAIL_SENT_STATE);
+		if (!userState.insert()) {
+			LOGGER.debug("unable to save welcome email state for user '{}'", userId);
+		}
+	}
+
 	public static JsonArray getUserRolesAndPermission(String userId) {
 		LazyList<AJEntityUserRoleMapping> userRoles = AJEntityUserRoleMapping
 				.findBySQL(AJEntityUserRoleMapping.FETCH_USER_ROLE, userId);
@@ -120,47 +120,14 @@ public final class DBHelper {
 			userRoleIds.add(role.getInteger(AJEntityUserRoleMapping.ROLE_ID));
 		});
 
-		LazyList<AJEntityRole> roles = AJEntityRole.findBySQL(AJEntityRole.FETCH_ROLES,
-				InternalHelper.toPostgresArrayInt(userRoleIds));
-		if (roles.isEmpty()) {
-			LOGGER.warn("Roles assigned to user '{}' not present in master table", userId);
-			return null;
-		}
-
-		Map<Integer, AJEntityRole> roleMap = new HashMap<>();
-		List<Integer> roleIds = new ArrayList<>();
-		roles.forEach(role -> {
-			Integer roleId = role.getInteger(AJEntityRole.ID);
-			roleMap.put(roleId, role);
-			roleIds.add(roleId);
-		});
-
 		LazyList<AJEntityRolePermissionMapping> rolePermissions = AJEntityRolePermissionMapping.findBySQL(
 				AJEntityRolePermissionMapping.FETCH_PERMISSIONS_BY_MULTIPLE_ROLES,
-				InternalHelper.toPostgresArrayInt(roleIds));
-		Map<Integer, JsonArray> rolePermissionsMap = new HashMap<>();
+				InternalHelper.toPostgresArrayInt(userRoleIds));
+		JsonArray permissionsArray = new JsonArray();
 		rolePermissions.forEach(mapping -> {
-			Integer roleId = mapping.getInteger(AJEntityRolePermissionMapping.ROLE_ID);
-			if (rolePermissionsMap.containsKey(roleId)) {
-				rolePermissionsMap.get(roleId).add(mapping.getString(AJEntityRolePermissionMapping.PERMISSION_NAME));
-			} else {
-				JsonArray permissions = new JsonArray();
-				permissions.add(mapping.getString(AJEntityRolePermissionMapping.PERMISSION_NAME));
-				rolePermissionsMap.put(roleId, permissions);
-			}
+			permissionsArray.add(mapping.getString(AJEntityRolePermissionMapping.PERMISSION_NAME));
 		});
-		
-		JsonArray rolesArray = new JsonArray();
-		rolePermissionsMap.forEach((k, v) -> {
-			JsonObject roleJson = new JsonObject();
-			AJEntityRole role = roleMap.get(k);
-			roleJson.put("id", role.getInteger("id"));
-			roleJson.put("name", role.getString("name"));
-			roleJson.put("permissions", v);
-			
-			rolesArray.add(roleJson);
-		});
-		
-		return rolesArray;
+
+		return permissionsArray;
 	}
 }
