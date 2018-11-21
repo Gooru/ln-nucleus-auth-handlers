@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.ResourceBundle;
 
 import org.gooru.nucleus.auth.handlers.app.components.AppHttpClient;
@@ -126,4 +128,22 @@ public final class InternalHelper {
             LOGGER.error("error while posting event", t);
         }
     }
+    
+	public static String toPostgresArrayInt(Collection<Integer> input) {
+		Iterator<Integer> it = input.iterator();
+		if (!it.hasNext()) {
+			return "{}";
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append('{');
+		for (;;) {
+			Integer i = it.next();
+			sb.append(i);
+			if (!it.hasNext()) {
+				return sb.append('}').toString();
+			}
+			sb.append(',');
+		}
+	}
 }
