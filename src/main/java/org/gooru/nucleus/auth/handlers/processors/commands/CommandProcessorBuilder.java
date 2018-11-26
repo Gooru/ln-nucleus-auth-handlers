@@ -11,8 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author szgooru
- *         Created On: 30-Dec-2016
+ * @author szgooru Created On: 30-Dec-2016
  */
 public enum CommandProcessorBuilder {
 
@@ -123,10 +122,16 @@ public enum CommandProcessorBuilder {
         }
     },
     INIT_LOGIN(MessageConstants.MSG_OP_INIT_LOGIN) {
-		@Override
-		public Processor build(ProcessorContext context) {
-			return new InitLoginProcessor(context);
-		}
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new InitLoginProcessor(context);
+        }
+    },
+    INTERNAL_TENANT_RELAM(MessageConstants.MSG_OP_INTERNAL_TENANT_RELAM) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new InternalTenantRelamProcessor(context);
+        }
     };
 
     private String name;

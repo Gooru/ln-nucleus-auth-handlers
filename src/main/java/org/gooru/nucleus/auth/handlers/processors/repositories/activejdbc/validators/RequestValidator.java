@@ -11,6 +11,7 @@ public final class RequestValidator {
 
     private static final String CLIENT_ID = ParameterConstants.PARAM_CLIENT_ID;
     private static final String CLIENT_KEY = ParameterConstants.PARAM_CLIENT_KEY;
+    private static final String ANONYMOUS_TOKEN = ParameterConstants.PARAM_ANONYMOUS_TOKEN;
     private static final String USER_CATEGORY = "user_category";
     private static final String GRANT_TYPE = ParameterConstants.PARAM_GRANT_TYPE;
     private static final String USER = ParameterConstants.PARAM_USER;
@@ -22,10 +23,10 @@ public final class RequestValidator {
     private static final Set<String> WSFEDSSO_FIELDS = new HashSet<>(Arrays.asList(GRANT_TYPE, USER));
 
     private static final Set<String> AUTHORIZE_ALLOWED_FIELDS =
-        new HashSet<>(Arrays.asList(CLIENT_ID, CLIENT_KEY, GRANT_TYPE, USER, APP_ID));
+        new HashSet<>(Arrays.asList(CLIENT_ID, CLIENT_KEY, ANONYMOUS_TOKEN, GRANT_TYPE, USER, APP_ID));
     
     private static final Set<String> AUTHORIZE_MANDATORY_FIELDS =
-        new HashSet<>(Arrays.asList(CLIENT_ID, CLIENT_KEY, GRANT_TYPE));
+        new HashSet<>(Arrays.asList(GRANT_TYPE));
 
     static {
         validatorRegistry = initializeValidators();

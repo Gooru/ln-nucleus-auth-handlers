@@ -19,6 +19,7 @@
     "http.conn.poolsize" : 20
   },
   "app.config" : {
-  	"appid.required" : false
+  	"appid.required" : false,
+  	"applogin.url": "http://local.gooru.org/sign-in"
   }
 }

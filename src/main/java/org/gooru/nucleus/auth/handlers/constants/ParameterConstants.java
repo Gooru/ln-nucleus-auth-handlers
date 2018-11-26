@@ -12,6 +12,7 @@ public final class ParameterConstants {
 
     public static final String PARAM_CLIENT_ID = "client_id";
     public static final String PARAM_CLIENT_KEY = "client_key";
+    public static final String PARAM_ANONYMOUS_TOKEN = "anonymous_token";
     public static final String PARAM_GRANT_TYPE = "grant_type";
     public static final String PARAM_ACCESS_TOKEN_VALIDITY = "access_token_validity";
     public static final String PARAM_PROVIDED_AT = "provided_at";
@@ -25,6 +26,7 @@ public final class ParameterConstants {
     public static final String PARAM_OLD_PASSWORD = "old_password";
     public static final String PARAM_NEW_PASSWORD = "new_password";
     public static final String PARAM_IDENTITY_ID = "identity_id";
+    public static final String PARAM_SHORT_NAME = "short_name";
 
     public static final String PARAM_USER = "user";
     public static final String PARAM_USER_ID = "user_id";

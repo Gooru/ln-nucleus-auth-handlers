@@ -23,4 +23,6 @@ public class AJEntityPartner extends Model {
 
     public static final String SELECT_BY_ID_SECRET =
         "SELECT id, tenant_id, access_token_validity FROM partner WHERE id = ?::uuid AND secret = ?";
+    public static final String SELECT_BY_ID =
+        "SELECT id, tenant_id, access_token_validity FROM partner WHERE id = ?::uuid";
 }

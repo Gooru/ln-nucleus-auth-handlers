@@ -3,8 +3,7 @@ package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhan
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 
 /**
- * @author szgooru
- *         Created On: 02-Jan-2017
+ * @author szgooru Created On: 02-Jan-2017
  */
 public final class DBHandlerBuilder {
 
@@ -68,8 +67,12 @@ public final class DBHandlerBuilder {
         return new DomainBasedRedirectHandler(context);
     }
 
-	public static DBHandler buildInitLoginHandler(ProcessorContext context) {
-		return new InitLoginHandler(context);
-	}
+    public static DBHandler buildInitLoginHandler(ProcessorContext context) {
+        return new InitLoginHandler(context);
+    }
+
+    public static DBHandler buildTenantRelamHandler(ProcessorContext context) {
+        return new InternalTenantRelamHandler(context);
+    }
 
 }
