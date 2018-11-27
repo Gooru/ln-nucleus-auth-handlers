@@ -12,20 +12,20 @@ import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult;
 import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponseFactory;
-import org.gooru.nucleus.auth.handlers.processors.utils.InternalHelper;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InternalTenantRelamHandler implements DBHandler {
+public class InternalTenantRealmHandler implements DBHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InternalTenantRelamHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InternalTenantRealmHandler.class);
     private final ProcessorContext context;
     private String shortName;
     private final RedisClient redisClient;
     private final String appLoginUrl;
-
-    public InternalTenantRelamHandler(ProcessorContext context) {
+    private final static int NONCE_EXPIRE_IN_SECONDS = 3600;
+    
+    public InternalTenantRealmHandler(ProcessorContext context) {
         this.context = context;
         this.redisClient = RedisClient.instance();
         this.appLoginUrl = AppConfiguration.getInstance().appLoginUrl();
@@ -54,7 +54,7 @@ public class InternalTenantRelamHandler implements DBHandler {
             shortName, HelperConstants.GrantTypes.credential.getType());
         if (tenants.size() > 0) {
             final AJEntityTenant tenant = tenants.get(0);
-            String nonce = saveTenantIdInRedis(tenant.getString(AJEntityTenant.ID));
+            String nonce = generateNonceAndsaveInRedis(tenant.getString(AJEntityTenant.ID));
             String appLoginUrl = this.appLoginUrl + "?nonce=" + nonce;
             return new ExecutionResult<>(MessageResponseFactory.createMovePermanentlyResponse(appLoginUrl),
                 ExecutionResult.ExecutionStatus.SUCCESSFUL);
@@ -65,9 +65,9 @@ public class InternalTenantRelamHandler implements DBHandler {
         }
     }
 
-    private String saveTenantIdInRedis(String tenantId) {
+    private String generateNonceAndsaveInRedis(String tenantId) {
         String nonce = UUID.randomUUID().toString();
-        this.redisClient.set(nonce, tenantId, 3600);
+        this.redisClient.set(nonce, tenantId, NONCE_EXPIRE_IN_SECONDS);
         return nonce;
     }
 

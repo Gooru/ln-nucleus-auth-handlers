@@ -39,8 +39,8 @@ public class AJInternalRepo implements InternalRepo {
     }
     
     @Override
-    public MessageResponse tenantRelam() {
-        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildTenantRelamHandler(context));
+    public MessageResponse tenantRealm() {
+        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildTenantRealmHandler(context));
     }
 
 }

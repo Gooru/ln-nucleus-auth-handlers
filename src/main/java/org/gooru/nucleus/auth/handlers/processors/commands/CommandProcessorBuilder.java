@@ -127,10 +127,10 @@ public enum CommandProcessorBuilder {
             return new InitLoginProcessor(context);
         }
     },
-    INTERNAL_TENANT_RELAM(MessageConstants.MSG_OP_INTERNAL_TENANT_RELAM) {
+    INTERNAL_TENANT_REALM(MessageConstants.MSG_OP_INTERNAL_TENANT_REALM) {
         @Override
         public Processor build(ProcessorContext context) {
-            return new InternalTenantRelamProcessor(context);
+            return new InternalTenantRealmProcessor(context);
         }
     };
 

@@ -71,8 +71,8 @@ public final class DBHandlerBuilder {
         return new InitLoginHandler(context);
     }
 
-    public static DBHandler buildTenantRelamHandler(ProcessorContext context) {
-        return new InternalTenantRelamHandler(context);
+    public static DBHandler buildTenantRealmHandler(ProcessorContext context) {
+        return new InternalTenantRealmHandler(context);
     }
 
 }

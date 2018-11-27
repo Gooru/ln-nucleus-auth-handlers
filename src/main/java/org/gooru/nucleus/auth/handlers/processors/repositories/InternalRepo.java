@@ -16,5 +16,5 @@ public interface InternalRepo {
     
     MessageResponse wsfedsso();
     
-    MessageResponse tenantRelam();
+    MessageResponse tenantRealm();
 }

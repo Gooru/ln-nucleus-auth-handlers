@@ -7,11 +7,11 @@ import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponseFacto
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InternalTenantRelamProcessor extends AbstractCommandProcessor {
+public class InternalTenantRealmProcessor extends AbstractCommandProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InternalTenantRelamProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InternalTenantRealmProcessor.class);
 
-    protected InternalTenantRelamProcessor(ProcessorContext context) {
+    protected InternalTenantRealmProcessor(ProcessorContext context) {
         super(context);
     }
 
@@ -23,10 +23,10 @@ public class InternalTenantRelamProcessor extends AbstractCommandProcessor {
     @Override
     protected MessageResponse processCommand() {
         try {
-            LOGGER.info("processing internal tenant relam");
-            return RepoBuilder.buildInternalRepo(context).tenantRelam();
+            LOGGER.info("processing internal tenant realm");
+            return RepoBuilder.buildInternalRepo(context).tenantRealm();
         } catch (Throwable t) {
-            LOGGER.error("exception while internal tenant relam", t);
+            LOGGER.error("exception while internal tenant realm", t);
             return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
         }
     }
