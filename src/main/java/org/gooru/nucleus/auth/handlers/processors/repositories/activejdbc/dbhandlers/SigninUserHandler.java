@@ -2,6 +2,7 @@ package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhan
 
 import java.util.ResourceBundle;
 
+import org.gooru.nucleus.auth.handlers.app.components.RedisClient;
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.MessageConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
@@ -40,9 +41,12 @@ public class SigninUserHandler implements DBHandler {
     private AJEntityPartner partner;
     private AJEntityTenant tenant;
     private AJEntityUsers user;
+    private final RedisClient redisClient;
+    private boolean isAnonymousTokenExist;
 
     public SigninUserHandler(ProcessorContext context) {
         this.context = context;
+        this.redisClient = RedisClient.instance();
     }
 
     @Override
@@ -63,9 +67,6 @@ public class SigninUserHandler implements DBHandler {
                 ExecutionStatus.FAILED);
         }
 
-        clientId = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_ID);
-        clientKey = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_KEY);
-
         basicCredentials = context.headers().get(MessageConstants.MSG_HEADER_BASIC_AUTH);
         if (basicCredentials == null || basicCredentials.isEmpty()) {
             LOGGER.warn("invalid credentials in request");
@@ -73,8 +74,7 @@ public class SigninUserHandler implements DBHandler {
                 MessageResponseFactory.createUnauthorizedResponse(RESOURCE_BUNDLE.getString("invalid.credential")),
                 ExecutionStatus.FAILED);
         }
-
-        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+        return checkClientDetailsOrAnonymousToken();
 
     }
 
@@ -89,11 +89,22 @@ public class SigninUserHandler implements DBHandler {
         LazyList<AJEntityTenant> tenants;
 
         // First lookup in partner if not found, fall back on tenant
-        LazyList<AJEntityPartner> partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
-            InternalHelper.encryptClientKey(clientKey));
+        LazyList<AJEntityPartner> partners = null;
+        if (isAnonymousTokenExist) {
+            partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID, clientId);
+        } else {
+            partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
+                InternalHelper.encryptClientKey(clientKey));
+        }
+
         if (partners.isEmpty()) {
-            tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
-                InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.credential.getType());
+            if (isAnonymousTokenExist) {
+                tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_GRANT_TYPE, clientId,
+                    HelperConstants.GrantTypes.credential.getType());
+            } else {
+                tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
+                    InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.credential.getType());
+            }
         } else {
             partner = partners.get(0);
             tenants =
@@ -153,6 +164,43 @@ public class SigninUserHandler implements DBHandler {
             MessageResponseFactory.createGetResponse(result,
                 EventBuilderFactory.getSigninUserEventBuilder(user.getString(AJEntityUsers.ID))),
             ExecutionResult.ExecutionStatus.SUCCESSFUL);
+    }
+
+    private ExecutionResult<MessageResponse> checkClientDetailsOrAnonymousToken() {
+        clientId = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_ID);
+        clientKey = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_KEY);
+        if (clientId != null && clientKey != null) {
+            return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+        } else {
+            String anonymousToken = context.requestBody().getString(ParameterConstants.PARAM_ANONYMOUS_TOKEN);
+            if (anonymousToken == null) {
+                LOGGER.warn(RESOURCE_BUNDLE.getString("missing.client.details.or.anonymous.token"));
+                return new ExecutionResult<>(
+                    MessageResponseFactory.createInvalidRequestResponse(
+                        RESOURCE_BUNDLE.getString("missing.client.details.or.anonymous.token")),
+                    ExecutionResult.ExecutionStatus.FAILED);
+
+            } else {
+                JsonObject tenant = this.getTenantFromToken(anonymousToken);
+                if (tenant != null) {
+                    clientId = tenant.getString(ParameterConstants.PARAM_TENANT_ID);
+                    isAnonymousTokenExist = true;
+                } else {
+                    LOGGER.warn(RESOURCE_BUNDLE.getString("anonymous.not.found"));
+                    return new ExecutionResult<>(MessageResponseFactory.createUnauthorizedResponse(
+                        RESOURCE_BUNDLE.getString("anonymous.not.found")), ExecutionStatus.FAILED);
+                }
+            }
+        }
+
+        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+
+    }
+
+    private JsonObject getTenantFromToken(String token) {
+        JsonObject anonymousTokenDetails = this.redisClient.getJsonObject(token);
+        return anonymousTokenDetails != null ? anonymousTokenDetails.getJsonObject(ParameterConstants.PARAM_TENANT)
+            : null;
     }
 
     @Override

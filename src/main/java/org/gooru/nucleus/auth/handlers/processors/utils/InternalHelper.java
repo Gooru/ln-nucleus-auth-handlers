@@ -30,6 +30,7 @@ public final class InternalHelper {
     private static final String TOKEN_VERSION = "2";
     private static final String RESET_PASSWORD_TOKEN = "RESET_PASSWORD_TOKEN";
     private static final String CLIENT_KEY_HASH = "$GooruCLIENTKeyHash$";
+    private static final String NONCE_KEY_HASH = "$GooruNONCEHash$";
     private static final String COLON = ":";
 
     private InternalHelper() {
@@ -39,6 +40,7 @@ public final class InternalHelper {
     public static String encryptClientKey(final String key) {
         return encrypt(CLIENT_KEY_HASH + key);
     }
+    
 
     private static String encrypt(final String text) {
         try {

@@ -15,4 +15,6 @@ public interface InternalRepo {
     MessageResponse ltisso();
     
     MessageResponse wsfedsso();
+    
+    MessageResponse tenantRealm();
 }

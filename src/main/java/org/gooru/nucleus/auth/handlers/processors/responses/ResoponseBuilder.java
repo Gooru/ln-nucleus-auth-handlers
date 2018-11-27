@@ -51,6 +51,7 @@ public class ResoponseBuilder {
 
         JsonObject tenantJson = new JsonObject();
         tenantJson.put(AJEntityUsers.TENANT_ID, tenant.getString(AJEntityTenant.ID));
+        tenantJson.put(AJEntityTenant.SHORT_NAME, tenant.getString(AJEntityTenant.SHORT_NAME));
         tenantJson.put(AJEntityUsers.TENANT_ROOT, user.getString(AJEntityUsers.TENANT_ROOT));
         result.put(ParameterConstants.PARAM_TENANT, tenantJson);
 
