@@ -23,7 +23,6 @@ public class InternalTenantRealmHandler implements DBHandler {
     private String shortName;
     private final RedisClient redisClient;
     private final String appLoginUrl;
-    private final static int NONCE_EXPIRE_IN_SECONDS = 3600;
     
     public InternalTenantRealmHandler(ProcessorContext context) {
         this.context = context;
@@ -67,7 +66,8 @@ public class InternalTenantRealmHandler implements DBHandler {
 
     private String generateNonceAndsaveInRedis(String tenantId) {
         String nonce = UUID.randomUUID().toString();
-        this.redisClient.set(nonce, tenantId, NONCE_EXPIRE_IN_SECONDS);
+        int nonceExpireInSecs = this.redisClient.getNonceExpireInSecs();
+        this.redisClient.set(nonce, tenantId, nonceExpireInSecs);
         return nonce;
     }
 
