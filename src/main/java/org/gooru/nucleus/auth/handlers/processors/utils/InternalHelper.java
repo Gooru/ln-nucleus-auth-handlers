@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.ResourceBundle;
 
 import org.gooru.nucleus.auth.handlers.app.components.AppHttpClient;
@@ -28,6 +30,7 @@ public final class InternalHelper {
     private static final String TOKEN_VERSION = "2";
     private static final String RESET_PASSWORD_TOKEN = "RESET_PASSWORD_TOKEN";
     private static final String CLIENT_KEY_HASH = "$GooruCLIENTKeyHash$";
+    private static final String NONCE_KEY_HASH = "$GooruNONCEHash$";
     private static final String COLON = ":";
 
     private InternalHelper() {
@@ -37,6 +40,7 @@ public final class InternalHelper {
     public static String encryptClientKey(final String key) {
         return encrypt(CLIENT_KEY_HASH + key);
     }
+    
 
     private static String encrypt(final String text) {
         try {
@@ -126,4 +130,22 @@ public final class InternalHelper {
             LOGGER.error("error while posting event", t);
         }
     }
+    
+	public static String toPostgresArrayInt(Collection<Integer> input) {
+		Iterator<Integer> it = input.iterator();
+		if (!it.hasNext()) {
+			return "{}";
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append('{');
+		for (;;) {
+			Integer i = it.next();
+			sb.append(i);
+			if (!it.hasNext()) {
+				return sb.append('}').toString();
+			}
+			sb.append(',');
+		}
+	}
 }

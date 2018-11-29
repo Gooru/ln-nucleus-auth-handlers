@@ -37,5 +37,10 @@ public class AJInternalRepo implements InternalRepo {
     public MessageResponse wsfedsso() {
         return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildInternalWSFedSSOHandler(context));
     }
+    
+    @Override
+    public MessageResponse tenantRealm() {
+        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildTenantRealmHandler(context));
+    }
 
 }

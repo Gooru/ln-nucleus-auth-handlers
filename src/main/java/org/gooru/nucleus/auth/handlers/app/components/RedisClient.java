@@ -13,6 +13,8 @@ import redis.clients.jedis.JedisPoolConfig;
 public final class RedisClient implements Initializer, Finalizer {
 
     private JedisPool pool = null;
+    private int nonceExpireInSecs;
+    private final String KEY_NONCE_EXPIRE_IN_SECS = "nonce.expire.in.secs";
 
     @Override
     public void initializeComponent(Vertx vertx, JsonObject config) {
@@ -25,6 +27,7 @@ public final class RedisClient implements Initializer, Finalizer {
         jedisPoolConfig.setTestOnBorrow(true);
         pool = new JedisPool(jedisPoolConfig, redisConfig.getString(ConfigConstants.HOST),
             redisConfig.getInteger(ConfigConstants.PORT));
+        nonceExpireInSecs = redisConfig.getInteger(KEY_NONCE_EXPIRE_IN_SECS, 180);
     }
 
     public static RedisClient instance() {
@@ -121,6 +124,10 @@ public final class RedisClient implements Initializer, Finalizer {
         if (pool != null) {
             pool.destroy();
         }
+    }
+
+    public int getNonceExpireInSecs() {
+        return nonceExpireInSecs;
     }
 
     private static final class Holder {

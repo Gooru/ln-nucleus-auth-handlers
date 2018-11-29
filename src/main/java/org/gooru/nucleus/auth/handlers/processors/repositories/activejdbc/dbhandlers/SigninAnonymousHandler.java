@@ -39,7 +39,7 @@ public class SigninAnonymousHandler implements DBHandler {
 
     private String clientId;
     private String clientKey;
-
+    private boolean isNonceExist;
     private AJEntityPartner partner;
     private AJEntityTenant tenant;
 
@@ -65,11 +65,8 @@ public class SigninAnonymousHandler implements DBHandler {
                 MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("invalid.granttype")),
                 ExecutionStatus.FAILED);
         }
+        return checkClientDetailsOrNonce();
 
-        clientId = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_ID);
-        clientKey = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_KEY);
-
-        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
     @Override
@@ -83,11 +80,22 @@ public class SigninAnonymousHandler implements DBHandler {
         LazyList<AJEntityTenant> tenants;
 
         // First lookup in partner if not found, fall back on tenant
-        LazyList<AJEntityPartner> partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
-            InternalHelper.encryptClientKey(clientKey));
+        LazyList<AJEntityPartner> partners = null;
+        if (isNonceExist) {
+            partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID, clientId);
+        } else {
+            partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
+                InternalHelper.encryptClientKey(clientKey));
+        }
+
         if (partners.isEmpty()) {
-            tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
-                InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.anonymous.getType());
+            if (isNonceExist) {
+                tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_GRANT_TYPE, clientId,
+                    HelperConstants.GrantTypes.anonymous.getType());
+            } else {
+                tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
+                    InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.anonymous.getType());
+            }
         } else {
             partner = partners.get(0);
             tenants =
@@ -145,9 +153,39 @@ public class SigninAnonymousHandler implements DBHandler {
         return true;
     }
 
+    private ExecutionResult<MessageResponse> checkClientDetailsOrNonce() {
+        clientId = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_ID);
+        clientKey = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_KEY);
+        if (clientId != null && clientKey != null) {
+            return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+        } else {
+            String nonce = context.headers().get(MessageConstants.MSG_HEADER_NONCE_TOKEN);
+            if (nonce == null) {
+                LOGGER.warn(RESOURCE_BUNDLE.getString("missing.client.details.or.nonce"));
+                return new ExecutionResult<>(
+                    MessageResponseFactory
+                        .createInvalidRequestResponse(RESOURCE_BUNDLE.getString("missing.client.details.or.nonce")),
+                    ExecutionResult.ExecutionStatus.FAILED);
+            }
+            isNonceExist = true;
+            clientId = this.getClientIdUsingNonceToken(nonce);
+            if (clientId == null) {
+                LOGGER.warn(RESOURCE_BUNDLE.getString("invalid.nonce.token"));
+                return new ExecutionResult<>(
+                    MessageResponseFactory.createUnauthorizedResponse(RESOURCE_BUNDLE.getString("invalid.nonce.token")),
+                    ExecutionResult.ExecutionStatus.FAILED);
+            }
+        }
+        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    }
+
     private void saveAccessToken(String token, JsonObject session, Integer expireAtInSeconds) {
         session.put(ParameterConstants.PARAM_ACCESS_TOKEN_VALIDITY, expireAtInSeconds);
         this.redisClient.set(token, session.toString(), expireAtInSeconds);
+    }
+
+    private String getClientIdUsingNonceToken(String nonce) {
+        return this.redisClient.get(nonce);
     }
 
     private static class DefaultPayloadValidator implements PayloadValidator {

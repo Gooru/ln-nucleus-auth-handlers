@@ -13,7 +13,6 @@ import io.vertx.core.json.JsonObject;
 public final class MessageResponseFactory {
 
     private static final String API_VERSION_DEPRECATED = "API version is deprecated";
-    private static final String API_VERSION_NOT_SUPPORTED = "API version is not supported";
 
     private MessageResponseFactory() {
         throw new AssertionError();
@@ -126,6 +125,12 @@ public final class MessageResponseFactory {
     
     public static MessageResponse createSeeOtherResponse(String redirectUrl) {
         return new MessageResponse.Builder().successful().setStatusHttpCode(HttpStatus.SEE_OTHER)
+            .setHeader(HttpConstants.HEADER_CONTENT_LENGTH, "0").setHeader(HttpConstants.HEADER_LOCATION, redirectUrl)
+            .build();
+    }
+    
+    public static MessageResponse createMovePermanentlyResponse(String redirectUrl) {
+        return new MessageResponse.Builder().successful().setStatusHttpCode(HttpStatus.MOVED_PERMANENTLY)
             .setHeader(HttpConstants.HEADER_CONTENT_LENGTH, "0").setHeader(HttpConstants.HEADER_LOCATION, redirectUrl)
             .build();
     }

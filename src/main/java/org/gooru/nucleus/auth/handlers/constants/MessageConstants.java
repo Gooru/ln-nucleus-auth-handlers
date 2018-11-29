@@ -5,6 +5,7 @@ public final class MessageConstants {
     public static final String MSG_HEADER_OP = "mb.operation";
     public static final String MSG_HEADER_TOKEN = "access.token";
     public static final String MSG_HEADER_BASIC_AUTH = "basic.auth";
+    public static final String MSG_HEADER_NONCE_TOKEN = "nonce.token";
     public static final String MSG_OP_AUTH_WITH_PREFS = "auth.with.prefs";
     public static final String MSG_OP_STATUS = "mb.operation.status";
     public static final String MSG_KEY_PREFS = "prefs";
@@ -55,6 +56,7 @@ public final class MessageConstants {
     public static final String MSG_OP_INTERNAL_IMPERSONATE = "internal.impersonate";
     public static final String MSG_OP_INTERNAL_LTI_SSO = "internal.lti.sso";
     public static final String MSG_OP_INTERNAL_WSFED_SSO = "internal.lti.sso.wsfed";
+    public static final String MSG_OP_INTERNAL_TENANT_REALM = "internal.tenant.realm";
 
     // --------------------------------------------------------------------
     // Authentication command
