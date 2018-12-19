@@ -12,26 +12,26 @@ import org.slf4j.LoggerFactory;
  */
 public class InternalWSFedSSOProcessor extends AbstractCommandProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InternalWSFedSSOProcessor.class);
-    
-    protected InternalWSFedSSOProcessor(ProcessorContext context) {
-        super(context);
-    }
+  private static final Logger LOGGER = LoggerFactory.getLogger(InternalWSFedSSOProcessor.class);
 
-    @Override
-    protected void setDeprecatedVersions() {
-        // NOOP
-    }
+  protected InternalWSFedSSOProcessor(ProcessorContext context) {
+    super(context);
+  }
 
-    @Override
-    protected MessageResponse processCommand() {
-        try {
-            LOGGER.info("processing internal wsfed sso");
-            return RepoBuilder.buildInternalRepo(context).wsfedsso();
-        } catch (Throwable t) {
-            LOGGER.error("exception while internal wsfed sso", t);
-            return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
-        }
+  @Override
+  protected void setDeprecatedVersions() {
+    // NOOP
+  }
+
+  @Override
+  protected MessageResponse processCommand() {
+    try {
+      LOGGER.info("processing internal wsfed sso");
+      return RepoBuilder.buildInternalRepo(context).wsfedsso();
+    } catch (Throwable t) {
+      LOGGER.error("exception while internal wsfed sso", t);
+      return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
     }
+  }
 
 }

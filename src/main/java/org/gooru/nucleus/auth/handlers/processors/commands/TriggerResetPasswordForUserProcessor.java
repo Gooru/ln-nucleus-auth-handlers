@@ -8,31 +8,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author szgooru
- *         Created On: 03-Jan-2017
+ * @author szgooru Created On: 03-Jan-2017
  */
 class TriggerResetPasswordForUserProcessor extends AbstractCommandProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TriggerResetPasswordForUserProcessor.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(TriggerResetPasswordForUserProcessor.class);
 
-    TriggerResetPasswordForUserProcessor(ProcessorContext context) {
-        super(context);
-    }
+  TriggerResetPasswordForUserProcessor(ProcessorContext context) {
+    super(context);
+  }
 
-    @Override
-    protected void setDeprecatedVersions() {
-        //NOOP
-    }
+  @Override
+  protected void setDeprecatedVersions() {
+    // NOOP
+  }
 
-    @Override
-    protected MessageResponse processCommand() {
-        try {
-            LOGGER.info("triggering reset password for user");
-            return RepoBuilder.buildUserRepo(context).triggerResetPassword();
-        } catch (Throwable t) {
-            LOGGER.error("exception while triggering reset password", t);
-            return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
-        }
+  @Override
+  protected MessageResponse processCommand() {
+    try {
+      LOGGER.info("triggering reset password for user");
+      return RepoBuilder.buildUserRepo(context).triggerResetPassword();
+    } catch (Throwable t) {
+      LOGGER.error("exception while triggering reset password", t);
+      return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
     }
+  }
 
 }

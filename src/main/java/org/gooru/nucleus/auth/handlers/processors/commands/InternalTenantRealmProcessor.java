@@ -9,26 +9,26 @@ import org.slf4j.LoggerFactory;
 
 public class InternalTenantRealmProcessor extends AbstractCommandProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InternalTenantRealmProcessor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(InternalTenantRealmProcessor.class);
 
-    protected InternalTenantRealmProcessor(ProcessorContext context) {
-        super(context);
-    }
+  protected InternalTenantRealmProcessor(ProcessorContext context) {
+    super(context);
+  }
 
-    @Override
-    protected void setDeprecatedVersions() {
-        // NOOP
-    }
+  @Override
+  protected void setDeprecatedVersions() {
+    // NOOP
+  }
 
-    @Override
-    protected MessageResponse processCommand() {
-        try {
-            LOGGER.info("processing internal tenant realm");
-            return RepoBuilder.buildInternalRepo(context).tenantRealm();
-        } catch (Throwable t) {
-            LOGGER.error("exception while internal tenant realm", t);
-            return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
-        }
+  @Override
+  protected MessageResponse processCommand() {
+    try {
+      LOGGER.info("processing internal tenant realm");
+      return RepoBuilder.buildInternalRepo(context).tenantRealm();
+    } catch (Throwable t) {
+      LOGGER.error("exception while internal tenant realm", t);
+      return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
     }
+  }
 
 }

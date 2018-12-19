@@ -4,13 +4,13 @@ import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 
 public interface AuthenticationRepo {
 
-    MessageResponse getAccessTokenDetails();
+  MessageResponse getAccessTokenDetails();
 
-    MessageResponse signinAnonymous();
+  MessageResponse signinAnonymous();
 
-    MessageResponse signinUser();
-    
-    MessageResponse domainBasedRedirect();
-    
-    MessageResponse initLogin();
+  MessageResponse signinUser();
+
+  MessageResponse domainBasedRedirect();
+
+  MessageResponse initLogin();
 }

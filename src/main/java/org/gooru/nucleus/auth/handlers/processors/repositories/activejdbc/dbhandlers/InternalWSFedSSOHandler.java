@@ -1,7 +1,6 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhandlers;
 
 import java.util.ResourceBundle;
-
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.MessageConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
@@ -25,7 +24,6 @@ import org.gooru.nucleus.auth.handlers.processors.utils.InternalHelper;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -33,197 +31,203 @@ import io.vertx.core.json.JsonObject;
  */
 public class InternalWSFedSSOHandler implements DBHandler {
 
-    private final ProcessorContext context;
-    private static final Logger LOGGER = LoggerFactory.getLogger(InternalWSFedSSOHandler.class);
-    private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
+  private final ProcessorContext context;
+  private static final Logger LOGGER = LoggerFactory.getLogger(InternalWSFedSSOHandler.class);
+  private static final ResourceBundle RESOURCE_BUNDLE =
+      ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
 
-    private String clientId;
-    private String clientKey;
-    private AJEntityPartner partner;
-    private AJEntityTenant tenant;
-    private AJEntityUsers user;
-    private boolean isPartner = false;
+  private String clientId;
+  private String clientKey;
+  private AJEntityPartner partner;
+  private AJEntityTenant tenant;
+  private AJEntityUsers user;
+  private boolean isPartner = false;
 
-    public InternalWSFedSSOHandler(ProcessorContext context) {
-        this.context = context;
+  public InternalWSFedSSOHandler(ProcessorContext context) {
+    this.context = context;
+  }
+
+  @Override
+  public ExecutionResult<MessageResponse> checkSanity() {
+    JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
+        RequestValidator.wsfedssoFieldSelector(), RequestValidator.getValidatorRegistry());
+    if (errors != null && !errors.isEmpty()) {
+      LOGGER.warn("Validation errors for request");
+      return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
+          ExecutionResult.ExecutionStatus.FAILED);
     }
 
-    @Override
-    public ExecutionResult<MessageResponse> checkSanity() {
-        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
-            RequestValidator.wsfedssoFieldSelector(), RequestValidator.getValidatorRegistry());
-        if (errors != null && !errors.isEmpty()) {
-            LOGGER.warn("Validation errors for request");
-            return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
-                ExecutionResult.ExecutionStatus.FAILED);
-        }
-
-        String grantType = context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE);
-        if (!grantType.equalsIgnoreCase(HelperConstants.GrantTypes.wsfed.getType())) {
-            LOGGER.warn("invalid grant type in request");
-            return new ExecutionResult<>(
-                MessageResponseFactory.createUnauthorizedResponse(RESOURCE_BUNDLE.getString("invalid.granttype")),
-                ExecutionStatus.FAILED);
-        }
-
-        // TODO:
-        // Validate user payload from request
-
-        final String basicCredentials = context.headers().get(MessageConstants.MSG_HEADER_BASIC_AUTH);
-        if (basicCredentials == null || basicCredentials.isEmpty()) {
-            LOGGER.warn("invalid credentials in request");
-            return new ExecutionResult<>(
-                MessageResponseFactory.createUnauthorizedResponse(RESOURCE_BUNDLE.getString("invalid.credential")),
-                ExecutionStatus.FAILED);
-        }
-
-        final String credentials[] = InternalHelper.getClientIdAndSecret(basicCredentials);
-        clientId = credentials[0];
-        clientKey = credentials[1];
-
-        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    String grantType = context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE);
+    if (!grantType.equalsIgnoreCase(HelperConstants.GrantTypes.wsfed.getType())) {
+      LOGGER.warn("invalid grant type in request");
+      return new ExecutionResult<>(MessageResponseFactory.createUnauthorizedResponse(
+          RESOURCE_BUNDLE.getString("invalid.granttype")), ExecutionStatus.FAILED);
     }
 
-    @Override
-    public ExecutionResult<MessageResponse> validateRequest() {
-        // validate app id if required
-        ExecutionResult<MessageResponse> result = AuthorizerBuilder.buildAppAuthorizer(context).authorize(null);
-        if (!result.continueProcessing()) {
-            return result;
-        }
+    // TODO:
+    // Validate user payload from request
 
-        LazyList<AJEntityTenant> tenants;
-
-        // First lookup in partner if not found, fall back on tenant
-        LazyList<AJEntityPartner> partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
-            InternalHelper.encryptClientKey(clientKey));
-        if (partners.isEmpty()) {
-            tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
-                InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.wsfed.getType());
-        } else {
-            partner = partners.get(0);
-            isPartner = true;
-            tenants =
-                AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID, partner.getString(AJEntityPartner.TENANT_ID));
-        }
-
-        if (tenants.isEmpty()) {
-            LOGGER.warn("No matching partner or tenant found for client_id '{}' and client_key '{}'", clientId,
-                clientKey);
-            return new ExecutionResult<>(
-                MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("tenant.not.found")),
-                ExecutionStatus.FAILED);
-        }
-
-        tenant = tenants.get(0);
-
-        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    final String basicCredentials = context.headers().get(MessageConstants.MSG_HEADER_BASIC_AUTH);
+    if (basicCredentials == null || basicCredentials.isEmpty()) {
+      LOGGER.warn("invalid credentials in request");
+      return new ExecutionResult<>(MessageResponseFactory.createUnauthorizedResponse(
+          RESOURCE_BUNDLE.getString("invalid.credential")), ExecutionStatus.FAILED);
     }
 
-    @Override
-    public ExecutionResult<MessageResponse> executeRequest() {
-        JsonObject userObject = context.requestBody().getJsonObject(ParameterConstants.PARAM_USER);
-        String referenceId = userObject.getString(AJEntityUsers.REFERENCE_ID);
-        String tenantId = tenant.getString(AJEntityTenant.ID);
-        String partnerId = isPartner ? partner.getString(AJEntityPartner.ID) : null;
+    final String credentials[] = InternalHelper.getClientIdAndSecret(basicCredentials);
+    clientId = credentials[0];
+    clientKey = credentials[1];
 
-        if (referenceId == null || referenceId.isEmpty()) {
-            LOGGER.warn("reference id is missing in request");
-            return new ExecutionResult<>(
-                MessageResponseFactory.createInvalidRequestResponse(RESOURCE_BUNDLE.getString("missing.referenceid")),
-                ExecutionResult.ExecutionStatus.FAILED);
-        }
+    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+  }
 
-        LazyList<AJEntityUsers> users;
-        if (isPartner) {
-            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_PARTNER_ID, referenceId.toLowerCase(), partnerId);
-        } else {
-            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_TENANT_ID, referenceId.toLowerCase(), tenantId);
-        }
-
-        if (users.isEmpty()) {
-            LOGGER.debug("user not found in database for reference_id: {}, tenant: {}, partner: {}", referenceId,
-                tenantId, partnerId);
-            user = new AJEntityUsers();
-            user.setString(AJEntityUsers.LOGIN_TYPE, HelperConstants.UserLoginType.wsfed.getType());
-            user.setTenantId(tenantId);
-            user.setTenantRoot(TenantHelper.getTenantRoot(tenantId));
-            user.setPartnerId(partnerId);
-            autoPopulate();
-
-            // Check if the username is already taken. If so, skip populating
-            // username and move ahead.
-            String username = user.getString(AJEntityUsers.USERNAME);
-            AJEntityUsers userByUsername = DBHelper.getUserByUsername(username, tenantId, partnerId, isPartner);
-            if (userByUsername != null) {
-                LOGGER.info("username '{}' already taken, setting it to null", username);
-                user.setString(AJEntityUsers.USERNAME, null);
-            }
-            user.setString(AJEntityUsers.DISPLAY_NAME, username);
-
-            // Check if the existing users have same email. If so, skip
-            // populating email and move ahead.
-            String email = user.getString(AJEntityUsers.EMAIL);
-            AJEntityUsers userByEmail = DBHelper.getUserByEmailAndTenantId(email, tenantId, partnerId);
-            if (userByEmail != null) {
-                LOGGER.info("email '{}' already taken, setting it to null", email);
-                user.setString(AJEntityUsers.EMAIL, null);
-            }
-
-            if (user.hasErrors()) {
-                LOGGER.warn("Validation errors while populating entity");
-                return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(getModelErrors()),
-                    ExecutionResult.ExecutionStatus.FAILED);
-            }
-
-            if (!user.insert()) {
-                LOGGER.debug("unable to create new user");
-                return new ExecutionResult<>(
-                    MessageResponseFactory.createInvalidRequestResponse("Unable to create user"),
-                    ExecutionStatus.FAILED);
-            }
-            
-			final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
-			return new ExecutionResult<>(
-					MessageResponseFactory.createPostResponse(result,
-							EventBuilderFactory.getWSFedSSOSignupEventBuilder(user.getString(AJEntityUsers.ID))),
-					ExecutionStatus.SUCCESSFUL);
-            
-        } else {
-            LOGGER.debug("user found in database for reference_id: '{}', client_id: '{}' No need to create",
-                referenceId, tenantId);
-            user = users.get(0);
-            
-            final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
-
-			return new ExecutionResult<>(
-					MessageResponseFactory.createPostResponse(result,
-							EventBuilderFactory.getWSFedSSOSigninEventBuilder(user.getString(AJEntityUsers.ID))),
-					ExecutionStatus.SUCCESSFUL);
-        }
-
-        
+  @Override
+  public ExecutionResult<MessageResponse> validateRequest() {
+    // validate app id if required
+    ExecutionResult<MessageResponse> result =
+        AuthorizerBuilder.buildAppAuthorizer(context).authorize(null);
+    if (!result.continueProcessing()) {
+      return result;
     }
 
-    @Override
-    public boolean handlerReadOnly() {
-        return false;
+    LazyList<AJEntityTenant> tenants;
+
+    // First lookup in partner if not found, fall back on tenant
+    LazyList<AJEntityPartner> partners = AJEntityPartner.findBySQL(
+        AJEntityPartner.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey));
+    if (partners.isEmpty()) {
+      tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
+          InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.wsfed.getType());
+    } else {
+      partner = partners.get(0);
+      isPartner = true;
+      tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID,
+          partner.getString(AJEntityPartner.TENANT_ID));
     }
 
-    private void autoPopulate() {
-        new DefaultAJEntityUsersBuilder().build(user,
-            context.requestBody().getJsonObject(ParameterConstants.PARAM_USER), AJEntityUsers.getConverterRegistry());
+    if (tenants.isEmpty()) {
+      LOGGER.warn("No matching partner or tenant found for client_id '{}' and client_key '{}'",
+          clientId, clientKey);
+      return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse(
+          RESOURCE_BUNDLE.getString("tenant.not.found")), ExecutionStatus.FAILED);
     }
 
-    private static class DefaultPayloadValidator implements PayloadValidator {
+    tenant = tenants.get(0);
+
+    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+  }
+
+  @Override
+  public ExecutionResult<MessageResponse> executeRequest() {
+    JsonObject userObject = context.requestBody().getJsonObject(ParameterConstants.PARAM_USER);
+    String referenceId = userObject.getString(AJEntityUsers.REFERENCE_ID);
+    String tenantId = tenant.getString(AJEntityTenant.ID);
+    String partnerId = isPartner ? partner.getString(AJEntityPartner.ID) : null;
+
+    if (referenceId == null || referenceId.isEmpty()) {
+      LOGGER.warn("reference id is missing in request");
+      return new ExecutionResult<>(
+          MessageResponseFactory
+              .createInvalidRequestResponse(RESOURCE_BUNDLE.getString("missing.referenceid")),
+          ExecutionResult.ExecutionStatus.FAILED);
     }
 
-    private static class DefaultAJEntityUsersBuilder implements EntityBuilder<AJEntityUsers> {
+    LazyList<AJEntityUsers> users;
+    if (isPartner) {
+      users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_PARTNER_ID,
+          referenceId.toLowerCase(), partnerId);
+    } else {
+      users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_TENANT_ID,
+          referenceId.toLowerCase(), tenantId);
     }
 
-    private JsonObject getModelErrors() {
-        JsonObject errors = new JsonObject();
-        user.errors().entrySet().forEach(entry -> errors.put(entry.getKey(), entry.getValue()));
-        return errors;
+    if (users.isEmpty()) {
+      LOGGER.debug("user not found in database for reference_id: {}, tenant: {}, partner: {}",
+          referenceId, tenantId, partnerId);
+      user = new AJEntityUsers();
+      user.setString(AJEntityUsers.LOGIN_TYPE, HelperConstants.UserLoginType.wsfed.getType());
+      user.setTenantId(tenantId);
+      user.setTenantRoot(TenantHelper.getTenantRoot(tenantId));
+      user.setPartnerId(partnerId);
+      autoPopulate();
+
+      // Check if the username is already taken. If so, skip populating
+      // username and move ahead.
+      String username = user.getString(AJEntityUsers.USERNAME);
+      AJEntityUsers userByUsername =
+          DBHelper.getUserByUsername(username, tenantId, partnerId, isPartner);
+      if (userByUsername != null) {
+        LOGGER.info("username '{}' already taken, setting it to null", username);
+        user.setString(AJEntityUsers.USERNAME, null);
+      }
+      user.setString(AJEntityUsers.DISPLAY_NAME, username);
+
+      // Check if the existing users have same email. If so, skip
+      // populating email and move ahead.
+      String email = user.getString(AJEntityUsers.EMAIL);
+      AJEntityUsers userByEmail = DBHelper.getUserByEmailAndTenantId(email, tenantId, partnerId);
+      if (userByEmail != null) {
+        LOGGER.info("email '{}' already taken, setting it to null", email);
+        user.setString(AJEntityUsers.EMAIL, null);
+      }
+
+      if (user.hasErrors()) {
+        LOGGER.warn("Validation errors while populating entity");
+        return new ExecutionResult<>(
+            MessageResponseFactory.createValidationErrorResponse(getModelErrors()),
+            ExecutionResult.ExecutionStatus.FAILED);
+      }
+
+      if (!user.insert()) {
+        LOGGER.debug("unable to create new user");
+        return new ExecutionResult<>(
+            MessageResponseFactory.createInvalidRequestResponse("Unable to create user"),
+            ExecutionStatus.FAILED);
+      }
+
+      final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
+      return new ExecutionResult<>(
+          MessageResponseFactory.createPostResponse(result,
+              EventBuilderFactory.getWSFedSSOSignupEventBuilder(user.getString(AJEntityUsers.ID))),
+          ExecutionStatus.SUCCESSFUL);
+
+    } else {
+      LOGGER.debug(
+          "user found in database for reference_id: '{}', client_id: '{}' No need to create",
+          referenceId, tenantId);
+      user = users.get(0);
+
+      final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
+
+      return new ExecutionResult<>(
+          MessageResponseFactory.createPostResponse(result,
+              EventBuilderFactory.getWSFedSSOSigninEventBuilder(user.getString(AJEntityUsers.ID))),
+          ExecutionStatus.SUCCESSFUL);
     }
+
+
+  }
+
+  @Override
+  public boolean handlerReadOnly() {
+    return false;
+  }
+
+  private void autoPopulate() {
+    new DefaultAJEntityUsersBuilder().build(user,
+        context.requestBody().getJsonObject(ParameterConstants.PARAM_USER),
+        AJEntityUsers.getConverterRegistry());
+  }
+
+  private static class DefaultPayloadValidator implements PayloadValidator {
+  }
+
+  private static class DefaultAJEntityUsersBuilder implements EntityBuilder<AJEntityUsers> {
+  }
+
+  private JsonObject getModelErrors() {
+    JsonObject errors = new JsonObject();
+    user.errors().entrySet().forEach(entry -> errors.put(entry.getKey(), entry.getValue()));
+    return errors;
+  }
 }

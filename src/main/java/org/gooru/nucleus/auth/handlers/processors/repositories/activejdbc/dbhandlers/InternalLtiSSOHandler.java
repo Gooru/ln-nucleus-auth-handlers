@@ -1,7 +1,6 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhandlers;
 
 import java.util.ResourceBundle;
-
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.MessageConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
@@ -25,7 +24,6 @@ import org.gooru.nucleus.auth.handlers.processors.utils.InternalHelper;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -33,178 +31,182 @@ import io.vertx.core.json.JsonObject;
  */
 public class InternalLtiSSOHandler implements DBHandler {
 
-    private final ProcessorContext context;
-    private static final Logger LOGGER = LoggerFactory.getLogger(InternalLtiSSOHandler.class);
-    private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
+  private final ProcessorContext context;
+  private static final Logger LOGGER = LoggerFactory.getLogger(InternalLtiSSOHandler.class);
+  private static final ResourceBundle RESOURCE_BUNDLE =
+      ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
 
-    private String clientId;
-    private String clientKey;
-    private AJEntityPartner partner;
-    private AJEntityTenant tenant;
-    private AJEntityUsers user;
-    private boolean isPartner = false;
+  private String clientId;
+  private String clientKey;
+  private AJEntityPartner partner;
+  private AJEntityTenant tenant;
+  private AJEntityUsers user;
+  private boolean isPartner = false;
 
-    public InternalLtiSSOHandler(ProcessorContext context) {
-        this.context = context;
+  public InternalLtiSSOHandler(ProcessorContext context) {
+    this.context = context;
+  }
+
+  @Override
+  public ExecutionResult<MessageResponse> checkSanity() {
+
+    JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
+        RequestValidator.ltissoFieldSelector(), RequestValidator.getValidatorRegistry());
+    if (errors != null && !errors.isEmpty()) {
+      LOGGER.warn("Validation errors for request");
+      return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
+          ExecutionResult.ExecutionStatus.FAILED);
     }
 
-    @Override
-    public ExecutionResult<MessageResponse> checkSanity() {
+    String grantType = context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE);
+    if (!grantType.equalsIgnoreCase(HelperConstants.GrantTypes.ltisso.getType())) {
+      LOGGER.warn("invalid grant type in request");
+      return new ExecutionResult<>(MessageResponseFactory.createUnauthorizedResponse(
+          RESOURCE_BUNDLE.getString("invalid.granttype")), ExecutionStatus.FAILED);
+    }
+    // TODO:
+    // Validate user payload from request
 
-        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
-            RequestValidator.ltissoFieldSelector(), RequestValidator.getValidatorRegistry());
-        if (errors != null && !errors.isEmpty()) {
-            LOGGER.warn("Validation errors for request");
-            return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
-                ExecutionResult.ExecutionStatus.FAILED);
+    final String basicCredentials = context.headers().get(MessageConstants.MSG_HEADER_BASIC_AUTH);
+    if (basicCredentials == null || basicCredentials.isEmpty()) {
+      LOGGER.warn("invalid credentials in request");
+      return new ExecutionResult<>(MessageResponseFactory.createUnauthorizedResponse(
+          RESOURCE_BUNDLE.getString("invalid.credential")), ExecutionStatus.FAILED);
+    }
+
+    final String credentials[] = InternalHelper.getClientIdAndSecret(basicCredentials);
+    clientId = credentials[0];
+    clientKey = credentials[1];
+
+    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+  }
+
+  @Override
+  public ExecutionResult<MessageResponse> validateRequest() {
+    // validate app id if required
+    ExecutionResult<MessageResponse> result =
+        AuthorizerBuilder.buildAppAuthorizer(context).authorize(null);
+    if (!result.continueProcessing()) {
+      return result;
+    }
+
+    LazyList<AJEntityTenant> tenants;
+
+    // First lookup in partner if not found, fall back on tenant
+    LazyList<AJEntityPartner> partners = AJEntityPartner.findBySQL(
+        AJEntityPartner.SELECT_BY_ID_SECRET, clientId, InternalHelper.encryptClientKey(clientKey));
+    if (partners.isEmpty()) {
+      tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
+          InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.ltisso.getType());
+    } else {
+      partner = partners.get(0);
+      isPartner = true;
+      tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID,
+          partner.getString(AJEntityPartner.TENANT_ID));
+    }
+
+    if (tenants.isEmpty()) {
+      LOGGER.warn("No matching partner or tenant found for client_id '{}' and client_key '{}'",
+          clientId, clientKey);
+      return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse(
+          RESOURCE_BUNDLE.getString("tenant.not.found")), ExecutionStatus.FAILED);
+    }
+
+    tenant = tenants.get(0);
+
+    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+  }
+
+  @Override
+  public ExecutionResult<MessageResponse> executeRequest() {
+    JsonObject userObject = context.requestBody().getJsonObject(ParameterConstants.PARAM_USER);
+    String referenceId = userObject.getString(AJEntityUsers.REFERENCE_ID);
+    String tenantId = tenant.getString(AJEntityTenant.ID);
+    String partnerId = isPartner ? partner.getString(AJEntityPartner.ID) : null;
+
+    LazyList<AJEntityUsers> users;
+    if (isPartner) {
+      users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_PARTNER_ID, referenceId,
+          partnerId);
+    } else {
+      users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_TENANT_ID, referenceId,
+          tenantId);
+    }
+
+    if (users.isEmpty()) {
+      LOGGER.debug("user not found in database for reference_id: {}, tenant: {}, partner: {}",
+          referenceId, tenantId, partnerId);
+      user = new AJEntityUsers();
+      user.setString(AJEntityUsers.LOGIN_TYPE, HelperConstants.UserLoginType.ltisso.getType());
+      user.setTenantId(tenantId);
+      user.setTenantRoot(TenantHelper.getTenantRoot(tenantId));
+      user.setPartnerId(partnerId);
+      autoPopulate();
+
+      String username = userObject.getString(AJEntityUsers.USERNAME);
+      if (username != null) {
+        AJEntityUsers existingUser =
+            DBHelper.getUserByUsername(username, tenantId, partnerId, isPartner);
+        if (existingUser != null) {
+          LOGGER.info("username '{}' already taken, setting it to null", username);
+          user.setString(AJEntityUsers.USERNAME, null);
         }
+        user.setString(AJEntityUsers.DISPLAY_NAME, username);
+      }
 
-        String grantType = context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE);
-        if (!grantType.equalsIgnoreCase(HelperConstants.GrantTypes.ltisso.getType())) {
-            LOGGER.warn("invalid grant type in request");
-            return new ExecutionResult<>(
-                MessageResponseFactory.createUnauthorizedResponse(RESOURCE_BUNDLE.getString("invalid.granttype")),
-                ExecutionStatus.FAILED);
-        }
-        // TODO:
-        // Validate user payload from request
+      if (user.hasErrors()) {
+        LOGGER.warn("Validation errors while populating entity");
+        return new ExecutionResult<>(
+            MessageResponseFactory.createValidationErrorResponse(getModelErrors()),
+            ExecutionResult.ExecutionStatus.FAILED);
+      }
 
-        final String basicCredentials = context.headers().get(MessageConstants.MSG_HEADER_BASIC_AUTH);
-        if (basicCredentials == null || basicCredentials.isEmpty()) {
-            LOGGER.warn("invalid credentials in request");
-            return new ExecutionResult<>(
-                MessageResponseFactory.createUnauthorizedResponse(RESOURCE_BUNDLE.getString("invalid.credential")),
-                ExecutionStatus.FAILED);
-        }
+      if (!user.insert()) {
+        LOGGER.debug("unable to create new user");
+        return new ExecutionResult<>(
+            MessageResponseFactory.createInvalidRequestResponse("Unable to create user"),
+            ExecutionStatus.FAILED);
+      }
 
-        final String credentials[] = InternalHelper.getClientIdAndSecret(basicCredentials);
-        clientId = credentials[0];
-        clientKey = credentials[1];
+      final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
 
-        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+      return new ExecutionResult<>(
+          MessageResponseFactory.createPostResponse(result,
+              EventBuilderFactory.getLTISSOSignupEventBuilder(user.getString(AJEntityUsers.ID))),
+          ExecutionStatus.SUCCESSFUL);
+    } else {
+      user = users.get(0);
+      final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
+
+      return new ExecutionResult<>(
+          MessageResponseFactory.createPostResponse(result,
+              EventBuilderFactory.getLTISSOSigninEventBuilder(user.getString(AJEntityUsers.ID))),
+          ExecutionStatus.SUCCESSFUL);
     }
 
-    @Override
-    public ExecutionResult<MessageResponse> validateRequest() {
-        // validate app id if required
-        ExecutionResult<MessageResponse> result = AuthorizerBuilder.buildAppAuthorizer(context).authorize(null);
-        if (!result.continueProcessing()) {
-            return result;
-        }
 
-        LazyList<AJEntityTenant> tenants;
+  }
 
-        // First lookup in partner if not found, fall back on tenant
-        LazyList<AJEntityPartner> partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
-            InternalHelper.encryptClientKey(clientKey));
-        if (partners.isEmpty()) {
-            tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
-                InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.ltisso.getType());
-        } else {
-            partner = partners.get(0);
-            isPartner = true;
-            tenants =
-                AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID, partner.getString(AJEntityPartner.TENANT_ID));
-        }
+  @Override
+  public boolean handlerReadOnly() {
+    return false;
+  }
 
-        if (tenants.isEmpty()) {
-            LOGGER.warn("No matching partner or tenant found for client_id '{}' and client_key '{}'", clientId,
-                clientKey);
-            return new ExecutionResult<>(
-                MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("tenant.not.found")),
-                ExecutionStatus.FAILED);
-        }
+  private void autoPopulate() {
+    new DefaultAJEntityUsersBuilder().build(user,
+        context.requestBody().getJsonObject(ParameterConstants.PARAM_USER),
+        AJEntityUsers.getConverterRegistry());
+  }
 
-        tenant = tenants.get(0);
+  private static class DefaultPayloadValidator implements PayloadValidator {
+  }
 
-        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
-    }
+  private static class DefaultAJEntityUsersBuilder implements EntityBuilder<AJEntityUsers> {
+  }
 
-    @Override
-    public ExecutionResult<MessageResponse> executeRequest() {
-        JsonObject userObject = context.requestBody().getJsonObject(ParameterConstants.PARAM_USER);
-        String referenceId = userObject.getString(AJEntityUsers.REFERENCE_ID);
-        String tenantId = tenant.getString(AJEntityTenant.ID);
-        String partnerId = isPartner ? partner.getString(AJEntityPartner.ID) : null;
-
-        LazyList<AJEntityUsers> users;
-        if (isPartner) {
-            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_PARTNER_ID, referenceId, partnerId);
-        } else {
-            users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_REFERENCE_ID_TENANT_ID, referenceId, tenantId);
-        }
-            
-        if (users.isEmpty()) {
-            LOGGER.debug("user not found in database for reference_id: {}, tenant: {}, partner: {}", referenceId,
-                tenantId, partnerId);
-            user = new AJEntityUsers();
-            user.setString(AJEntityUsers.LOGIN_TYPE, HelperConstants.UserLoginType.ltisso.getType());
-            user.setTenantId(tenantId);
-            user.setTenantRoot(TenantHelper.getTenantRoot(tenantId));
-            user.setPartnerId(partnerId);
-            autoPopulate();
-
-            String username = userObject.getString(AJEntityUsers.USERNAME);
-            if (username != null) {
-                AJEntityUsers existingUser = DBHelper.getUserByUsername(username, tenantId, partnerId, isPartner);
-                if (existingUser != null) {
-                    LOGGER.info("username '{}' already taken, setting it to null", username);
-                    user.setString(AJEntityUsers.USERNAME, null);
-                }
-                user.setString(AJEntityUsers.DISPLAY_NAME, username);
-            }
-
-            if (user.hasErrors()) {
-                LOGGER.warn("Validation errors while populating entity");
-                return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(getModelErrors()),
-                    ExecutionResult.ExecutionStatus.FAILED);
-            }
-
-            if (!user.insert()) {
-                LOGGER.debug("unable to create new user");
-                return new ExecutionResult<>(
-                    MessageResponseFactory.createInvalidRequestResponse("Unable to create user"),
-                    ExecutionStatus.FAILED);
-            }
-            
-            final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
-
-            return new ExecutionResult<>(
-                MessageResponseFactory.createPostResponse(result,
-                    EventBuilderFactory.getLTISSOSignupEventBuilder(user.getString(AJEntityUsers.ID))),
-                ExecutionStatus.SUCCESSFUL);
-        } else {
-            user = users.get(0);
-            final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
-
-            return new ExecutionResult<>(
-                MessageResponseFactory.createPostResponse(result,
-                    EventBuilderFactory.getLTISSOSigninEventBuilder(user.getString(AJEntityUsers.ID))),
-                ExecutionStatus.SUCCESSFUL);
-        }
-
-        
-    }
-
-    @Override
-    public boolean handlerReadOnly() {
-        return false;
-    }
-
-    private void autoPopulate() {
-        new DefaultAJEntityUsersBuilder().build(user,
-            context.requestBody().getJsonObject(ParameterConstants.PARAM_USER), AJEntityUsers.getConverterRegistry());
-    }
-
-    private static class DefaultPayloadValidator implements PayloadValidator {
-    }
-
-    private static class DefaultAJEntityUsersBuilder implements EntityBuilder<AJEntityUsers> {
-    }
-
-    private JsonObject getModelErrors() {
-        JsonObject errors = new JsonObject();
-        user.errors().entrySet().forEach(entry -> errors.put(entry.getKey(), entry.getValue()));
-        return errors;
-    }
+  private JsonObject getModelErrors() {
+    JsonObject errors = new JsonObject();
+    user.errors().entrySet().forEach(entry -> errors.put(entry.getKey(), entry.getValue()));
+    return errors;
+  }
 }

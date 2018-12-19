@@ -8,31 +8,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author gooru
- *         Created On: 03-Jan-2017
+ * @author gooru Created On: 03-Jan-2017
  */
 class SigninUserProcessor extends AbstractCommandProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SigninUserProcessor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SigninUserProcessor.class);
 
-    SigninUserProcessor(ProcessorContext context) {
-        super(context);
-    }
+  SigninUserProcessor(ProcessorContext context) {
+    super(context);
+  }
 
-    @Override
-    protected void setDeprecatedVersions() {
-        //NOOP
-    }
+  @Override
+  protected void setDeprecatedVersions() {
+    // NOOP
+  }
 
-    @Override
-    protected MessageResponse processCommand() {
-        try {
-            LOGGER.info("signing in user");
-            return RepoBuilder.buildAuthenticationRepo(context).signinUser();
-        } catch (Throwable t) {
-            LOGGER.error("exception while user signin", t);
-            return MessageResponseFactory.createInvalidRequestResponse(t.getMessage());
-        }
+  @Override
+  protected MessageResponse processCommand() {
+    try {
+      LOGGER.info("signing in user");
+      return RepoBuilder.buildAuthenticationRepo(context).signinUser();
+    } catch (Throwable t) {
+      LOGGER.error("exception while user signin", t);
+      return MessageResponseFactory.createInvalidRequestResponse(t.getMessage());
     }
+  }
 
 }

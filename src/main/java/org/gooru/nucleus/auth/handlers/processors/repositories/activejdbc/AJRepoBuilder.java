@@ -6,24 +6,23 @@ import org.gooru.nucleus.auth.handlers.processors.repositories.InternalRepo;
 import org.gooru.nucleus.auth.handlers.processors.repositories.UserRepo;
 
 /**
- * @author szgooru
- *         Created On: 02-Jan-2017
+ * @author szgooru Created On: 02-Jan-2017
  */
 public final class AJRepoBuilder {
 
-    private AJRepoBuilder() {
-        throw new AssertionError();
-    }
+  private AJRepoBuilder() {
+    throw new AssertionError();
+  }
 
-    public static UserRepo buildUserRepo(ProcessorContext context) {
-        return new AJUserRepo(context);
-    }
+  public static UserRepo buildUserRepo(ProcessorContext context) {
+    return new AJUserRepo(context);
+  }
 
-    public static AuthenticationRepo buildAuthenticationRepo(ProcessorContext context) {
-        return new AJAuthenticationRepo(context);
-    }
+  public static AuthenticationRepo buildAuthenticationRepo(ProcessorContext context) {
+    return new AJAuthenticationRepo(context);
+  }
 
-    public static InternalRepo buildInternalRepo(ProcessorContext context) {
-        return new AJInternalRepo(context);
-    }
+  public static InternalRepo buildInternalRepo(ProcessorContext context) {
+    return new AJInternalRepo(context);
+  }
 }

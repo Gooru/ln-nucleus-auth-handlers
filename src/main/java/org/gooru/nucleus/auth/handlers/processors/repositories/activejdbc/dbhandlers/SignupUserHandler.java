@@ -2,7 +2,6 @@ package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhan
 
 import java.util.ResourceBundle;
 import java.util.UUID;
-
 import org.gooru.nucleus.auth.handlers.constants.EmailTemplateConstants;
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
@@ -23,7 +22,6 @@ import org.gooru.nucleus.auth.handlers.processors.responses.ResoponseBuilder;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -31,116 +29,120 @@ import io.vertx.core.json.JsonObject;
  */
 public class SignupUserHandler implements DBHandler {
 
-    private final ProcessorContext context;
-    private static final Logger LOGGER = LoggerFactory.getLogger(SignupUserHandler.class);
-    private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
+  private final ProcessorContext context;
+  private static final Logger LOGGER = LoggerFactory.getLogger(SignupUserHandler.class);
+  private static final ResourceBundle RESOURCE_BUNDLE =
+      ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
 
-    private AJEntityUsers user;
-    private AJEntityTenant tenant;
+  private AJEntityUsers user;
+  private AJEntityTenant tenant;
 
-    public SignupUserHandler(ProcessorContext context) {
-        this.context = context;
+  public SignupUserHandler(ProcessorContext context) {
+    this.context = context;
+  }
+
+  @Override
+  public ExecutionResult<MessageResponse> checkSanity() {
+
+    JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
+        AJEntityUsers.signupFieldSelector(), AJEntityUsers.getValidatorRegistry());
+    if (errors != null && !errors.isEmpty()) {
+      LOGGER.warn("Validation errors for request :{}", errors.toString());
+      return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
+          ExecutionResult.ExecutionStatus.FAILED);
+    }
+    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+  }
+
+  @Override
+  public ExecutionResult<MessageResponse> validateRequest() {
+    // validate app id if required
+    ExecutionResult<MessageResponse> result =
+        AuthorizerBuilder.buildAppAuthorizer(context).authorize(null);
+    if (!result.continueProcessing()) {
+      return result;
     }
 
-    @Override
-    public ExecutionResult<MessageResponse> checkSanity() {
+    String tenantId = context.requestBody().getString(ParameterConstants.PARAM_TENANT_ID);
+    String email = context.requestBody().getString(AJEntityUsers.EMAIL).toLowerCase();
+    String username = context.requestBody().getString(AJEntityUsers.USERNAME).toLowerCase();
 
-        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
-            AJEntityUsers.signupFieldSelector(), AJEntityUsers.getValidatorRegistry());
-        if (errors != null && !errors.isEmpty()) {
-            LOGGER.warn("Validation errors for request :{}", errors.toString());
-            return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
-                ExecutionResult.ExecutionStatus.FAILED);
-        }
-        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    LazyList<AJEntityUsers> users =
+        AJEntityUsers.findBySQL(AJEntityUsers.SELECT_FOR_SIGNUP, email, username, tenantId);
+
+    if (!users.isEmpty()) {
+      user = users.get(0);
+      String usernameFromDB = user.getString(AJEntityUsers.USERNAME);
+      String emailFromDB = user.getString(AJEntityUsers.EMAIL);
+      JsonObject errors = new JsonObject();
+      if (usernameFromDB != null && usernameFromDB.equalsIgnoreCase(username)) {
+        LOGGER.error("user already exists with username: '{}'", username);
+        errors.put(AJEntityUsers.USERNAME, "'" + username + "'" + " is already taken");
+      }
+
+      if (emailFromDB != null && emailFromDB.equalsIgnoreCase(email)) {
+        LOGGER.error("user already exists with email: '{}'", email);
+        errors.put(AJEntityUsers.EMAIL, "'" + email + "'" + " is already taken");
+      }
+      return new ExecutionResult<>(MessageResponseFactory.createConflictRespose(errors),
+          ExecutionStatus.FAILED);
     }
 
-    @Override
-    public ExecutionResult<MessageResponse> validateRequest() {
-        // validate app id if required
-        ExecutionResult<MessageResponse> result = AuthorizerBuilder.buildAppAuthorizer(context).authorize(null);
-        if (!result.continueProcessing()) {
-            return result;
-        }
-
-        String tenantId = context.requestBody().getString(ParameterConstants.PARAM_TENANT_ID);
-        String email = context.requestBody().getString(AJEntityUsers.EMAIL).toLowerCase();
-        String username = context.requestBody().getString(AJEntityUsers.USERNAME).toLowerCase();
-
-        LazyList<AJEntityUsers> users =
-            AJEntityUsers.findBySQL(AJEntityUsers.SELECT_FOR_SIGNUP, email, username, tenantId);
-
-        if (!users.isEmpty()) {
-            user = users.get(0);
-            String usernameFromDB = user.getString(AJEntityUsers.USERNAME);
-            String emailFromDB = user.getString(AJEntityUsers.EMAIL);
-            JsonObject errors = new JsonObject();
-            if (usernameFromDB != null && usernameFromDB.equalsIgnoreCase(username)) {
-                LOGGER.error("user already exists with username: '{}'", username);
-                errors.put(AJEntityUsers.USERNAME, "'" + username + "'" + " is already taken");
-            }
-
-            if (emailFromDB != null && emailFromDB.equalsIgnoreCase(email)) {
-                LOGGER.error("user already exists with email: '{}'", email);
-                errors.put(AJEntityUsers.EMAIL, "'" + email + "'" + " is already taken");
-            }
-            return new ExecutionResult<>(MessageResponseFactory.createConflictRespose(errors), ExecutionStatus.FAILED);
-        }
-
-        tenant = AJEntityTenant.findById(UUID.fromString(tenantId));
-        if (tenant == null) {
-            LOGGER.warn("no tenant found for id: {}", tenantId);
-            return new ExecutionResult<>(
-                MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("tenant.not.found")),
-                ExecutionStatus.FAILED);
-        }
-
-        user = new AJEntityUsers();
-        user.setString(AJEntityUsers.LOGIN_TYPE, HelperConstants.UserLoginType.credential.getType());
-        autoPopulate();
-
-        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    tenant = AJEntityTenant.findById(UUID.fromString(tenantId));
+    if (tenant == null) {
+      LOGGER.warn("no tenant found for id: {}", tenantId);
+      return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse(
+          RESOURCE_BUNDLE.getString("tenant.not.found")), ExecutionStatus.FAILED);
     }
 
-    @Override
-    public ExecutionResult<MessageResponse> executeRequest() {
-        if (user.insert()) {
-            final JsonObject result = new ResoponseBuilder(context, user, tenant, null).build();
-            
-            // Store system state for user to send welcome email
-            String userId = user.getString(AJEntityUsers.ID);
-            DBHelper.storeUserSystemStateForSignup(userId);
-            
-            LOGGER.info("user created successfully");
-            return new ExecutionResult<>(
-                MessageResponseFactory.createPostResponse(result,
-                    EventBuilderFactory.getSignupUserEventBuilder(userId)),
-                ExecutionStatus.SUCCESSFUL);
-        }
+    user = new AJEntityUsers();
+    user.setString(AJEntityUsers.LOGIN_TYPE, HelperConstants.UserLoginType.credential.getType());
+    autoPopulate();
 
-        LOGGER.debug("unable to create new user");
-        return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Unable to create user"),
-            ExecutionStatus.FAILED);
+    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+  }
+
+  @Override
+  public ExecutionResult<MessageResponse> executeRequest() {
+    if (user.insert()) {
+      final JsonObject result = new ResoponseBuilder(context, user, tenant, null).build();
+
+      // Store system state for user to send welcome email
+      String userId = user.getString(AJEntityUsers.ID);
+      DBHelper.storeUserSystemStateForSignup(userId);
+
+      LOGGER.info("user created successfully");
+      return new ExecutionResult<>(MessageResponseFactory.createPostResponse(result,
+          EventBuilderFactory.getSignupUserEventBuilder(userId)), ExecutionStatus.SUCCESSFUL);
     }
 
-    @Override
-    public boolean handlerReadOnly() {
-        return false;
-    }
+    LOGGER.debug("unable to create new user");
+    return new ExecutionResult<>(
+        MessageResponseFactory.createInvalidRequestResponse("Unable to create user"),
+        ExecutionStatus.FAILED);
+  }
 
-    private void autoPopulate() {
-        new DefaultAJEntityUsersBuilder().build(user, context.requestBody(), AJEntityUsers.getConverterRegistry());
-        // set username in lowercase
-        user.setString(AJEntityUsers.USERNAME, context.requestBody().getString(AJEntityUsers.USERNAME).toLowerCase());
+  @Override
+  public boolean handlerReadOnly() {
+    return false;
+  }
 
-        // set incoming username as is which can used as display name.
-        user.setString(AJEntityUsers.DISPLAY_NAME, context.requestBody().getString(AJEntityUsers.USERNAME));
-    }
+  private void autoPopulate() {
+    new DefaultAJEntityUsersBuilder().build(user, context.requestBody(),
+        AJEntityUsers.getConverterRegistry());
+    // set username in lowercase
+    user.setString(AJEntityUsers.USERNAME,
+        context.requestBody().getString(AJEntityUsers.USERNAME).toLowerCase());
 
-    private static class DefaultPayloadValidator implements PayloadValidator {
-    }
+    // set incoming username as is which can used as display name.
+    user.setString(AJEntityUsers.DISPLAY_NAME,
+        context.requestBody().getString(AJEntityUsers.USERNAME));
+  }
 
-    private static class DefaultAJEntityUsersBuilder implements EntityBuilder<AJEntityUsers> {
-    }
+  private static class DefaultPayloadValidator implements PayloadValidator {
+  }
+
+  private static class DefaultAJEntityUsersBuilder implements EntityBuilder<AJEntityUsers> {
+  }
 
 }

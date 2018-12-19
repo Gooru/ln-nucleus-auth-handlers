@@ -12,25 +12,25 @@ import org.slf4j.LoggerFactory;
  */
 public class InitLoginProcessor extends AbstractCommandProcessor {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(InitLoginProcessor.class);
-	
-	protected InitLoginProcessor(ProcessorContext context) {
-		super(context);
-	}
+  private static final Logger LOGGER = LoggerFactory.getLogger(InitLoginProcessor.class);
 
-	@Override
-	protected void setDeprecatedVersions() {
-		// NOOP
-	}
+  protected InitLoginProcessor(ProcessorContext context) {
+    super(context);
+  }
 
-	@Override
-	protected MessageResponse processCommand() {
-		try {
-			return RepoBuilder.buildAuthenticationRepo(context).initLogin();
-		} catch (Throwable t) {
-			LOGGER.error("exception while initialize login", t);
-			return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
-		}
-	}
+  @Override
+  protected void setDeprecatedVersions() {
+    // NOOP
+  }
+
+  @Override
+  protected MessageResponse processCommand() {
+    try {
+      return RepoBuilder.buildAuthenticationRepo(context).initLogin();
+    } catch (Throwable t) {
+      LOGGER.error("exception while initialize login", t);
+      return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
+    }
+  }
 
 }
