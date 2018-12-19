@@ -1,7 +1,6 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhandlers;
 
 import java.util.ResourceBundle;
-
 import org.gooru.nucleus.auth.handlers.app.components.RedisClient;
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.MessageConstants;
@@ -23,7 +22,6 @@ import org.gooru.nucleus.auth.handlers.processors.utils.InternalHelper;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -31,184 +29,183 @@ import io.vertx.core.json.JsonObject;
  */
 public class SigninUserHandler implements DBHandler {
 
-    private final ProcessorContext context;
-    private static final Logger LOGGER = LoggerFactory.getLogger(SigninUserHandler.class);
-    private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
+  private final ProcessorContext context;
+  private static final Logger LOGGER = LoggerFactory.getLogger(SigninUserHandler.class);
+  private static final ResourceBundle RESOURCE_BUNDLE =
+      ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
 
-    private String basicCredentials;
-    private String clientId;
-    private String clientKey;
-    private AJEntityPartner partner;
-    private AJEntityTenant tenant;
-    private AJEntityUsers user;
-    private final RedisClient redisClient;
-    private boolean isAnonymousTokenExist;
+  private String basicCredentials;
+  private String clientId;
+  private String clientKey;
+  private AJEntityPartner partner;
+  private AJEntityTenant tenant;
+  private AJEntityUsers user;
+  private final RedisClient redisClient;
+  private boolean isAnonymousTokenExist;
 
-    public SigninUserHandler(ProcessorContext context) {
-        this.context = context;
-        this.redisClient = RedisClient.instance();
+  public SigninUserHandler(ProcessorContext context) {
+    this.context = context;
+    this.redisClient = RedisClient.instance();
+  }
+
+  @Override
+  public ExecutionResult<MessageResponse> checkSanity() {
+    JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
+        RequestValidator.authorizeFieldSelector(), RequestValidator.getValidatorRegistry());
+    if (errors != null && !errors.isEmpty()) {
+      LOGGER.warn("Validation errors for request");
+      return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
+          ExecutionResult.ExecutionStatus.FAILED);
     }
 
-    @Override
-    public ExecutionResult<MessageResponse> checkSanity() {
-        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
-            RequestValidator.authorizeFieldSelector(), RequestValidator.getValidatorRegistry());
-        if (errors != null && !errors.isEmpty()) {
-            LOGGER.warn("Validation errors for request");
-            return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
-                ExecutionResult.ExecutionStatus.FAILED);
-        }
-
-        String grantType = context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE);
-        if (!grantType.equalsIgnoreCase(HelperConstants.GrantTypes.credential.getType())) {
-            LOGGER.warn("missing or invalid grant type in request");
-            return new ExecutionResult<>(
-                MessageResponseFactory.createUnauthorizedResponse(RESOURCE_BUNDLE.getString("invalid.granttype")),
-                ExecutionStatus.FAILED);
-        }
-
-        basicCredentials = context.headers().get(MessageConstants.MSG_HEADER_BASIC_AUTH);
-        if (basicCredentials == null || basicCredentials.isEmpty()) {
-            LOGGER.warn("invalid credentials in request");
-            return new ExecutionResult<>(
-                MessageResponseFactory.createUnauthorizedResponse(RESOURCE_BUNDLE.getString("invalid.credential")),
-                ExecutionStatus.FAILED);
-        }
-        return checkClientDetailsOrAnonymousToken();
-
+    String grantType = context.requestBody().getString(ParameterConstants.PARAM_GRANT_TYPE);
+    if (!grantType.equalsIgnoreCase(HelperConstants.GrantTypes.credential.getType())) {
+      LOGGER.warn("missing or invalid grant type in request");
+      return new ExecutionResult<>(MessageResponseFactory.createUnauthorizedResponse(
+          RESOURCE_BUNDLE.getString("invalid.granttype")), ExecutionStatus.FAILED);
     }
 
-    @Override
-    public ExecutionResult<MessageResponse> validateRequest() {
-        // validate app id if required
-        ExecutionResult<MessageResponse> result = AuthorizerBuilder.buildAppAuthorizer(context).authorize(null);
-        if (!result.continueProcessing()) {
-            return result;
-        }
+    basicCredentials = context.headers().get(MessageConstants.MSG_HEADER_BASIC_AUTH);
+    if (basicCredentials == null || basicCredentials.isEmpty()) {
+      LOGGER.warn("invalid credentials in request");
+      return new ExecutionResult<>(MessageResponseFactory.createUnauthorizedResponse(
+          RESOURCE_BUNDLE.getString("invalid.credential")), ExecutionStatus.FAILED);
+    }
+    return checkClientDetailsOrAnonymousToken();
 
-        LazyList<AJEntityTenant> tenants;
+  }
 
-        // First lookup in partner if not found, fall back on tenant
-        LazyList<AJEntityPartner> partners = null;
-        if (isAnonymousTokenExist) {
-            partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID, clientId);
-        } else {
-            partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
-                InternalHelper.encryptClientKey(clientKey));
-        }
-
-        if (partners.isEmpty()) {
-            if (isAnonymousTokenExist) {
-                tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_GRANT_TYPE, clientId,
-                    HelperConstants.GrantTypes.credential.getType());
-            } else {
-                tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
-                    InternalHelper.encryptClientKey(clientKey), HelperConstants.GrantTypes.credential.getType());
-            }
-        } else {
-            partner = partners.get(0);
-            tenants =
-                AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID, partner.getString(AJEntityPartner.TENANT_ID));
-        }
-
-        if (tenants.isEmpty()) {
-            LOGGER.warn("No matching partner or tenant found for client_id '{}' and client_key '{}'", clientId,
-                clientKey);
-            return new ExecutionResult<>(
-                MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("tenant.not.found")),
-                ExecutionStatus.FAILED);
-        }
-
-        tenant = tenants.get(0);
-
-        final String credentials[] = InternalHelper.getUsernameAndPassword(basicCredentials);
-        final String username = credentials[0];
-        final String password = InternalHelper.encryptPassword(credentials[1]);
-
-        LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_FOR_SIGNIN, username.toLowerCase(),
-            username.toLowerCase(), tenant.getString(AJEntityTenant.ID));
-        if (users.isEmpty()) {
-            LOGGER.warn("user not found in database for username/email: {}", username);
-            return new ExecutionResult<>(
-                MessageResponseFactory.createNotFoundResponse((RESOURCE_BUNDLE.getString("user.not.found"))),
-                ExecutionStatus.FAILED);
-        }
-
-        user = users.get(0);
-        // Check whether user is allowed to login using credentials
-        String loginType = user.getString(AJEntityUsers.LOGIN_TYPE);
-        if (!loginType.equals(HelperConstants.GrantTypes.credential.getType())) {
-            LOGGER.warn("user is not allowed to login via this mode, user login_type: {}", loginType);
-            return new ExecutionResult<>(
-                MessageResponseFactory.createForbiddenResponse((RESOURCE_BUNDLE.getString("login.not.allowed"))),
-                ExecutionStatus.FAILED);
-        }
-
-        // Check if provided password matches with what stored in DB
-        if (!password.equals(user.getString(AJEntityUsers.PASSWORD))) {
-            LOGGER.warn("Invalid password provided while login");
-            return new ExecutionResult<>(
-                MessageResponseFactory.createUnauthorizedResponse((RESOURCE_BUNDLE.getString("invalid.password"))),
-                ExecutionStatus.FAILED);
-        }
-
-        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+  @Override
+  public ExecutionResult<MessageResponse> validateRequest() {
+    // validate app id if required
+    ExecutionResult<MessageResponse> result =
+        AuthorizerBuilder.buildAppAuthorizer(context).authorize(null);
+    if (!result.continueProcessing()) {
+      return result;
     }
 
-    @Override
-    public ExecutionResult<MessageResponse> executeRequest() {
-        final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
+    LazyList<AJEntityTenant> tenants;
 
-        LOGGER.debug("user token generated successfully");
+    // First lookup in partner if not found, fall back on tenant
+    LazyList<AJEntityPartner> partners = null;
+    if (isAnonymousTokenExist) {
+      partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID, clientId);
+    } else {
+      partners = AJEntityPartner.findBySQL(AJEntityPartner.SELECT_BY_ID_SECRET, clientId,
+          InternalHelper.encryptClientKey(clientKey));
+    }
+
+    if (partners.isEmpty()) {
+      if (isAnonymousTokenExist) {
+        tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_GRANT_TYPE, clientId,
+            HelperConstants.GrantTypes.credential.getType());
+      } else {
+        tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID_SECRET, clientId,
+            InternalHelper.encryptClientKey(clientKey),
+            HelperConstants.GrantTypes.credential.getType());
+      }
+    } else {
+      partner = partners.get(0);
+      tenants = AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_ID,
+          partner.getString(AJEntityPartner.TENANT_ID));
+    }
+
+    if (tenants.isEmpty()) {
+      LOGGER.warn("No matching partner or tenant found for client_id '{}' and client_key '{}'",
+          clientId, clientKey);
+      return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse(
+          RESOURCE_BUNDLE.getString("tenant.not.found")), ExecutionStatus.FAILED);
+    }
+
+    tenant = tenants.get(0);
+
+    final String credentials[] = InternalHelper.getUsernameAndPassword(basicCredentials);
+    final String username = credentials[0];
+    final String password = InternalHelper.encryptPassword(credentials[1]);
+
+    LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_FOR_SIGNIN,
+        username.toLowerCase(), username.toLowerCase(), tenant.getString(AJEntityTenant.ID));
+    if (users.isEmpty()) {
+      LOGGER.warn("user not found in database for username/email: {}", username);
+      return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(
+          (RESOURCE_BUNDLE.getString("user.not.found"))), ExecutionStatus.FAILED);
+    }
+
+    user = users.get(0);
+    // Check whether user is allowed to login using credentials
+    String loginType = user.getString(AJEntityUsers.LOGIN_TYPE);
+    if (!loginType.equals(HelperConstants.GrantTypes.credential.getType())) {
+      LOGGER.warn("user is not allowed to login via this mode, user login_type: {}", loginType);
+      return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse(
+          (RESOURCE_BUNDLE.getString("login.not.allowed"))), ExecutionStatus.FAILED);
+    }
+
+    // Check if provided password matches with what stored in DB
+    if (!password.equals(user.getString(AJEntityUsers.PASSWORD))) {
+      LOGGER.warn("Invalid password provided while login");
+      return new ExecutionResult<>(MessageResponseFactory.createUnauthorizedResponse(
+          (RESOURCE_BUNDLE.getString("invalid.password"))), ExecutionStatus.FAILED);
+    }
+
+    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+  }
+
+  @Override
+  public ExecutionResult<MessageResponse> executeRequest() {
+    final JsonObject result = new ResoponseBuilder(context, user, tenant, partner).build();
+
+    LOGGER.debug("user token generated successfully");
+    return new ExecutionResult<>(
+        MessageResponseFactory.createGetResponse(result,
+            EventBuilderFactory.getSigninUserEventBuilder(user.getString(AJEntityUsers.ID))),
+        ExecutionResult.ExecutionStatus.SUCCESSFUL);
+  }
+
+  private ExecutionResult<MessageResponse> checkClientDetailsOrAnonymousToken() {
+    clientId = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_ID);
+    clientKey = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_KEY);
+    if (clientId != null && clientKey != null) {
+      return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    } else {
+      String anonymousToken =
+          context.requestBody().getString(ParameterConstants.PARAM_ANONYMOUS_TOKEN);
+      if (anonymousToken == null) {
+        LOGGER.warn(RESOURCE_BUNDLE.getString("missing.client.details.or.anonymous.token"));
         return new ExecutionResult<>(
-            MessageResponseFactory.createGetResponse(result,
-                EventBuilderFactory.getSigninUserEventBuilder(user.getString(AJEntityUsers.ID))),
-            ExecutionResult.ExecutionStatus.SUCCESSFUL);
-    }
+            MessageResponseFactory.createInvalidRequestResponse(
+                RESOURCE_BUNDLE.getString("missing.client.details.or.anonymous.token")),
+            ExecutionResult.ExecutionStatus.FAILED);
 
-    private ExecutionResult<MessageResponse> checkClientDetailsOrAnonymousToken() {
-        clientId = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_ID);
-        clientKey = context.requestBody().getString(ParameterConstants.PARAM_CLIENT_KEY);
-        if (clientId != null && clientKey != null) {
-            return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+      } else {
+        JsonObject tenant = this.getTenantFromToken(anonymousToken);
+        if (tenant != null) {
+          clientId = tenant.getString(ParameterConstants.PARAM_TENANT_ID);
+          isAnonymousTokenExist = true;
         } else {
-            String anonymousToken = context.requestBody().getString(ParameterConstants.PARAM_ANONYMOUS_TOKEN);
-            if (anonymousToken == null) {
-                LOGGER.warn(RESOURCE_BUNDLE.getString("missing.client.details.or.anonymous.token"));
-                return new ExecutionResult<>(
-                    MessageResponseFactory.createInvalidRequestResponse(
-                        RESOURCE_BUNDLE.getString("missing.client.details.or.anonymous.token")),
-                    ExecutionResult.ExecutionStatus.FAILED);
-
-            } else {
-                JsonObject tenant = this.getTenantFromToken(anonymousToken);
-                if (tenant != null) {
-                    clientId = tenant.getString(ParameterConstants.PARAM_TENANT_ID);
-                    isAnonymousTokenExist = true;
-                } else {
-                    LOGGER.warn(RESOURCE_BUNDLE.getString("anonymous.not.found"));
-                    return new ExecutionResult<>(MessageResponseFactory.createUnauthorizedResponse(
-                        RESOURCE_BUNDLE.getString("anonymous.not.found")), ExecutionStatus.FAILED);
-                }
-            }
+          LOGGER.warn(RESOURCE_BUNDLE.getString("anonymous.not.found"));
+          return new ExecutionResult<>(MessageResponseFactory.createUnauthorizedResponse(
+              RESOURCE_BUNDLE.getString("anonymous.not.found")), ExecutionStatus.FAILED);
         }
-
-        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
-
+      }
     }
 
-    private JsonObject getTenantFromToken(String token) {
-        JsonObject anonymousTokenDetails = this.redisClient.getJsonObject(token);
-        return anonymousTokenDetails != null ? anonymousTokenDetails.getJsonObject(ParameterConstants.PARAM_TENANT)
-            : null;
-    }
+    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
 
-    @Override
-    public boolean handlerReadOnly() {
-        return true;
-    }
+  }
 
-    private static class DefaultPayloadValidator implements PayloadValidator {
-    }
+  private JsonObject getTenantFromToken(String token) {
+    JsonObject anonymousTokenDetails = this.redisClient.getJsonObject(token);
+    return anonymousTokenDetails != null
+        ? anonymousTokenDetails.getJsonObject(ParameterConstants.PARAM_TENANT)
+        : null;
+  }
+
+  @Override
+  public boolean handlerReadOnly() {
+    return true;
+  }
+
+  private static class DefaultPayloadValidator implements PayloadValidator {
+  }
 
 }

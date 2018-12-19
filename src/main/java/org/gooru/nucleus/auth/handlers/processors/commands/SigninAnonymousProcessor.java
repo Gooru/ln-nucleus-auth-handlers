@@ -8,30 +8,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author szgooru
- *         Created On: 02-Jan-2017
+ * @author szgooru Created On: 02-Jan-2017
  */
 class SigninAnonymousProcessor extends AbstractCommandProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SigninAnonymousProcessor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SigninAnonymousProcessor.class);
 
-    SigninAnonymousProcessor(ProcessorContext context) {
-        super(context);
-    }
+  SigninAnonymousProcessor(ProcessorContext context) {
+    super(context);
+  }
 
-    @Override
-    protected void setDeprecatedVersions() {
-        //NOOP
-    }
+  @Override
+  protected void setDeprecatedVersions() {
+    // NOOP
+  }
 
-    @Override
-    protected MessageResponse processCommand() {
-        try {
-            return RepoBuilder.buildAuthenticationRepo(context).signinAnonymous();
-        } catch (Throwable t) {
-            LOGGER.error("exception while generating anonymous access token", t);
-            return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
-        }
+  @Override
+  protected MessageResponse processCommand() {
+    try {
+      return RepoBuilder.buildAuthenticationRepo(context).signinAnonymous();
+    } catch (Throwable t) {
+      LOGGER.error("exception while generating anonymous access token", t);
+      return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
     }
+  }
 
 }

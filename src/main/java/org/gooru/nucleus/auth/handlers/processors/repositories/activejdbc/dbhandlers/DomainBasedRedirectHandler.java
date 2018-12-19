@@ -2,7 +2,6 @@ package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhan
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-
 import org.gooru.nucleus.auth.handlers.constants.HttpConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityDomainBasedRedirect;
@@ -14,7 +13,6 @@ import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -22,90 +20,95 @@ import io.vertx.core.json.JsonObject;
  */
 public class DomainBasedRedirectHandler implements DBHandler {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(DomainBasedRedirectHandler.class);
-	private final ProcessorContext context;
-	AJEntityDomainBasedRedirect domainBasedRedirectURL;
-	private String contextUrl = null;
+  private static final Logger LOGGER = LoggerFactory.getLogger(DomainBasedRedirectHandler.class);
+  private final ProcessorContext context;
+  AJEntityDomainBasedRedirect domainBasedRedirectURL;
+  private String contextUrl = null;
 
-	public DomainBasedRedirectHandler(ProcessorContext context) {
-		this.context = context;
-	}
+  public DomainBasedRedirectHandler(ProcessorContext context) {
+    this.context = context;
+  }
 
-	@Override
-	public ExecutionResult<MessageResponse> checkSanity() {
-		JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
-				AJEntityDomainBasedRedirect.fieldSelector(), AJEntityUsers.getValidatorRegistry());
-		if (errors != null && !errors.isEmpty()) {
-			LOGGER.warn("Validation errors for request");
-			return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
-					ExecutionResult.ExecutionStatus.FAILED);
-		}
+  @Override
+  public ExecutionResult<MessageResponse> checkSanity() {
+    JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
+        AJEntityDomainBasedRedirect.fieldSelector(), AJEntityUsers.getValidatorRegistry());
+    if (errors != null && !errors.isEmpty()) {
+      LOGGER.warn("Validation errors for request");
+      return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
+          ExecutionResult.ExecutionStatus.FAILED);
+    }
 
-		this.contextUrl = context.requestBody().getString(AJEntityDomainBasedRedirect.CONTEXT_URL);
-		return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
-	}
+    this.contextUrl = context.requestBody().getString(AJEntityDomainBasedRedirect.CONTEXT_URL);
+    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+  }
 
-	@Override
-	public ExecutionResult<MessageResponse> validateRequest() {
-		return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
-	}
+  @Override
+  public ExecutionResult<MessageResponse> validateRequest() {
+    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+  }
 
-	@Override
-	public ExecutionResult<MessageResponse> executeRequest() {
-		initializeDomainBasedRedirectModel();
+  @Override
+  public ExecutionResult<MessageResponse> executeRequest() {
+    initializeDomainBasedRedirectModel();
 
-		JsonObject response = generateResponse();
+    JsonObject response = generateResponse();
 
-		return new ExecutionResult<>(MessageResponseFactory.createGetResponse(response),
-				ExecutionResult.ExecutionStatus.SUCCESSFUL);
-	}
+    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(response),
+        ExecutionResult.ExecutionStatus.SUCCESSFUL);
+  }
 
-	private JsonObject generateResponse() {
-		JsonObject response = new JsonObject();
-		if (this.domainBasedRedirectURL == null) {
-			response.put(AJEntityDomainBasedRedirect.RESP_STATUS_CODE, HttpConstants.HttpStatus.NOT_FOUND.getCode());
-			response.putNull(AJEntityDomainBasedRedirect.REDIRECT_URL);
-		} else {
-			String redirectUrl = this.domainBasedRedirectURL.getString(AJEntityDomainBasedRedirect.REDIRECT_URL);
-			if (redirectUrl == null) {
-				response.putNull(AJEntityDomainBasedRedirect.REDIRECT_URL);
-				response.put(AJEntityDomainBasedRedirect.RESP_STATUS_CODE, HttpConstants.HttpStatus.SUCCESS.getCode());
-			} else {
-				try {
-					redirectUrl = redirectUrl.concat(
-							(this.contextUrl != null ? "?context=" + URLEncoder.encode(contextUrl, "UTF-8") : ""));
-				} catch (UnsupportedEncodingException e) {
-					LOGGER.warn("unable to encode URL, using unencoded URL");
-					redirectUrl = redirectUrl.concat((this.contextUrl != null ? "?context=" + contextUrl : ""));
-				}
-				response.put(AJEntityDomainBasedRedirect.RESP_STATUS_CODE,
-						HttpConstants.HttpStatus.SEE_OTHER.getCode());
-				response.put(AJEntityDomainBasedRedirect.REDIRECT_URL, redirectUrl);
-			}
-		}
-		return response;
-	}
+  private JsonObject generateResponse() {
+    JsonObject response = new JsonObject();
+    if (this.domainBasedRedirectURL == null) {
+      response.put(AJEntityDomainBasedRedirect.RESP_STATUS_CODE,
+          HttpConstants.HttpStatus.NOT_FOUND.getCode());
+      response.putNull(AJEntityDomainBasedRedirect.REDIRECT_URL);
+    } else {
+      String redirectUrl =
+          this.domainBasedRedirectURL.getString(AJEntityDomainBasedRedirect.REDIRECT_URL);
+      if (redirectUrl == null) {
+        response.putNull(AJEntityDomainBasedRedirect.REDIRECT_URL);
+        response.put(AJEntityDomainBasedRedirect.RESP_STATUS_CODE,
+            HttpConstants.HttpStatus.SUCCESS.getCode());
+      } else {
+        try {
+          redirectUrl = redirectUrl.concat(
+              (this.contextUrl != null ? "?context=" + URLEncoder.encode(contextUrl, "UTF-8")
+                  : ""));
+        } catch (UnsupportedEncodingException e) {
+          LOGGER.warn("unable to encode URL, using unencoded URL");
+          redirectUrl =
+              redirectUrl.concat((this.contextUrl != null ? "?context=" + contextUrl : ""));
+        }
+        response.put(AJEntityDomainBasedRedirect.RESP_STATUS_CODE,
+            HttpConstants.HttpStatus.SEE_OTHER.getCode());
+        response.put(AJEntityDomainBasedRedirect.REDIRECT_URL, redirectUrl);
+      }
+    }
+    return response;
+  }
 
-	private void initializeDomainBasedRedirectModel() {
-		String domain = getDomain();
-		this.domainBasedRedirectURL = AJEntityDomainBasedRedirect.findFirst(AJEntityDomainBasedRedirect.FIND_BY_DOMAIN,
-				domain);
-	}
+  private void initializeDomainBasedRedirectModel() {
+    String domain = getDomain();
+    this.domainBasedRedirectURL =
+        AJEntityDomainBasedRedirect.findFirst(AJEntityDomainBasedRedirect.FIND_BY_DOMAIN, domain);
+  }
 
-	@Override
-	public boolean handlerReadOnly() {
-		return true;
-	}
+  @Override
+  public boolean handlerReadOnly() {
+    return true;
+  }
 
-	private static class DefaultPayloadValidator implements PayloadValidator {
-	}
+  private static class DefaultPayloadValidator implements PayloadValidator {
+  }
 
-	public String getDomain() {
-		String domain = context.requestBody().getString(AJEntityDomainBasedRedirect.DOMAIN);
-		if (domain.startsWith("www.") || domain.startsWith("WWW.")) {
-			domain = domain.substring(4);
-		}
+  public String getDomain() {
+    String domain = context.requestBody().getString(AJEntityDomainBasedRedirect.DOMAIN);
+    if (domain.startsWith("www.") || domain.startsWith("WWW.")) {
+      domain = domain.substring(4);
+    }
 
-		return domain.toLowerCase();
-	}
+    return domain.toLowerCase();
+  }
 }

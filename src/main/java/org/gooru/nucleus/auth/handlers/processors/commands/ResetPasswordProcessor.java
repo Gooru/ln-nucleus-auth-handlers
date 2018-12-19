@@ -8,31 +8,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author szgooru
- *         Created On: 03-Jan-2017
+ * @author szgooru Created On: 03-Jan-2017
  */
 class ResetPasswordProcessor extends AbstractCommandProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ResetPasswordProcessor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ResetPasswordProcessor.class);
 
-    ResetPasswordProcessor(ProcessorContext context) {
-        super(context);
-    }
+  ResetPasswordProcessor(ProcessorContext context) {
+    super(context);
+  }
 
-    @Override
-    protected void setDeprecatedVersions() {
-        //NOOP
-    }
+  @Override
+  protected void setDeprecatedVersions() {
+    // NOOP
+  }
 
-    @Override
-    protected MessageResponse processCommand() {
-        try {
-            LOGGER.info("resetting password for user");
-            return RepoBuilder.buildUserRepo(context).resetPassword();
-        } catch (Throwable t) {
-            LOGGER.error("exception while reset password");
-            return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
-        }
+  @Override
+  protected MessageResponse processCommand() {
+    try {
+      LOGGER.info("resetting password for user");
+      return RepoBuilder.buildUserRepo(context).resetPassword();
+    } catch (Throwable t) {
+      LOGGER.error("exception while reset password");
+      return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
     }
+  }
 
 }

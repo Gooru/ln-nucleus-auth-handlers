@@ -3,20 +3,19 @@ package org.gooru.nucleus.auth.handlers.processors.repositories;
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 
 /**
- * @author gooru
- *         Created On: 02-Jan-2017
+ * @author gooru Created On: 02-Jan-2017
  */
 public interface UserRepo {
 
-    MessageResponse signupUser();
+  MessageResponse signupUser();
 
-    MessageResponse authorizeUser();
+  MessageResponse authorizeUser();
 
-    MessageResponse updateUser();
+  MessageResponse updateUser();
 
-    MessageResponse triggerResetPassword();
+  MessageResponse triggerResetPassword();
 
-    MessageResponse resetPassword();
+  MessageResponse resetPassword();
 
-    MessageResponse changePassword();
+  MessageResponse changePassword();
 }

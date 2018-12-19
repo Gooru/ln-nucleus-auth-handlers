@@ -8,31 +8,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author szgooru
- *         Created On: 03-Jan-2017
+ * @author szgooru Created On: 03-Jan-2017
  */
 class InternalAuthenticateProcessor extends AbstractCommandProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InternalAuthenticateProcessor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(InternalAuthenticateProcessor.class);
 
-    InternalAuthenticateProcessor(ProcessorContext context) {
-        super(context);
-    }
+  InternalAuthenticateProcessor(ProcessorContext context) {
+    super(context);
+  }
 
-    @Override
-    protected void setDeprecatedVersions() {
-        //NOOP
-    }
+  @Override
+  protected void setDeprecatedVersions() {
+    // NOOP
+  }
 
-    @Override
-    protected MessageResponse processCommand() {
-        try {
-            LOGGER.info("processing user authorize");
-            return RepoBuilder.buildInternalRepo(context).authenticate();
-        } catch (Throwable t) {
-            LOGGER.error("exception while authorizing user");
-            return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
-        }
+  @Override
+  protected MessageResponse processCommand() {
+    try {
+      LOGGER.info("processing user authorize");
+      return RepoBuilder.buildInternalRepo(context).authenticate();
+    } catch (Throwable t) {
+      LOGGER.error("exception while authorizing user");
+      return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
     }
+  }
 
 }

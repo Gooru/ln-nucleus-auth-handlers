@@ -3,18 +3,17 @@ package org.gooru.nucleus.auth.handlers.processors.repositories;
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 
 /**
- * @author szgooru
- *         Created On: 03-Jan-2017
+ * @author szgooru Created On: 03-Jan-2017
  */
 public interface InternalRepo {
 
-    MessageResponse authenticate();
+  MessageResponse authenticate();
 
-    MessageResponse impersonate();
+  MessageResponse impersonate();
 
-    MessageResponse ltisso();
-    
-    MessageResponse wsfedsso();
-    
-    MessageResponse tenantRealm();
+  MessageResponse ltisso();
+
+  MessageResponse wsfedsso();
+
+  MessageResponse tenantRealm();
 }
