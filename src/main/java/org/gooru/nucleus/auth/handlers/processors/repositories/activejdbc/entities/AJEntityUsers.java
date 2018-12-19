@@ -80,7 +80,7 @@ public class AJEntityUsers extends Model {
         new HashSet<>(Arrays.asList(ParameterConstants.PARAM_TOKEN, PASSWORD));
 
     private static final Set<String> CHANGE_PASSWORD_FIELDS =
-        new HashSet<>(Arrays.asList(ParameterConstants.PARAM_OLD_PASSWORD, ParameterConstants.PARAM_NEW_PASSWORD));
+        new HashSet<>(Arrays.asList(ParameterConstants.PARAM_OLD_PASSWORD, ParameterConstants.PARAM_NEW_PASSWORD, ParameterConstants.PARAM_SEND_EMAIL));
 
     public static final String SELECT_FOR_SIGNIN =
         "SELECT id, display_name, username, email, first_name, last_name, password, login_type, user_category, thumbnail, "

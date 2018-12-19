@@ -25,6 +25,7 @@ public final class ParameterConstants {
     public static final String PARAM_TOKEN = "token";
     public static final String PARAM_OLD_PASSWORD = "old_password";
     public static final String PARAM_NEW_PASSWORD = "new_password";
+    public static final String PARAM_SEND_EMAIL = "send_email";
     public static final String PARAM_IDENTITY_ID = "identity_id";
     public static final String PARAM_SHORT_NAME = "shortname";
 

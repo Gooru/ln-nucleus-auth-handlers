@@ -35,6 +35,7 @@ public class ChangePassowrdHandler implements DBHandler {
     private String userId;
     private String oldPassword;
     private String newPassword;
+    private boolean sendEmail;
     private AJEntityUsers user;
 
     public ChangePassowrdHandler(ProcessorContext context) {
@@ -55,6 +56,7 @@ public class ChangePassowrdHandler implements DBHandler {
 
         oldPassword = context.requestBody().getString(ParameterConstants.PARAM_OLD_PASSWORD);
         newPassword = context.requestBody().getString(ParameterConstants.PARAM_NEW_PASSWORD);
+        sendEmail = context.requestBody().getBoolean(ParameterConstants.PARAM_SEND_EMAIL, false);
         userId = context.user().getString(ParameterConstants.PARAM_USER_ID);
 
         LOGGER.debug("checkSanity OK");
@@ -93,22 +95,27 @@ public class ChangePassowrdHandler implements DBHandler {
         user.setString(AJEntityUsers.PASSWORD, InternalHelper.encryptPassword(newPassword));
         user.saveIt();
 
-        final String newToken = InternalHelper.generatePasswordResetToken(user.getString(AJEntityUsers.ID));
-        JsonObject redisPacket = new JsonObject().put(AJEntityUsers.EMAIL, user.getString(AJEntityUsers.EMAIL))
-            .put(AJEntityUsers.TENANT_ID, user.getString(AJEntityUsers.TENANT_ID));
-        this.redisClient.set(newToken, redisPacket.toString(), HelperConstants.RESET_PASS_TOKEN_EXPIRY);
-        
-        EmailNotificationBuilder emailNotificationBuilder = new EmailNotificationBuilder();
-        emailNotificationBuilder.setTemplateName(EmailTemplateConstants.PASSWORD_CHANGED)
-            .addToAddress(user.getString(AJEntityUsers.EMAIL))
-            .putContext(ParameterConstants.MAIL_TOKEN, InternalHelper.encodeToken(newToken))
-            .putContext(ParameterConstants.PARAM_USER_ID, user.getString(AJEntityUsers.ID))
-            .putContext(ParameterConstants.MAIL_USERNAME, user.getString(AJEntityUsers.USERNAME));
-
-        return new ExecutionResult<>(
-            MessageResponseFactory.createNoContentResponse(EventBuilderFactory
-                .getResetPasswordEventBuilder(user.getString(AJEntityUsers.ID), emailNotificationBuilder)),
-            ExecutionStatus.SUCCESSFUL);
+        if (sendEmail) {
+            final String newToken = InternalHelper.generatePasswordResetToken(user.getString(AJEntityUsers.ID));
+            JsonObject redisPacket = new JsonObject().put(AJEntityUsers.EMAIL, user.getString(AJEntityUsers.EMAIL))
+                .put(AJEntityUsers.TENANT_ID, user.getString(AJEntityUsers.TENANT_ID));
+            this.redisClient.set(newToken, redisPacket.toString(), HelperConstants.RESET_PASS_TOKEN_EXPIRY);
+            
+            EmailNotificationBuilder emailNotificationBuilder = new EmailNotificationBuilder();
+            emailNotificationBuilder.setTemplateName(EmailTemplateConstants.PASSWORD_CHANGED)
+                .addToAddress(user.getString(AJEntityUsers.EMAIL))
+                .putContext(ParameterConstants.MAIL_TOKEN, InternalHelper.encodeToken(newToken))
+                .putContext(ParameterConstants.PARAM_USER_ID, user.getString(AJEntityUsers.ID))
+                .putContext(ParameterConstants.MAIL_USERNAME, user.getString(AJEntityUsers.USERNAME));
+            LOGGER.debug("sending response with email notification");
+            return new ExecutionResult<>(
+                MessageResponseFactory.createNoContentResponse(EventBuilderFactory
+                    .getResetPasswordEventBuilder(user.getString(AJEntityUsers.ID), emailNotificationBuilder)),
+                ExecutionStatus.SUCCESSFUL);
+        } else {
+          LOGGER.debug("sending response without email notification");          
+          return new ExecutionResult<>(MessageResponseFactory.createNoContentResponse(), ExecutionStatus.SUCCESSFUL);
+        }
     }
 
     @Override
