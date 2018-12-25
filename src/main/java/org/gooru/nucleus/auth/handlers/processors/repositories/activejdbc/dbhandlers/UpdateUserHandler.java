@@ -1,7 +1,6 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhandlers;
 
 import java.util.ResourceBundle;
-
 import org.gooru.nucleus.auth.handlers.constants.HelperConstants;
 import org.gooru.nucleus.auth.handlers.constants.MessageConstants;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
@@ -17,7 +16,6 @@ import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -25,126 +23,131 @@ import io.vertx.core.json.JsonObject;
  */
 public class UpdateUserHandler implements DBHandler {
 
-    private final ProcessorContext context;
-    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateUserHandler.class);
-    private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
+  private final ProcessorContext context;
+  private static final Logger LOGGER = LoggerFactory.getLogger(UpdateUserHandler.class);
+  private static final ResourceBundle RESOURCE_BUNDLE =
+      ResourceBundle.getBundle(HelperConstants.RESOURCE_BUNDLE);
 
-    private AJEntityUsers user;
-    private String tenantId;
-    private String partnerId;
-    private boolean isPartner = false;
-    private  boolean setUsername = false;
+  private AJEntityUsers user;
+  private String tenantId;
+  private String partnerId;
+  private boolean isPartner = false;
+  private boolean setUsername = false;
 
-    public UpdateUserHandler(ProcessorContext context) {
-        this.context = context;
+  public UpdateUserHandler(ProcessorContext context) {
+    this.context = context;
+  }
+
+  @Override
+  public ExecutionResult<MessageResponse> checkSanity() {
+
+    String userId = context.user().getString(ParameterConstants.PARAM_USER_ID);
+    if (userId == null || userId.equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS)) {
+      LOGGER.warn("anonymous user trying to update user record, aborting");
+      return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse(
+          (RESOURCE_BUNDLE.getString("error.anonymous.user"))), ExecutionStatus.FAILED);
     }
 
-    @Override
-    public ExecutionResult<MessageResponse> checkSanity() {
-        
-        String userId = context.user().getString(ParameterConstants.PARAM_USER_ID);
-        if (userId == null || userId.equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS)) {
-            LOGGER.warn("anonymous user trying to update user record, aborting");
-            return new ExecutionResult<>(
-                MessageResponseFactory.createForbiddenResponse((RESOURCE_BUNDLE.getString("error.anonymous.user"))),
-                ExecutionStatus.FAILED);
-        }
-        
-        // TODO: revisit the field validation for null/nullable fields
-        JsonObject errors = new DefaultPayloadValidator()
-            .validatePayload(context.requestBody(), AJEntityUsers.updateFieldSelector(),
-                AJEntityUsers.getValidatorRegistry());
-        if (errors != null && !errors.isEmpty()) {
-            LOGGER.warn("Validation errors for request");
-            return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
-                ExecutionResult.ExecutionStatus.FAILED);
-        }
-        
-        this.tenantId =
-            context.user().getJsonObject(ParameterConstants.PARAM_TENANT).getString(ParameterConstants.PARAM_TENANT_ID);
-        this.partnerId = context.user().getString(ParameterConstants.PARAM_PARTNER_ID);
-        if (this.partnerId != null) {
-            this.isPartner = true;
-        }
-        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    // TODO: revisit the field validation for null/nullable fields
+    JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
+        AJEntityUsers.updateFieldSelector(), AJEntityUsers.getValidatorRegistry());
+    if (errors != null && !errors.isEmpty()) {
+      LOGGER.warn("Validation errors for request");
+      return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
+          ExecutionResult.ExecutionStatus.FAILED);
     }
 
-    @Override
-    public ExecutionResult<MessageResponse> validateRequest() {
-        String userId = context.user().getString(ParameterConstants.PARAM_USER_ID);
+    this.tenantId = context.user().getJsonObject(ParameterConstants.PARAM_TENANT)
+        .getString(ParameterConstants.PARAM_TENANT_ID);
+    this.partnerId = context.user().getString(ParameterConstants.PARAM_PARTNER_ID);
+    if (this.partnerId != null) {
+      this.isPartner = true;
+    }
+    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+  }
 
-        if (isPartner) {
-            user = DBHelper.getUserByIdAndPartnerId(userId, this.partnerId);
-        } else {
-            user = DBHelper.getUserByIdAndTenantId(userId, this.tenantId);
+  @Override
+  public ExecutionResult<MessageResponse> validateRequest() {
+    String userId = context.user().getString(ParameterConstants.PARAM_USER_ID);
+
+    if (isPartner) {
+      user = DBHelper.getUserByIdAndPartnerId(userId, this.partnerId);
+    } else {
+      user = DBHelper.getUserByIdAndTenantId(userId, this.tenantId);
+    }
+
+    if (user == null) {
+      LOGGER.warn("user not found for id:{}, tenant_id:{}", userId, this.tenantId);
+      return new ExecutionResult<>(MessageResponseFactory.createUnauthorizedResponse(
+          (RESOURCE_BUNDLE.getString("user.not.found"))), ExecutionStatus.FAILED);
+    }
+
+    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+  }
+
+  @Override
+  public ExecutionResult<MessageResponse> executeRequest() {
+    // If username present in the request body, verify its uniqueness
+    if (context.requestBody().containsKey(AJEntityUsers.USERNAME)) {
+      String usernameFromRequest = context.requestBody().getString(AJEntityUsers.USERNAME);
+      String usernameFromDB = user.getString(AJEntityUsers.USERNAME);
+
+      if (usernameFromDB == null || !usernameFromDB.equalsIgnoreCase(usernameFromRequest)) {
+        AJEntityUsers existingUser =
+            DBHelper.getUserByUsername(usernameFromRequest, tenantId, partnerId, isPartner);
+        if (existingUser != null) {
+          JsonObject errors = new JsonObject();
+          errors.put(AJEntityUsers.USERNAME, "'" + usernameFromRequest + "'" + " is already taken");
+          return new ExecutionResult<>(MessageResponseFactory.createConflictRespose(errors),
+              ExecutionStatus.FAILED);
         }
-        
-        if (user == null) {
-            LOGGER.warn("user not found for id:{}, tenant_id:{}", userId, this.tenantId);
-            return new ExecutionResult<>(
-                MessageResponseFactory.createUnauthorizedResponse((RESOURCE_BUNDLE.getString("user.not.found"))),
-                ExecutionStatus.FAILED);
-        }
-
-        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+        this.setUsername = true;
+      } else {
+        this.setUsername = true;
+      }
     }
 
-    @Override
-    public ExecutionResult<MessageResponse> executeRequest() {
-        // If username present in the request body, verify its uniqueness
-        if (context.requestBody().containsKey(AJEntityUsers.USERNAME)) {
-            String usernameFromRequest = context.requestBody().getString(AJEntityUsers.USERNAME);
-            String usernameFromDB = user.getString(AJEntityUsers.USERNAME);
-            
-            if (usernameFromDB == null || !usernameFromDB.equalsIgnoreCase(usernameFromRequest)) {
-                AJEntityUsers existingUser = DBHelper.getUserByUsername(usernameFromRequest, tenantId, partnerId, isPartner);
-                if (existingUser != null) {
-                    JsonObject errors = new JsonObject();
-                    errors.put(AJEntityUsers.USERNAME, "'" + usernameFromRequest + "'" + " is already taken");
-                    return new ExecutionResult<>(MessageResponseFactory.createConflictRespose(errors), ExecutionStatus.FAILED);
-                } 
-                this.setUsername = true;
-            } else {
-                this.setUsername = true;
-            }
-        }
-        
-        // TODO: Do we need to update the Redis session if the username is
-        // udpated?
-        autoPopulate();
+    // TODO: Do we need to update the Redis session if the username is
+    // udpated?
+    autoPopulate();
 
-        if (!user.save()) {
-            LOGGER.warn("unable to update user for id:{}", user.get(AJEntityUsers.ID));
-            return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(
-                new JsonObject().put(MessageConstants.MSG_MESSAGE, RESOURCE_BUNDLE.getString("user.save.error"))),
-                ExecutionStatus.FAILED);
-        }
-
-        return new ExecutionResult<>(MessageResponseFactory
-            .createNoContentResponse(EventBuilderFactory.getUpdateUserEventBuilder(user.getString(AJEntityUsers.ID))),
-            ExecutionStatus.SUCCESSFUL);
+    if (!user.save()) {
+      LOGGER.warn("unable to update user for id:{}", user.get(AJEntityUsers.ID));
+      return new ExecutionResult<>(
+          MessageResponseFactory.createValidationErrorResponse(new JsonObject()
+              .put(MessageConstants.MSG_MESSAGE, RESOURCE_BUNDLE.getString("user.save.error"))),
+          ExecutionStatus.FAILED);
     }
 
-    @Override
-    public boolean handlerReadOnly() {
-        return false;
-    }
+    return new ExecutionResult<>(
+        MessageResponseFactory.createNoContentResponse(
+            EventBuilderFactory.getUpdateUserEventBuilder(user.getString(AJEntityUsers.ID))),
+        ExecutionStatus.SUCCESSFUL);
+  }
 
-    private void autoPopulate() {
-        new DefaultAJEntityUsersBuilder().build(user, context.requestBody(), AJEntityUsers.getConverterRegistry());
-        
-        if (this.setUsername) {
-            // set username in lowercase 
-            user.setString(AJEntityUsers.USERNAME, context.requestBody().getString(AJEntityUsers.USERNAME).toLowerCase());
-            
-            // set incoming username as is which can used as display name.
-            user.setString(AJEntityUsers.DISPLAY_NAME, context.requestBody().getString(AJEntityUsers.USERNAME));
-        }
-    }
+  @Override
+  public boolean handlerReadOnly() {
+    return false;
+  }
 
-    private static class DefaultPayloadValidator implements PayloadValidator {
-    }
+  private void autoPopulate() {
+    new DefaultAJEntityUsersBuilder().build(user, context.requestBody(),
+        AJEntityUsers.getConverterRegistry());
 
-    private static class DefaultAJEntityUsersBuilder implements EntityBuilder<AJEntityUsers> {
+    if (this.setUsername) {
+      // set username in lowercase
+      user.setString(AJEntityUsers.USERNAME,
+          context.requestBody().getString(AJEntityUsers.USERNAME).toLowerCase());
+
+      // set incoming username as is which can used as display name.
+      user.setString(AJEntityUsers.DISPLAY_NAME,
+          context.requestBody().getString(AJEntityUsers.USERNAME));
     }
+  }
+
+  private static class DefaultPayloadValidator implements PayloadValidator {
+  }
+
+  private static class DefaultAJEntityUsersBuilder implements EntityBuilder<AJEntityUsers> {
+  }
 }

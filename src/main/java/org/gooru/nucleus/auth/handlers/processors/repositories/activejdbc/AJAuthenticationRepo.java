@@ -7,39 +7,43 @@ import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.transa
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 
 /**
- * @author szgooru
- *         Created On: 02-Jan-2017
+ * @author szgooru Created On: 02-Jan-2017
  */
 public class AJAuthenticationRepo implements AuthenticationRepo {
 
-    private final ProcessorContext context;
+  private final ProcessorContext context;
 
-    public AJAuthenticationRepo(ProcessorContext context) {
-        this.context = context;
-    }
+  public AJAuthenticationRepo(ProcessorContext context) {
+    this.context = context;
+  }
 
-    @Override
-    public MessageResponse signinAnonymous() {
-        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildSigninAnonymousHandler(context));
-    }
+  @Override
+  public MessageResponse signinAnonymous() {
+    return new TransactionExecutor()
+        .executeTransaction(DBHandlerBuilder.buildSigninAnonymousHandler(context));
+  }
 
-    @Override
-    public MessageResponse signinUser() {
-        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildSigninUserHandler(context));
-    }
+  @Override
+  public MessageResponse signinUser() {
+    return new TransactionExecutor()
+        .executeTransaction(DBHandlerBuilder.buildSigninUserHandler(context));
+  }
 
-    @Override
-    public MessageResponse getAccessTokenDetails() {
-        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildGetAccessTokenDetailsHandler(context));
-    }
+  @Override
+  public MessageResponse getAccessTokenDetails() {
+    return new TransactionExecutor()
+        .executeTransaction(DBHandlerBuilder.buildGetAccessTokenDetailsHandler(context));
+  }
 
-    @Override
-    public MessageResponse domainBasedRedirect() {
-        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildDomainBasedRedirectHandler(context));
-    }
+  @Override
+  public MessageResponse domainBasedRedirect() {
+    return new TransactionExecutor()
+        .executeTransaction(DBHandlerBuilder.buildDomainBasedRedirectHandler(context));
+  }
 
-	@Override
-	public MessageResponse initLogin() {
-		return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildInitLoginHandler(context));
-	}
+  @Override
+  public MessageResponse initLogin() {
+    return new TransactionExecutor()
+        .executeTransaction(DBHandlerBuilder.buildInitLoginHandler(context));
+  }
 }
