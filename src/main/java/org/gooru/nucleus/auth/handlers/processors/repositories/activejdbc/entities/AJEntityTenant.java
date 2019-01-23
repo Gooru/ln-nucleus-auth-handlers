@@ -1,7 +1,14 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponseFactory;
 import org.javalite.activejdbc.Model;
 import org.javalite.activejdbc.annotations.Table;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author szgooru Created On: 03-Jan-2017
@@ -9,6 +16,8 @@ import org.javalite.activejdbc.annotations.Table;
 
 @Table("tenant")
 public class AJEntityTenant extends Model {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AJEntityTenant.class);
 
   public static final String TABLE = "tenant";
 
@@ -30,6 +39,9 @@ public class AJEntityTenant extends Model {
   public static final String CDN_URLS = "cdn_urls";
   public static final String ACCESS_TOKEN_VALIDITY = "access_token_validity";
   public static final String SHORT_NAME = "short_name";
+  
+  public static final String GRANT_TYPE_GOOGLE = "google";
+  public static final String GRANT_TYPE_CREDENTIAL = "credential";
 
   public static final String SELECT_BY_ID =
       "SELECT id, cdn_urls, access_token_validity, short_name FROM tenant WHERE id = ?::uuid AND status = 'active'";
@@ -46,6 +58,32 @@ public class AJEntityTenant extends Model {
           + "ARRAY[?]::text[] AND status = 'active'";
 
   public static final String SELECT_BY_SHORT_NAME_GRANT_TYPE =
-      "SELECT id FROM tenant WHERE short_name = ?::varchar  AND grant_types @> "
-          + "ARRAY[?]::text[] AND status = 'active'";
+      "SELECT id, grant_types FROM tenant WHERE short_name = ?::varchar AND status = 'active'";
+
+  public List<String> getGrantTypes() {
+    Object grantTypes = this.get(GRANT_TYPES);
+    if (grantTypes == null) {
+      return null;
+    }
+
+    if (grantTypes instanceof java.sql.Array) {
+      String[] result = new String[0];
+      try {
+        result = (String[]) ((java.sql.Array) grantTypes).getArray();
+        List<String> types = new ArrayList<>();
+        if (result.length == 0) {
+          return types;
+        }
+        Collections.addAll(types, result);
+        return types;
+      } catch (SQLException e) {
+        LOGGER.warn("Invalid grant types", e);
+        return null;
+      }
+    } else {
+      LOGGER.warn("grant type is not instance of array");
+      return null;
+    }
+  }
+
 }
