@@ -45,7 +45,7 @@ public class InternalTenantRealmHandler implements DBHandler {
   @Override
   public ExecutionResult<MessageResponse> validateRequest() {
     LazyList<AJEntityTenant> tenants =
-        AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_SHORT_NAME_GRANT_TYPE, shortName);
+        AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_SHORT_NAME_GRANT_TYPE, shortName.toLowerCase());
     if (tenants.isEmpty()) {
       LOGGER.warn("No tenant match with this shortname {}.", shortName);
       return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
