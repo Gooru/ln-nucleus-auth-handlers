@@ -21,11 +21,15 @@ public class AppConfiguration implements Initializer, Finalizer {
 
   private static final String KEY_APP_CONFIG = "app.config";
   private static final String KEY_APPID_REQUIRED = "appid.required";
-  private static final String KEY_APPLOGIN_URL = "applogin.url";
+  private static final String KEY_CREDENTIAL_APPLOGIN_URL = "credential.applogin.url";
+  private static final String KEY_GOOGLE_APPLOGIN_URL = "google.applogin.url";
+  private static final String KEY_DEFAULT_APPLOGIN_URL = "default.applogin.url";
 
   private Boolean isAppIdRequired;
 
-  private String appLoginUrl;
+  private String credentialAppLoginUrl;
+  private String googleAppLoginUrl;
+  private String defaultLoginUrl;
 
   private AppConfiguration() {}
 
@@ -47,10 +51,22 @@ public class AppConfiguration implements Initializer, Finalizer {
       LOGGER.warn(RESOURCE_BUNDLE.getString("appid.required.not.found"));
       throw new AssertionError(RESOURCE_BUNDLE.getString("appid.required.not.found"));
     }
-    this.appLoginUrl = appConfig.getString(KEY_APPLOGIN_URL);
-    if (this.appLoginUrl == null) {
-      LOGGER.warn(RESOURCE_BUNDLE.getString("applogin.url.not.found"));
-      throw new AssertionError(RESOURCE_BUNDLE.getString("applogin.url.not.found"));
+    this.credentialAppLoginUrl = appConfig.getString(KEY_CREDENTIAL_APPLOGIN_URL);
+    if (this.credentialAppLoginUrl == null) {
+      LOGGER.warn(RESOURCE_BUNDLE.getString("credential.login.url.not.found"));
+      throw new AssertionError(RESOURCE_BUNDLE.getString("credential.login.url.not.found"));
+    }
+    
+    this.googleAppLoginUrl = appConfig.getString(KEY_GOOGLE_APPLOGIN_URL);
+    if (this.googleAppLoginUrl == null || this.googleAppLoginUrl.isEmpty()) {
+      LOGGER.warn(RESOURCE_BUNDLE.getString("google.login.url.not.found"));
+      throw new AssertionError(RESOURCE_BUNDLE.getString("google.login.url.not.found"));
+    }
+    
+    this.defaultLoginUrl = appConfig.getString(KEY_DEFAULT_APPLOGIN_URL);
+    if (this.defaultLoginUrl == null || this.defaultLoginUrl.isEmpty()) {
+      LOGGER.warn(RESOURCE_BUNDLE.getString("default.login.url.not.found"));
+      throw new AssertionError(RESOURCE_BUNDLE.getString("default.login.url.not.found"));
     }
 
     LOGGER.debug("AppID required flag set to:{}", isAppIdRequired);
@@ -64,9 +80,15 @@ public class AppConfiguration implements Initializer, Finalizer {
     return isAppIdRequired;
   }
 
-  public String appLoginUrl() {
-    return appLoginUrl;
+  public String credentialAppLoginUrl() {
+    return credentialAppLoginUrl;
   }
 
+  public String googleAppLoginUrl() {
+    return googleAppLoginUrl;
+  }
 
+  public String defaultLoginUrl() {
+    return defaultLoginUrl;
+  }
 }

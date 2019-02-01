@@ -21,6 +21,8 @@
   },
   "app.config" : {
   	"appid.required" : false,
-  	"applogin.url": "http://local.gooru.org/sign-in"
+  	"credential.applogin.url": "http://local.gooru.org/sign-in",
+  	"google.applogin.url": "http://staging.gooru.org/api/nucleus-auth-idp/v2/google?tenantId=",
+  	"default.applogin.url": "http://local.gooru.org/sign-in"
   }
 }
