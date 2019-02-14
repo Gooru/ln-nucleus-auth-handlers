@@ -75,4 +75,8 @@ public final class DBHandlerBuilder {
     return new InternalTenantRealmHandler(context);
   }
 
+  public static DBHandler buildSignoutHandler(ProcessorContext context) {
+    return new SignoutHandler(context);
+  }
+
 }

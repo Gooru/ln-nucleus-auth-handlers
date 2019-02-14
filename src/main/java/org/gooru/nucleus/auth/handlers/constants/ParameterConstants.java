@@ -30,6 +30,9 @@ public final class ParameterConstants {
 
   public static final String PARAM_USER = "user";
   public static final String PARAM_USER_ID = "user_id";
+  
+  public static final String RESP_KEY_DEFAULT = "default";
+  public static final String RESP_KEY_LOGINURL = "login_url";
 
   // Email Notification Constants
   public static final String MAIL_TEMPLATE_NAME = "mail_template_name";
