@@ -45,7 +45,7 @@ public final class HelperConstants {
   }
 
   public enum UserLoginType {
-    google("google"), wsfed("wsfed"), saml("saml"), credential("credential"), ltisso("ltisso");
+    google("google"), wsfed("wsfed"), saml("saml"), credential("credential"), ltisso("ltisso"), oauth2("oauth2");
 
     public final String type;
 
@@ -60,7 +60,7 @@ public final class HelperConstants {
 
   public enum GrantTypes {
     anonymous("anonymous"), credential("credential"), google("google"), wsfed("wsfed"), saml(
-        "saml"), ltisso("ltisso");
+        "saml"), ltisso("ltisso"), oauth2("oauth2");
 
     public final String type;
 

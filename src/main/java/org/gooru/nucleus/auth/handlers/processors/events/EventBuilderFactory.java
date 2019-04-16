@@ -68,6 +68,10 @@ public final class EventBuilderFactory {
   public static EventBuilder getWSFedSSOSigninEventBuilder(String userId) {
     return getSigninUserEventBuilder(userId);
   }
+  
+  public static EventBuilder getOAuth2SSOSigninEventBuilder(String userId) {
+      return getSigninUserEventBuilder(userId);
+    }
 
   public static EventBuilder getWSFedSSOSignupEventBuilder(String userId) {
     return getSignupUserEventBuilder(userId);

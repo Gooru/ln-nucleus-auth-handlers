@@ -46,5 +46,11 @@ public class AJInternalRepo implements InternalRepo {
     return new TransactionExecutor()
         .executeTransaction(DBHandlerBuilder.buildTenantRealmHandler(context));
   }
+  
+  @Override
+  public MessageResponse oauth2sso() {
+    return new TransactionExecutor()
+        .executeTransaction(DBHandlerBuilder.buildInternalOAuth2SSOHandler(context));
+  }
 
 }

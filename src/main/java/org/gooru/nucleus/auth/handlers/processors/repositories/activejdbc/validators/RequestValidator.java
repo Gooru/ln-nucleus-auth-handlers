@@ -20,7 +20,8 @@ public final class RequestValidator {
 
   private static final Set<String> LTISSO_FIELDS = new HashSet<>(Arrays.asList(GRANT_TYPE, USER));
   private static final Set<String> WSFEDSSO_FIELDS = new HashSet<>(Arrays.asList(GRANT_TYPE, USER));
-
+  private static final Set<String> OAUTH2SSO_FIELDS = new HashSet<>(Arrays.asList(GRANT_TYPE, USER));
+  
   private static final Set<String> AUTHORIZE_ALLOWED_FIELDS = new HashSet<>(
       Arrays.asList(CLIENT_ID, CLIENT_KEY, ANONYMOUS_TOKEN, GRANT_TYPE, USER, APP_ID));
 
@@ -49,6 +50,10 @@ public final class RequestValidator {
   public static FieldSelector wsfedssoFieldSelector() {
     return () -> Collections.unmodifiableSet(WSFEDSSO_FIELDS);
   }
+  
+  public static FieldSelector oauth2ssoFieldSelector() {
+      return () -> Collections.unmodifiableSet(OAUTH2SSO_FIELDS);
+    }
 
   public static FieldSelector authorizeFieldSelector() {
     return new FieldSelector() {

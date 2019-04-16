@@ -131,7 +131,13 @@ public enum CommandProcessorBuilder {
     public Processor build(ProcessorContext context) {
       return new InternalTenantRealmProcessor(context);
     }
-  };
+  },
+  INTERNAL_OAUTH2_SSO(MessageConstants.MSG_OP_INTERNAL_OAUTH2_SSO) {
+      @Override
+      public Processor build(ProcessorContext context) {
+        return new InternalOAuth2SSOProcessor(context);
+      }
+    };
 
   private String name;
 
