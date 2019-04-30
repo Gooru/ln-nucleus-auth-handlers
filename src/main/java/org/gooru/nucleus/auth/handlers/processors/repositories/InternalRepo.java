@@ -16,4 +16,6 @@ public interface InternalRepo {
   MessageResponse wsfedsso();
 
   MessageResponse tenantRealm();
+  
+  MessageResponse oauth2sso();
 }
