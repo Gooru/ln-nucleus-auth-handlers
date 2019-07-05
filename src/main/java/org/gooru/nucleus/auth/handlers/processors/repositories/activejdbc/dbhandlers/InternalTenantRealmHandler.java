@@ -44,8 +44,8 @@ public class InternalTenantRealmHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> validateRequest() {
-    LazyList<AJEntityTenant> tenants =
-        AJEntityTenant.findBySQL(AJEntityTenant.SELECT_BY_SHORT_NAME_GRANT_TYPE, shortName.toLowerCase());
+    LazyList<AJEntityTenant> tenants = AJEntityTenant
+        .findBySQL(AJEntityTenant.SELECT_BY_SHORT_NAME_GRANT_TYPE, shortName.toLowerCase());
     if (tenants.isEmpty()) {
       LOGGER.warn("No tenant match with this shortname {}.", shortName);
       return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
@@ -91,6 +91,8 @@ public class InternalTenantRealmHandler implements DBHandler {
         return credentialTypeRedirect(this.tenant.getString(AJEntityTenant.ID));
       } else if (grantType.equalsIgnoreCase(AJEntityTenant.GRANT_TYPE_GOOGLE)) {
         return googleTypeRedirect(this.tenant.getString(AJEntityTenant.ID));
+      } else if (grantType.equalsIgnoreCase(AJEntityTenant.GRANT_TYPE_OAUTH2)) {
+        return oauth2TypeRedirect();
       }
 
       if (count == 2) {
@@ -109,8 +111,13 @@ public class InternalTenantRealmHandler implements DBHandler {
   }
 
   private ExecutionResult<MessageResponse> googleTypeRedirect(String tenantId) {
-    String redirectUrl =
-        AppConfiguration.getInstance().googleAppLoginUrl() + tenantId;
+    String redirectUrl = AppConfiguration.getInstance().googleAppLoginUrl() + tenantId;
+    return new ExecutionResult<>(MessageResponseFactory.createMovePermanentlyResponse(redirectUrl),
+        ExecutionResult.ExecutionStatus.SUCCESSFUL);
+  }
+
+  private ExecutionResult<MessageResponse> oauth2TypeRedirect() {
+    String redirectUrl = AppConfiguration.getInstance().oauth2AppLoginUrl() + this.shortName;
     return new ExecutionResult<>(MessageResponseFactory.createMovePermanentlyResponse(redirectUrl),
         ExecutionResult.ExecutionStatus.SUCCESSFUL);
   }
