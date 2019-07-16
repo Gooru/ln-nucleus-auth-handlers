@@ -1,6 +1,7 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.validators;
 
 import java.util.Set;
+import org.gooru.nucleus.auth.handlers.constants.MessageConstants;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -10,6 +11,10 @@ public interface PayloadValidator {
 
   default JsonObject validatePayload(JsonObject input, FieldSelector selector,
       ValidatorRegistry registry) {
+    if (input == null || input.isEmpty()) {
+      return new JsonObject().put(MessageConstants.MSG_MESSAGE, "null or empty payload");
+    }
+    
     JsonObject result = new JsonObject();
     input.forEach(entry -> {
       if (selector.allowedFields().contains(entry.getKey())) {
