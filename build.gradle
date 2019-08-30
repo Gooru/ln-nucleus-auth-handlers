@@ -4,7 +4,6 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath "com.github.jengelman.gradle.plugins:shadow:1.2.2"
     classpath group: 'org.javalite', name: 'activejdbc', version: '1.4.11'
     classpath group: 'org.javalite', name: 'activejdbc-instrumentation', version: '1.4.11'
   }
@@ -12,7 +11,7 @@ buildscript {
 
 plugins {
   id 'java' // or 'groovy' Must be explicitly applied
-  id 'com.github.johnrengelman.shadow' version "1.2.2"
+  id "com.github.johnrengelman.shadow" version "2.0.2"
 }
 
 
@@ -89,7 +88,7 @@ shadowJar {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.7'
+    gradleVersion = '4.4'
 }
 
 // from the Griffon ActiveJDBC plugin
