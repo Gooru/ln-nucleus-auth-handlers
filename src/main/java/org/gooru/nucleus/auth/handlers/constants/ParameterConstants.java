@@ -19,6 +19,7 @@ public final class ParameterConstants {
   public static final String PARAM_CDN_URLS = "cdn_urls";
   public static final String PARAM_TENANT_ID = "tenant_id";
   public static final String PARAM_TENANT = "tenant";
+  public static final String PARAM_SETTINGS = "settings";
   public static final String PARAM_APP_ID = "app_id";
   public static final String PARAM_PARTNER_ID = "partner_id";
   public static final String PARAM_TOKEN = "token";

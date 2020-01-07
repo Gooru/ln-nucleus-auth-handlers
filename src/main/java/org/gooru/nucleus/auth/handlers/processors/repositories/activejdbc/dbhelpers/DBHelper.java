@@ -1,18 +1,14 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityRole;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityRolePermissionMapping;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserRoleMapping;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserState;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
 import org.gooru.nucleus.auth.handlers.processors.utils.InternalHelper;
-import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,6 +91,10 @@ public final class DBHelper {
 
     return userPreferenceJson;
   }
+  
+  public static JsonObject getTenantSettings(String tenantId) {
+    return TenantHelper.getTenantSettings(tenantId);
+  }
 
   public static JsonObject getUserClientState(String userId) {
     AJEntityUserState userState = AJEntityUserState.findById(UUID.fromString(userId));
@@ -133,4 +133,5 @@ public final class DBHelper {
 
     return permissionsArray;
   }
+  
 }
