@@ -1,6 +1,8 @@
 package org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityRolePermissionMapping;
@@ -132,6 +134,26 @@ public final class DBHelper {
     });
 
     return permissionsArray;
+  }
+  
+  public static String toPostgresArrayString(Collection<String> input) {
+    int approxSize = ((input.size() + 1) * 36); // Length of UUID is around
+    // 36 chars
+    Iterator<String> it = input.iterator();
+    if (!it.hasNext()) {
+      return "{}";
+    }
+
+    StringBuilder sb = new StringBuilder(approxSize);
+    sb.append('{');
+    for (; ; ) {
+      String s = it.next();
+      sb.append('"').append(s).append('"');
+      if (!it.hasNext()) {
+        return sb.append('}').toString();
+      }
+      sb.append(',');
+    }
   }
   
 }

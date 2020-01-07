@@ -25,6 +25,8 @@ public final class TenantHelper {
   private static final String STANDARD_PREFERNCE = "standard_preference";
   private static final List<String> TENANT_SETTING_KEYS_LIST =
       Collections.unmodifiableList(Arrays.asList("allow_multi_grade_class"));
+  private static final String OPEN_CURLY_BRACE = "{";
+  private static final String CLOSE_CURLY_BRACE = "}";
 
   private TenantHelper() {
     throw new AssertionError();
@@ -85,12 +87,13 @@ public final class TenantHelper {
   public static JsonObject getTenantSettings(String tenantId) {
     JsonObject tenantSettingAsJson = null;
     LazyList<AJEntityTenantSetting> tenantSettings = AJEntityTenantSetting.where(
-        AJEntityTenantSetting.SELECT_TENANT_SETTING_BY_KEYS, tenantId, toPostgresArrayString(TENANT_SETTING_KEYS_LIST));
+        AJEntityTenantSetting.SELECT_TENANT_SETTING_BY_KEYS, tenantId, DBHelper.toPostgresArrayString(TENANT_SETTING_KEYS_LIST));
     if (tenantSettings != null && !tenantSettings.isEmpty()) {
       for (AJEntityTenantSetting tenantSetting : tenantSettings) {
         if (!StringUtil.isNullOrEmpty(tenantSetting.getString(AJEntityTenantSetting.VALUE))) {
           tenantSettingAsJson = new JsonObject();
-          if (tenantSetting.getString(AJEntityTenantSetting.VALUE).startsWith(AJEntityTenantSetting.OPEN_CURLY_BRACE)) {
+          String value = tenantSetting.getString(AJEntityTenantSetting.VALUE);
+          if (value.startsWith(OPEN_CURLY_BRACE) && value.endsWith(CLOSE_CURLY_BRACE)) {
             tenantSettingAsJson.put(tenantSetting.getString(AJEntityTenantSetting.KEY),
                 new JsonObject(tenantSetting.getString(AJEntityTenantSetting.VALUE)));
           } else {
@@ -103,24 +106,6 @@ public final class TenantHelper {
     return tenantSettingAsJson;
   }
   
-  public static String toPostgresArrayString(Collection<String> input) {
-    int approxSize = ((input.size() + 1) * 36); // Length of UUID is around
-    // 36 chars
-    Iterator<String> it = input.iterator();
-    if (!it.hasNext()) {
-      return "{}";
-    }
 
-    StringBuilder sb = new StringBuilder(approxSize);
-    sb.append('{');
-    for (; ; ) {
-      String s = it.next();
-      sb.append('"').append(s).append('"');
-      if (!it.hasNext()) {
-        return sb.append('}').toString();
-      }
-      sb.append(',');
-    }
-  }
 
 }
