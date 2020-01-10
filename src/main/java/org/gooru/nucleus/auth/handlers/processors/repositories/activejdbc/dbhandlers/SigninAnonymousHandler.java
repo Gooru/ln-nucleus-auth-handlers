@@ -8,6 +8,7 @@ import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.DBHelper;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.TenantHelper;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
@@ -128,6 +129,8 @@ public class SigninAnonymousHandler implements DBHandler {
     JsonObject tenantJson = new JsonObject();
     tenantJson.put(AJEntityUsers.TENANT_ID, tenantId);
     tenantJson.put(AJEntityUsers.TENANT_ROOT, TenantHelper.getTenantRoot(tenantId));
+    tenantJson.put(ParameterConstants.PARAM_SETTINGS,
+        DBHelper.getTenantSettings(tenant.getString(AJEntityTenant.ID)));
     result.put(ParameterConstants.PARAM_TENANT, tenantJson);
 
     JsonObject userPreference = TenantHelper.mergeDefaultPrefsWithTenantFrameworkPrefs(tenantId);
