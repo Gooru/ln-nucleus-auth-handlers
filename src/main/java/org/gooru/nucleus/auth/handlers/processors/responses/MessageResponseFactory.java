@@ -95,6 +95,11 @@ public final class MessageResponseFactory {
     return new MessageResponse.Builder().successful().setStatusCreated().setContentTypeJson()
         .setResponseBody(response).setEventData(eventBuilder.build()).build();
   }
+  
+  public static MessageResponse createPostResponse(JsonObject response) {
+	    return new MessageResponse.Builder().successful().setStatusOkay().setContentTypeJson()
+	        .setResponseBody(response).build();
+	  }
 
   public static MessageResponse createPostResponse(EventBuilder eventBuilder) {
     return new MessageResponse.Builder().successful().setStatusCreated()
