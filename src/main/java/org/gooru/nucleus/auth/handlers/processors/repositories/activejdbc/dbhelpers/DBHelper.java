@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityRolePermissionMapping;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
@@ -11,6 +12,7 @@ import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entiti
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserState;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUsers;
 import org.gooru.nucleus.auth.handlers.processors.utils.InternalHelper;
+import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,12 +127,12 @@ public final class DBHelper {
       userRoleIds.add(role.getInteger(AJEntityUserRoleMapping.ROLE_ID));
     });
 
-    LazyList<AJEntityRolePermissionMapping> rolePermissions = AJEntityRolePermissionMapping
-        .findBySQL(AJEntityRolePermissionMapping.FETCH_PERMISSIONS_BY_MULTIPLE_ROLES,
+    List<Map> rolePermissions = Base
+        .findAll(AJEntityRolePermissionMapping.FETCH_PERMISSIONS_BY_MULTIPLE_ROLES,
             InternalHelper.toPostgresArrayInt(userRoleIds));
     JsonArray permissionsArray = new JsonArray();
     rolePermissions.forEach(mapping -> {
-      permissionsArray.add(mapping.getString(AJEntityRolePermissionMapping.PERMISSION_NAME));
+      permissionsArray.add(mapping.get(AJEntityRolePermissionMapping.CODE));
     });
 
     return permissionsArray;
