@@ -14,162 +14,162 @@ import org.slf4j.LoggerFactory;
  */
 public enum CommandProcessorBuilder {
 
-    DEFAULT("default") {
-        private final Logger LOGGER = LoggerFactory.getLogger(CommandProcessorBuilder.class);
+  DEFAULT("default") {
+    private final Logger LOGGER = LoggerFactory.getLogger(CommandProcessorBuilder.class);
 
-        public Processor build(ProcessorContext context) {
-            return () -> {
-                LOGGER.debug("Invalid operation type passed in, not able to handle");
-                throw new InvalidRequestException();
-            };
-        }
-    },
-    ANONYMOUS_SIGNIN(MessageConstants.MSG_OP_ANONYMOUS_SIGNIN) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new SigninAnonymousProcessor(context);
-        }
-    },
-    USER_SIGNIN(MessageConstants.MSG_OP_USER_SIGNIN) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new SigninUserProcessor(context);
-        }
-    },
-    USER_SIGNUP(MessageConstants.MSG_OP_USER_SIGNUP) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new SignupUserProcessor(context);
-        }
-    },
-    USER_UPDATE(MessageConstants.MSG_OP_USER_UPDATE) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new UpdateUserProcessor(context);
-        }
-    },
-    USER_TOKEN_CHECK(MessageConstants.MSG_OP_ACCESS_TOKEN_CHECK) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new CheckAccessTokenProcessor(context);
-        }
-    },
-    USER_TOKEN_DETAILS(MessageConstants.MSG_OP_ACCESS_TOKEN_DETAILS) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new GetAccessTokenDetailsProcessor(context);
-        }
-    },
-    USER_SIGNOUT(MessageConstants.MSG_OP_USER_SIGNOUT) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new SignoutUserProcessor(context);
-        }
-    },
-    USER_AUTHORIZE(MessageConstants.MSG_OP_USER_AUTHORIZE) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new AuthorizeUserProcessor(context);
-        }
-    },
-    USER_PASSWORD_RESET_TRIGGER(MessageConstants.MSG_OP_USER_PASSWORD_RESET_TRIGGER) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new TriggerResetPasswordForUserProcessor(context);
-        }
-    },
-    USER_PASSWORD_RESET(MessageConstants.MSG_OP_USER_PASSWORD_RESET) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new ResetPasswordProcessor(context);
-        }
-    },
-    USER_PASSWORD_CHANGE(MessageConstants.MSG_OP_USER_PASSWORD_CHANGE) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new ChangePasswordProcessor(context);
-        }
-    },
-    USER_ACCOUNTS(MessageConstants.MSG_OP_GET_USER_ACCOUNTS) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new UserAccountsProcessor(context);
-        }
-    },
-    DOMAIN_BASED_REDIRECT(MessageConstants.MSG_OP_DOMAIN_BASED_REDIRECT) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new DomainBasedRedirectProcessor(context);
-        }
-    },
-    INTERNAL_AUTHENTICATE(MessageConstants.MSG_OP_INTERNAL_AUTHENTICATE) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new InternalAuthenticateProcessor(context);
-        }
-    },
-    INTERNAL_IMPERSONATE(MessageConstants.MSG_OP_INTERNAL_IMPERSONATE) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new InternalImpersonateProcessor(context);
-        }
-    },
-    INTERNAL_LTI_SSO(MessageConstants.MSG_OP_INTERNAL_LTI_SSO) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new InternalLtiSSOProcessor(context);
-        }
-    },
-    INTERNAL_WSFED_SSO(MessageConstants.MSG_OP_INTERNAL_WSFED_SSO) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new InternalWSFedSSOProcessor(context);
-        }
-    },
-    INIT_LOGIN(MessageConstants.MSG_OP_INIT_LOGIN) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new InitLoginProcessor(context);
-        }
-    },
-    INTERNAL_TENANT_REALM(MessageConstants.MSG_OP_INTERNAL_TENANT_REALM) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new InternalTenantRealmProcessor(context);
-        }
-    },
-    INTERNAL_OAUTH2_SSO(MessageConstants.MSG_OP_INTERNAL_OAUTH2_SSO) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new InternalOAuth2SSOProcessor(context);
-        }
-    };
-
-    private String name;
-
-    CommandProcessorBuilder(String name) {
-        this.name = name;
+    public Processor build(ProcessorContext context) {
+      return () -> {
+        LOGGER.debug("Invalid operation type passed in, not able to handle");
+        throw new InvalidRequestException();
+      };
     }
-
-    public String getName() {
-        return this.name;
+  },
+  ANONYMOUS_SIGNIN(MessageConstants.MSG_OP_ANONYMOUS_SIGNIN) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new SigninAnonymousProcessor(context);
     }
-
-    private static final Map<String, CommandProcessorBuilder> LOOKUP = new HashMap<>();
-
-    static {
-        for (CommandProcessorBuilder builder : values()) {
-            LOOKUP.put(builder.name, builder);
-        }
+  },
+  USER_SIGNIN(MessageConstants.MSG_OP_USER_SIGNIN) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new SigninUserProcessor(context);
     }
-
-    public static CommandProcessorBuilder lookupBuilder(String name) {
-        CommandProcessorBuilder builder = LOOKUP.get(name);
-        if (builder == null) {
-            return DEFAULT;
-        }
-        return builder;
+  },
+  USER_SIGNUP(MessageConstants.MSG_OP_USER_SIGNUP) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new SignupUserProcessor(context);
     }
+  },
+  USER_UPDATE(MessageConstants.MSG_OP_USER_UPDATE) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new UpdateUserProcessor(context);
+    }
+  },
+  USER_TOKEN_CHECK(MessageConstants.MSG_OP_ACCESS_TOKEN_CHECK) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new CheckAccessTokenProcessor(context);
+    }
+  },
+  USER_TOKEN_DETAILS(MessageConstants.MSG_OP_ACCESS_TOKEN_DETAILS) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new GetAccessTokenDetailsProcessor(context);
+    }
+  },
+  USER_SIGNOUT(MessageConstants.MSG_OP_USER_SIGNOUT) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new SignoutUserProcessor(context);
+    }
+  },
+  USER_AUTHORIZE(MessageConstants.MSG_OP_USER_AUTHORIZE) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new AuthorizeUserProcessor(context);
+    }
+  },
+  USER_PASSWORD_RESET_TRIGGER(MessageConstants.MSG_OP_USER_PASSWORD_RESET_TRIGGER) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new TriggerResetPasswordForUserProcessor(context);
+    }
+  },
+  USER_PASSWORD_RESET(MessageConstants.MSG_OP_USER_PASSWORD_RESET) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new ResetPasswordProcessor(context);
+    }
+  },
+  USER_PASSWORD_CHANGE(MessageConstants.MSG_OP_USER_PASSWORD_CHANGE) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new ChangePasswordProcessor(context);
+    }
+  },
+  USER_ACCOUNTS(MessageConstants.MSG_OP_GET_USER_ACCOUNTS) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new UserAccountsProcessor(context);
+    }
+  },
+  DOMAIN_BASED_REDIRECT(MessageConstants.MSG_OP_DOMAIN_BASED_REDIRECT) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new DomainBasedRedirectProcessor(context);
+    }
+  },
+  INTERNAL_AUTHENTICATE(MessageConstants.MSG_OP_INTERNAL_AUTHENTICATE) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new InternalAuthenticateProcessor(context);
+    }
+  },
+  INTERNAL_IMPERSONATE(MessageConstants.MSG_OP_INTERNAL_IMPERSONATE) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new InternalImpersonateProcessor(context);
+    }
+  },
+  INTERNAL_LTI_SSO(MessageConstants.MSG_OP_INTERNAL_LTI_SSO) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new InternalLtiSSOProcessor(context);
+    }
+  },
+  INTERNAL_WSFED_SSO(MessageConstants.MSG_OP_INTERNAL_WSFED_SSO) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new InternalWSFedSSOProcessor(context);
+    }
+  },
+  INIT_LOGIN(MessageConstants.MSG_OP_INIT_LOGIN) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new InitLoginProcessor(context);
+    }
+  },
+  INTERNAL_TENANT_REALM(MessageConstants.MSG_OP_INTERNAL_TENANT_REALM) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new InternalTenantRealmProcessor(context);
+    }
+  },
+  INTERNAL_OAUTH2_SSO(MessageConstants.MSG_OP_INTERNAL_OAUTH2_SSO) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new InternalOAuth2SSOProcessor(context);
+    }
+  };
 
-    public abstract Processor build(ProcessorContext context);
+  private String name;
+
+  CommandProcessorBuilder(String name) {
+    this.name = name;
+  }
+
+  public String getName() {
+    return this.name;
+  }
+
+  private static final Map<String, CommandProcessorBuilder> LOOKUP = new HashMap<>();
+
+  static {
+    for (CommandProcessorBuilder builder : values()) {
+      LOOKUP.put(builder.name, builder);
+    }
+  }
+
+  public static CommandProcessorBuilder lookupBuilder(String name) {
+    CommandProcessorBuilder builder = LOOKUP.get(name);
+    if (builder == null) {
+      return DEFAULT;
+    }
+    return builder;
+  }
+
+  public abstract Processor build(ProcessorContext context);
 }
