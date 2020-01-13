@@ -45,9 +45,19 @@ public class AJEntityUserAccounts extends Model {
     validatorMap.put(ParameterConstants.PARAM_EMAIL, (FieldValidator::validateEmail));
     return validatorMap;
   }
+  
+  public static FieldSelector userAccountsFieldSelector() {
+    return new FieldSelector() {
+      @Override
+      public Set<String> allowedFields() {
+        return Collections.unmodifiableSet(USERS_ACCOUNTS_PAYLOAD_FIELDS);
+      }
 
-  public static FieldSelector mandatoryFields() {
-    return () -> Collections.unmodifiableSet(USERS_ACCOUNTS_PAYLOAD_FIELDS);
+      @Override
+      public Set<String> mandatoryFields() {
+        return Collections.unmodifiableSet(USERS_ACCOUNTS_PAYLOAD_FIELDS);
+      }
+    };
   }
 
 }

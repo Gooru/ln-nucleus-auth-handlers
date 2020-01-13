@@ -37,8 +37,9 @@ public class UserAccountsHandler implements DBHandler, PayloadValidator {
 
   @Override
   public ExecutionResult<MessageResponse> checkSanity() {
-    JsonObject errors = validatePayload(context.requestBody(),
-        AJEntityUserAccounts.mandatoryFields(), AJEntityUserAccounts.getValidatorRegistry());
+    JsonObject errors = new DefaultPayloadValidator().validatePayload(context.requestBody(),
+        AJEntityUserAccounts.userAccountsFieldSelector(),
+        AJEntityUserAccounts.getValidatorRegistry());
     if (errors != null && !errors.isEmpty()) {
       LOGGER.warn("Validation errors for request");
       return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(errors),
@@ -73,6 +74,9 @@ public class UserAccountsHandler implements DBHandler, PayloadValidator {
   @Override
   public boolean handlerReadOnly() {
     return false;
+  }
+
+  private static class DefaultPayloadValidator implements PayloadValidator {
   }
 
 }

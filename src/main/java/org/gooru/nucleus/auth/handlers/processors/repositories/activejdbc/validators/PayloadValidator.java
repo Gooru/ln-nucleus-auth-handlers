@@ -14,7 +14,7 @@ public interface PayloadValidator {
     if (input == null || input.isEmpty()) {
       return new JsonObject().put(MessageConstants.MSG_MESSAGE, "null or empty payload");
     }
-    
+
     JsonObject result = new JsonObject();
     input.forEach(entry -> {
       if (selector.allowedFields().contains(entry.getKey())) {
@@ -29,7 +29,7 @@ public interface PayloadValidator {
       }
     });
     Set<String> mandatory = selector.mandatoryFields();
-    if (mandatory != null && mandatory.isEmpty()) {
+    if (mandatory != null && !mandatory.isEmpty()) {
       mandatory.forEach(s -> {
         if (input.getValue(s) == null) {
           result.put(s, "Missing field");
