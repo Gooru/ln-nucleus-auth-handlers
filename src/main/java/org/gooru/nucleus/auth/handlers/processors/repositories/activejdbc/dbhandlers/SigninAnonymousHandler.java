@@ -129,6 +129,9 @@ public class SigninAnonymousHandler implements DBHandler {
     JsonObject tenantJson = new JsonObject();
     tenantJson.put(AJEntityUsers.TENANT_ID, tenantId);
     tenantJson.put(AJEntityUsers.TENANT_ROOT, TenantHelper.getTenantRoot(tenantId));
+    tenantJson.put(AJEntityTenant.TENANT_NAME, tenant.getString(AJEntityTenant.NAME));
+    tenantJson.put(AJEntityTenant.TENANT_SHORT_NAME, tenant.getString(AJEntityTenant.SHORT_NAME));
+    tenantJson.put(AJEntityTenant.TENANT_IMAGE_URL, tenant.getString(AJEntityTenant.IMAGE_URL));
     tenantJson.put(ParameterConstants.PARAM_SETTINGS,
         DBHelper.getTenantSettings(tenant.getString(AJEntityTenant.ID)));
     result.put(ParameterConstants.PARAM_TENANT, tenantJson);
