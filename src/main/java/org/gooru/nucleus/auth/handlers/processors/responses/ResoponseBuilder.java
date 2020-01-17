@@ -50,7 +50,9 @@ public class ResoponseBuilder {
 
     JsonObject tenantJson = new JsonObject();
     tenantJson.put(AJEntityUsers.TENANT_ID, tenant.getString(AJEntityTenant.ID));
+    tenantJson.put(AJEntityTenant.NAME, tenant.getString(AJEntityTenant.NAME));
     tenantJson.put(AJEntityTenant.SHORT_NAME, tenant.getString(AJEntityTenant.SHORT_NAME));
+    tenantJson.put(AJEntityTenant.IMAGE_URL, tenant.getString(AJEntityTenant.IMAGE_URL));
     tenantJson.put(AJEntityUsers.TENANT_ROOT, user.getString(AJEntityUsers.TENANT_ROOT));
     tenantJson.put(ParameterConstants.PARAM_SETTINGS,
         DBHelper.getTenantSettings(tenant.getString(AJEntityTenant.ID)));
