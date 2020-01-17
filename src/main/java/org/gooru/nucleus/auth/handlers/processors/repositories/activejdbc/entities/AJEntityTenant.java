@@ -41,7 +41,6 @@ public class AJEntityTenant extends Model {
   public static final String LOGIN_URL = "login_url";
   public static final String IMAGE_URL = "image_url";
   public static final String NAME = "name";
-  public static final String TENANT_SHORT_NAME = "tenant_short_name";
 
   public static final String GRANT_TYPE_OAUTH2 = "oauth2";
   public static final String GRANT_TYPE_GOOGLE = "google";
