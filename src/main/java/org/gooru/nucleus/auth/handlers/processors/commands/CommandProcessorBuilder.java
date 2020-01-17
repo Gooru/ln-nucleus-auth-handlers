@@ -90,6 +90,12 @@ public enum CommandProcessorBuilder {
       return new ChangePasswordProcessor(context);
     }
   },
+  USER_ACCOUNTS(MessageConstants.MSG_OP_GET_USER_ACCOUNTS) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new UserAccountsProcessor(context);
+    }
+  },
   DOMAIN_BASED_REDIRECT(MessageConstants.MSG_OP_DOMAIN_BASED_REDIRECT) {
     @Override
     public Processor build(ProcessorContext context) {
@@ -133,11 +139,11 @@ public enum CommandProcessorBuilder {
     }
   },
   INTERNAL_OAUTH2_SSO(MessageConstants.MSG_OP_INTERNAL_OAUTH2_SSO) {
-      @Override
-      public Processor build(ProcessorContext context) {
-        return new InternalOAuth2SSOProcessor(context);
-      }
-    };
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new InternalOAuth2SSOProcessor(context);
+    }
+  };
 
   private String name;
 

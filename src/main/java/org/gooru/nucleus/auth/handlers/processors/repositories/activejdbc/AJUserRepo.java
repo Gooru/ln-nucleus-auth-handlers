@@ -53,4 +53,10 @@ public class AJUserRepo implements UserRepo {
         .executeTransaction(DBHandlerBuilder.buildChangePasswordHandler(context));
   }
 
+  @Override
+  public MessageResponse getUserAccounts() {
+    return new TransactionExecutor()
+        .executeTransaction(DBHandlerBuilder.buildUserAccountsHandler(context));
+  }
+
 }

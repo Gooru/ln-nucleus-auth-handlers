@@ -28,10 +28,11 @@ public final class ParameterConstants {
   public static final String PARAM_SEND_EMAIL = "send_email";
   public static final String PARAM_IDENTITY_ID = "identity_id";
   public static final String PARAM_SHORT_NAME = "shortname";
+  public static final String PARAM_EMAIL = "email";
 
   public static final String PARAM_USER = "user";
   public static final String PARAM_USER_ID = "user_id";
-  
+
   public static final String RESP_KEY_DEFAULT = "default";
   public static final String RESP_KEY_LOGINURL = "login_url";
 
