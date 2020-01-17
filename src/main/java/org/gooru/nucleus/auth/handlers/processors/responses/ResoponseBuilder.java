@@ -6,6 +6,7 @@ import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.DBHelper;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
+import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenantSetting;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserRoleMapping;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserState;
@@ -51,6 +52,8 @@ public class ResoponseBuilder {
     tenantJson.put(AJEntityUsers.TENANT_ID, tenant.getString(AJEntityTenant.ID));
     tenantJson.put(AJEntityTenant.SHORT_NAME, tenant.getString(AJEntityTenant.SHORT_NAME));
     tenantJson.put(AJEntityUsers.TENANT_ROOT, user.getString(AJEntityUsers.TENANT_ROOT));
+    tenantJson.put(ParameterConstants.PARAM_SETTINGS,
+        DBHelper.getTenantSettings(tenant.getString(AJEntityTenant.ID)));
     result.put(ParameterConstants.PARAM_TENANT, tenantJson);
 
     result.put(AJEntityUserPreference.PREFERENCE_SETTINGS,
