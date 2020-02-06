@@ -53,6 +53,7 @@ public final class MessageConstants {
   public static final String MSG_OP_USER_PASSWORD_CHANGE = "user.password.change";
   public static final String MSG_OP_GET_USER_FIND = "get.user.find";
   public static final String MSG_OP_GET_USERS_FIND = "get.users.find";
+  public static final String MSG_OP_GET_USER_ACCOUNTS = "get.user.accounts";
 
   
   public static final String MSG_OP_INTERNAL_AUTHENTICATE = "internal.authenticate";
