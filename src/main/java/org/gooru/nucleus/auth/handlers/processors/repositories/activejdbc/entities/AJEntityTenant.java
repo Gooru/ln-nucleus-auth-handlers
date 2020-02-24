@@ -47,17 +47,17 @@ public class AJEntityTenant extends Model {
   public static final String GRANT_TYPE_CREDENTIAL = "credential";
 
   public static final String SELECT_BY_ID =
-      "SELECT id, cdn_urls, access_token_validity, short_name FROM tenant WHERE id = ?::uuid AND status = 'active'";
+      "SELECT id, cdn_urls, access_token_validity, short_name, image_url FROM tenant WHERE id = ?::uuid AND status = 'active'";
 
   public static final String SELECT_BY_ID_SECRET =
-      "SELECT id, cdn_urls, access_token_validity, short_name FROM tenant WHERE id = ?::uuid AND secret = ? AND grant_types @> "
+      "SELECT id, cdn_urls, access_token_validity, short_name, image_url FROM tenant WHERE id = ?::uuid AND secret = ? AND grant_types @> "
           + "ARRAY[?]::text[] AND status = 'active'";
 
   public static final String SELECT_PARENT_TENANT =
       "SELECT parent_tenant FROM tenant WHERE id = ?::uuid AND status = 'active'";
 
   public static final String SELECT_BY_ID_GRANT_TYPE =
-      "SELECT id, cdn_urls, access_token_validity, short_name FROM tenant WHERE id = ?::uuid  AND grant_types @> "
+      "SELECT id, cdn_urls, access_token_validity, short_name, image_url FROM tenant WHERE id = ?::uuid  AND grant_types @> "
           + "ARRAY[?]::text[] AND status = 'active'";
 
   public static final String SELECT_BY_SHORT_NAME_GRANT_TYPE =
