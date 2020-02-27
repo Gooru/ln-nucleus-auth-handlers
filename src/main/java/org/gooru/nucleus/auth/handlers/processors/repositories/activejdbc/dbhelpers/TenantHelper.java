@@ -24,7 +24,7 @@ public final class TenantHelper {
   private static final Logger LOGGER = LoggerFactory.getLogger(TenantHelper.class);
   private static final String STANDARD_PREFERNCE = "standard_preference";
   private static final List<String> TENANT_SETTING_KEYS_LIST =
-      Collections.unmodifiableList(Arrays.asList("allow_multi_grade_class"));
+      Collections.unmodifiableList(Arrays.asList("allow_multi_grade_class","usage_metrics_visibility"));
   private static final String OPEN_CURLY_BRACE = "{";
   private static final String CLOSE_CURLY_BRACE = "}";
 
@@ -86,12 +86,13 @@ public final class TenantHelper {
 
   public static JsonObject getTenantSettings(String tenantId) {
     JsonObject tenantSettingAsJson = null;
-    LazyList<AJEntityTenantSetting> tenantSettings = AJEntityTenantSetting.where(
-        AJEntityTenantSetting.SELECT_TENANT_SETTING_BY_KEYS, tenantId, DBHelper.toPostgresArrayString(TENANT_SETTING_KEYS_LIST));
+    LazyList<AJEntityTenantSetting> tenantSettings =
+        AJEntityTenantSetting.where(AJEntityTenantSetting.SELECT_TENANT_SETTING_BY_KEYS, tenantId,
+            DBHelper.toPostgresArrayString(TENANT_SETTING_KEYS_LIST));
     if (tenantSettings != null && !tenantSettings.isEmpty()) {
+      tenantSettingAsJson = new JsonObject();
       for (AJEntityTenantSetting tenantSetting : tenantSettings) {
         if (!StringUtil.isNullOrEmpty(tenantSetting.getString(AJEntityTenantSetting.VALUE))) {
-          tenantSettingAsJson = new JsonObject();
           String value = tenantSetting.getString(AJEntityTenantSetting.VALUE);
           if (value.startsWith(OPEN_CURLY_BRACE) && value.endsWith(CLOSE_CURLY_BRACE)) {
             tenantSettingAsJson.put(tenantSetting.getString(AJEntityTenantSetting.KEY),
