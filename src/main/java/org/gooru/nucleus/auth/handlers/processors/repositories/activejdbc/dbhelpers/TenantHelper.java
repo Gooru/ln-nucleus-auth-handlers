@@ -24,7 +24,7 @@ public final class TenantHelper {
   private static final Logger LOGGER = LoggerFactory.getLogger(TenantHelper.class);
   private static final String STANDARD_PREFERNCE = "standard_preference";
   private static final List<String> TENANT_SETTING_KEYS_LIST =
-      Collections.unmodifiableList(Arrays.asList("allow_multi_grade_class","usage_metrics_visibility"));
+      Collections.unmodifiableList(Arrays.asList("allow_multi_grade_class","usage_metrics_visibility","enable_i2d"));
   private static final String OPEN_CURLY_BRACE = "{";
   private static final String CLOSE_CURLY_BRACE = "}";
 
