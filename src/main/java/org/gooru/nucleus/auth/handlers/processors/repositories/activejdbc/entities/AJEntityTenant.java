@@ -39,28 +39,30 @@ public class AJEntityTenant extends Model {
   public static final String ACCESS_TOKEN_VALIDITY = "access_token_validity";
   public static final String SHORT_NAME = "short_name";
   public static final String LOGIN_URL = "login_url";
-  
+  public static final String IMAGE_URL = "image_url";
+  public static final String NAME = "name";
+
   public static final String GRANT_TYPE_OAUTH2 = "oauth2";
   public static final String GRANT_TYPE_GOOGLE = "google";
   public static final String GRANT_TYPE_CREDENTIAL = "credential";
 
   public static final String SELECT_BY_ID =
-      "SELECT id, cdn_urls, access_token_validity, short_name FROM tenant WHERE id = ?::uuid AND status = 'active'";
+      "SELECT id, cdn_urls, access_token_validity, short_name, image_url FROM tenant WHERE id = ?::uuid AND status = 'active'";
 
   public static final String SELECT_BY_ID_SECRET =
-      "SELECT id, cdn_urls, access_token_validity, short_name FROM tenant WHERE id = ?::uuid AND secret = ? AND grant_types @> "
+      "SELECT id, cdn_urls, access_token_validity, short_name, image_url FROM tenant WHERE id = ?::uuid AND secret = ? AND grant_types @> "
           + "ARRAY[?]::text[] AND status = 'active'";
 
   public static final String SELECT_PARENT_TENANT =
       "SELECT parent_tenant FROM tenant WHERE id = ?::uuid AND status = 'active'";
 
   public static final String SELECT_BY_ID_GRANT_TYPE =
-      "SELECT id, cdn_urls, access_token_validity, short_name FROM tenant WHERE id = ?::uuid  AND grant_types @> "
+      "SELECT id, cdn_urls, access_token_validity, short_name, image_url FROM tenant WHERE id = ?::uuid  AND grant_types @> "
           + "ARRAY[?]::text[] AND status = 'active'";
 
   public static final String SELECT_BY_SHORT_NAME_GRANT_TYPE =
       "SELECT id, grant_types FROM tenant WHERE short_name = ?::varchar AND status = 'active'";
-  
+
   public static final String SELECT_LOGIN_URL =
       "SELECT login_url FROM tenant where id = ?::uuid AND status = 'active'";
 

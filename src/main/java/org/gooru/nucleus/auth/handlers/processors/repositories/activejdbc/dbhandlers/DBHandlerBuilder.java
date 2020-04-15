@@ -82,5 +82,9 @@ public final class DBHandlerBuilder {
     public static DBHandler buildInternalOAuth2SSOHandler(ProcessorContext context) {
         return new InternalOAuth2SSOHandler(context);
     }
+    
+    public static DBHandler buildUserAccountsHandler(ProcessorContext context) {
+        return new UserAccountsHandler(context);
+    }
 
 }

@@ -18,4 +18,6 @@ public interface UserRepo {
   MessageResponse resetPassword();
 
   MessageResponse changePassword();
+  
+  MessageResponse getUserAccounts();
 }
