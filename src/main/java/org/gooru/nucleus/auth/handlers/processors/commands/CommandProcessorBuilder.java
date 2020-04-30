@@ -143,7 +143,15 @@ public enum CommandProcessorBuilder {
     public Processor build(ProcessorContext context) {
       return new InternalOAuth2SSOProcessor(context);
     }
+  },
+  CREATE_ACCESS_TOKEN_USING_REFRESH_TOKEN(
+      MessageConstants.MSG_OP_REFRESH_TOKEN_CREATE_ACCESS_TOKEN) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new CreateAccessTokenUsingRefreshTokenProcessor(context);
+    }
   };
+
 
   private String name;
 

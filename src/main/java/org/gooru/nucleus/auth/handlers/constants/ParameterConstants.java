@@ -29,6 +29,8 @@ public final class ParameterConstants {
   public static final String PARAM_IDENTITY_ID = "identity_id";
   public static final String PARAM_SHORT_NAME = "shortname";
   public static final String PARAM_EMAIL = "email";
+  public static final String PARAM_LONG_LIVED_ACCESS = "long_lived_access";
+  public static final String PARAM_REFRESH_TOKEN = "refresh_token";
 
   public static final String PARAM_USER = "user";
   public static final String PARAM_USER_ID = "user_id";

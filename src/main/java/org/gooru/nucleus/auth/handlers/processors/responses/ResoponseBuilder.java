@@ -1,12 +1,12 @@
 package org.gooru.nucleus.auth.handlers.processors.responses;
 
+import org.gooru.nucleus.auth.handlers.app.components.AppConfiguration;
 import org.gooru.nucleus.auth.handlers.app.components.RedisClient;
 import org.gooru.nucleus.auth.handlers.constants.ParameterConstants;
 import org.gooru.nucleus.auth.handlers.processors.ProcessorContext;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.dbhelpers.DBHelper;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityPartner;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenant;
-import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityTenantSetting;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserPreference;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserRoleMapping;
 import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entities.AJEntityUserState;
@@ -69,8 +69,13 @@ public class ResoponseBuilder {
     String partnerId = (partner != null) ? partner.getString(AJEntityPartner.ID) : null;
     final String token = InternalHelper.generateToken(user.getString(AJEntityUsers.ID), partnerId,
         tenant.getString(AJEntityTenant.ID));
+    boolean longLivedAccess =
+        context.requestBody().getBoolean(ParameterConstants.PARAM_LONG_LIVED_ACCESS, false);
+    if (longLivedAccess) {
+      final String refreshToken = generateAndSaveRefreshtoken(userId);
+      result.put(ParameterConstants.PARAM_REFRESH_TOKEN, refreshToken);
+    }
     saveAccessToken(token, result, accessTokenValidity);
-
     result.put(ParameterConstants.PARAM_ACCESS_TOKEN, token);
     result.put(AJEntityUsers.FIRST_NAME, user.getString(AJEntityUsers.FIRST_NAME));
     result.put(AJEntityUsers.LAST_NAME, user.getString(AJEntityUsers.LAST_NAME));
@@ -83,5 +88,17 @@ public class ResoponseBuilder {
   private void saveAccessToken(String token, JsonObject session, Integer expireAtInSeconds) {
     session.put(ParameterConstants.PARAM_ACCESS_TOKEN_VALIDITY, expireAtInSeconds);
     this.redisClient.set(token, session.toString(), expireAtInSeconds);
+  }
+
+  private String generateAndSaveRefreshtoken(String userId) {
+    final String tokenKey = InternalHelper.generateRefreshTokenKey(userId);
+    final String token = InternalHelper.generateRefreshToken(userId);
+    JsonObject tokenDetails = new JsonObject();
+    tokenDetails.put(ParameterConstants.PARAM_USER_ID, userId);
+    tokenDetails.put(ParameterConstants.PARAM_REFRESH_TOKEN, token);
+    tokenDetails.put(ParameterConstants.PARAM_PROVIDED_AT, System.currentTimeMillis());
+    this.redisClient.set(tokenKey, tokenDetails.toString(),
+        AppConfiguration.getInstance().refreshTokenExpireInSecs());
+    return token;
   }
 }

@@ -6,6 +6,7 @@ public final class MessageConstants {
   public static final String MSG_HEADER_TOKEN = "access.token";
   public static final String MSG_HEADER_BASIC_AUTH = "basic.auth";
   public static final String MSG_HEADER_NONCE_TOKEN = "nonce.token";
+  public static final String MSG_HEADER_REFRESH_TOKEN = "refresh.token";
   public static final String MSG_OP_AUTH_WITH_PREFS = "auth.with.prefs";
   public static final String MSG_OP_STATUS = "mb.operation.status";
   public static final String MSG_KEY_PREFS = "prefs";
@@ -40,6 +41,7 @@ public final class MessageConstants {
 
   public static final String MSG_OP_DOMAIN_BASED_REDIRECT = "domain.based.redirect";
   public static final String MSG_OP_INIT_LOGIN = "init.login";
+  public static final String MSG_OP_REFRESH_TOKEN_CREATE_ACCESS_TOKEN =  "refresh.token.create.access.token";
 
   // Authorize command
   public static final String MSG_OP_USER_AUTHORIZE = "user.authorize";

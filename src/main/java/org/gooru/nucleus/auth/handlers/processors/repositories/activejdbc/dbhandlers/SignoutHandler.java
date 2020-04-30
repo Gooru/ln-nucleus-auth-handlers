@@ -11,6 +11,7 @@ import org.gooru.nucleus.auth.handlers.processors.repositories.activejdbc.entiti
 import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult;
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponse;
 import org.gooru.nucleus.auth.handlers.processors.responses.MessageResponseFactory;
+import org.gooru.nucleus.auth.handlers.processors.utils.InternalHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.gooru.nucleus.auth.handlers.processors.responses.ExecutionResult.ExecutionStatus;
@@ -80,6 +81,8 @@ public class SignoutHandler implements DBHandler {
   public ExecutionResult<MessageResponse> executeRequest() {
     String userId = sessionPacket.getString(ParameterConstants.PARAM_USER_ID);
     RedisClient.instance().del(context.accessToken());
+    // refresh token will get deleted, if the token associated with this user.
+    RedisClient.instance().del(InternalHelper.generateRefreshTokenKey(userId));
 
     // Do not send event for anonymous user signout
     if (userId.equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS)) {

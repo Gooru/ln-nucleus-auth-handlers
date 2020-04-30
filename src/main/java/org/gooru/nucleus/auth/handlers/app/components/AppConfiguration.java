@@ -25,6 +25,7 @@ public class AppConfiguration implements Initializer, Finalizer {
   private static final String KEY_GOOGLE_APPLOGIN_URL = "google.applogin.url";
   private static final String KEY_OAUTH2_APPLOGIN_URL = "oauth2.applogin.url";
   private static final String KEY_DEFAULT_APPLOGIN_URL = "default.applogin.url";
+  private static final String KEY_REFRESH_TOKEN_EXPIRE_IN_SECS = "refresh.token.expire.in.secs";
 
   private Boolean isAppIdRequired;
 
@@ -32,6 +33,7 @@ public class AppConfiguration implements Initializer, Finalizer {
   private String googleAppLoginUrl;
   private String oauth2AppLoginUrl;
   private String defaultLoginUrl;
+  private Integer refreshTokenExpireInSecs;
 
   private AppConfiguration() {}
 
@@ -58,24 +60,26 @@ public class AppConfiguration implements Initializer, Finalizer {
       LOGGER.warn(RESOURCE_BUNDLE.getString("credential.login.url.not.found"));
       throw new AssertionError(RESOURCE_BUNDLE.getString("credential.login.url.not.found"));
     }
-    
+
     this.googleAppLoginUrl = appConfig.getString(KEY_GOOGLE_APPLOGIN_URL);
     if (this.googleAppLoginUrl == null || this.googleAppLoginUrl.isEmpty()) {
       LOGGER.warn(RESOURCE_BUNDLE.getString("google.login.url.not.found"));
       throw new AssertionError(RESOURCE_BUNDLE.getString("google.login.url.not.found"));
     }
-    
+
     this.oauth2AppLoginUrl = appConfig.getString(KEY_OAUTH2_APPLOGIN_URL);
     if (this.oauth2AppLoginUrl == null || this.oauth2AppLoginUrl.isEmpty()) {
       LOGGER.warn(RESOURCE_BUNDLE.getString("oauth2.login.url.not.found"));
       throw new AssertionError(RESOURCE_BUNDLE.getString("oauth2.login.url.not.found"));
     }
-    
+
     this.defaultLoginUrl = appConfig.getString(KEY_DEFAULT_APPLOGIN_URL);
     if (this.defaultLoginUrl == null || this.defaultLoginUrl.isEmpty()) {
       LOGGER.warn(RESOURCE_BUNDLE.getString("default.login.url.not.found"));
       throw new AssertionError(RESOURCE_BUNDLE.getString("default.login.url.not.found"));
     }
+    this.refreshTokenExpireInSecs =
+        appConfig.getInteger(KEY_REFRESH_TOKEN_EXPIRE_IN_SECS, 31536000);
 
     LOGGER.debug("AppID required flag set to:{}", isAppIdRequired);
     LOGGER.debug("App Configuration component initialized successfully");
@@ -95,12 +99,16 @@ public class AppConfiguration implements Initializer, Finalizer {
   public String googleAppLoginUrl() {
     return googleAppLoginUrl;
   }
-  
+
   public String oauth2AppLoginUrl() {
     return oauth2AppLoginUrl;
   }
 
   public String defaultLoginUrl() {
     return defaultLoginUrl;
+  }
+
+  public Integer refreshTokenExpireInSecs() {
+    return refreshTokenExpireInSecs;
   }
 }

@@ -46,10 +46,16 @@ public class AJAuthenticationRepo implements AuthenticationRepo {
     return new TransactionExecutor()
         .executeTransaction(DBHandlerBuilder.buildInitLoginHandler(context));
   }
-  
+
   @Override
   public MessageResponse signout() {
     return new TransactionExecutor()
         .executeTransaction(DBHandlerBuilder.buildSignoutHandler(context));
+  }
+
+  @Override
+  public MessageResponse createAccessTokenUsingRefreshToken() {
+    return new TransactionExecutor().executeTransaction(
+        DBHandlerBuilder.buildCreateAccessTokenUsingRefreshTokenHandler(context));
   }
 }

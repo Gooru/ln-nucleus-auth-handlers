@@ -17,6 +17,7 @@ public final class EventBuilderFactory {
   private static final String EVT_USER_PASSWORD_RESET_TRIGGER = "event.user.password.reset.trigger";
   private static final String EVT_USER_PASSWORD_RESET = "event.user.password.reset";
   private static final String EVT_USER_PASSWORD_CHANGE = "event.user.password.change";
+  private static final String EVT_CREATE_ACCESS_TOKEN = "event.create.access.token";
 
   private static final String EVENT_NAME = "event.name";
   private static final String EVENT_BODY = "event.body";
@@ -68,10 +69,10 @@ public final class EventBuilderFactory {
   public static EventBuilder getWSFedSSOSigninEventBuilder(String userId) {
     return getSigninUserEventBuilder(userId);
   }
-  
+
   public static EventBuilder getOAuth2SSOSigninEventBuilder(String userId) {
-      return getSigninUserEventBuilder(userId);
-    }
+    return getSigninUserEventBuilder(userId);
+  }
 
   public static EventBuilder getWSFedSSOSignupEventBuilder(String userId) {
     return getSignupUserEventBuilder(userId);
@@ -93,5 +94,10 @@ public final class EventBuilderFactory {
       EmailNotificationBuilder emailNotification) {
     return () -> new JsonObject().put(EVENT_NAME, EVT_USER_PASSWORD_CHANGE).put(EVENT_BODY,
         new JsonObject().put(ID, userId).put(EMAIL_CONTEXT, emailNotification.build()));
+  }
+
+  public static EventBuilder getCreateAccessTokenUsingRefreshTokenEventBuilder(String userId) {
+    return () -> new JsonObject().put(EVENT_NAME, EVT_CREATE_ACCESS_TOKEN).put(EVENT_BODY,
+        new JsonObject().put(ID, userId));
   }
 }

@@ -15,15 +15,17 @@ public final class RequestValidator {
   private static final String GRANT_TYPE = ParameterConstants.PARAM_GRANT_TYPE;
   private static final String USER = ParameterConstants.PARAM_USER;
   private static final String APP_ID = ParameterConstants.PARAM_APP_ID;
+  private static final String LONG_LIVED_ACCESS = ParameterConstants.PARAM_LONG_LIVED_ACCESS;
 
   private static final Map<String, FieldValidator> validatorRegistry;
 
   private static final Set<String> LTISSO_FIELDS = new HashSet<>(Arrays.asList(GRANT_TYPE, USER));
   private static final Set<String> WSFEDSSO_FIELDS = new HashSet<>(Arrays.asList(GRANT_TYPE, USER));
-  private static final Set<String> OAUTH2SSO_FIELDS = new HashSet<>(Arrays.asList(GRANT_TYPE, USER));
-  
-  private static final Set<String> AUTHORIZE_ALLOWED_FIELDS = new HashSet<>(
-      Arrays.asList(CLIENT_ID, CLIENT_KEY, ANONYMOUS_TOKEN, GRANT_TYPE, USER, APP_ID));
+  private static final Set<String> OAUTH2SSO_FIELDS =
+      new HashSet<>(Arrays.asList(GRANT_TYPE, USER));
+
+  private static final Set<String> AUTHORIZE_ALLOWED_FIELDS = new HashSet<>(Arrays.asList(CLIENT_ID,
+      CLIENT_KEY, ANONYMOUS_TOKEN, GRANT_TYPE, USER, APP_ID, LONG_LIVED_ACCESS));
 
   private static final Set<String> AUTHORIZE_MANDATORY_FIELDS =
       new HashSet<>(Arrays.asList(GRANT_TYPE));
@@ -50,10 +52,10 @@ public final class RequestValidator {
   public static FieldSelector wsfedssoFieldSelector() {
     return () -> Collections.unmodifiableSet(WSFEDSSO_FIELDS);
   }
-  
+
   public static FieldSelector oauth2ssoFieldSelector() {
-      return () -> Collections.unmodifiableSet(OAUTH2SSO_FIELDS);
-    }
+    return () -> Collections.unmodifiableSet(OAUTH2SSO_FIELDS);
+  }
 
   public static FieldSelector authorizeFieldSelector() {
     return new FieldSelector() {

@@ -3,7 +3,7 @@
   "redis": {
     "host": "127.0.0.1",
     "port": 6379,
-    "nonce.expire.in.secs": 180 
+    "nonce.expire.in.secs": 180
   },
   "defaultDataSource": {
     "nucleus.ds.type": "hikari",
@@ -21,6 +21,7 @@
   },
   "app.config" : {
   	"appid.required" : false,
+  	"refresh.token.expire.in.secs": 31536000,
   	"credential.applogin.url": "http://local.gooru.org/sign-in",
   	"google.applogin.url": "http://staging.gooru.org/api/nucleus-auth-idp/v2/google?tenantId=",
   	"oauth2.applogin.url": "http://staging.gooru.org/api/nucleus-auth-idp/v1/oauth2/",

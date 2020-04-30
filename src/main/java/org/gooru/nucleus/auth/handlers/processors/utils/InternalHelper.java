@@ -29,8 +29,9 @@ public final class InternalHelper {
   private static final String TOKEN_VERSION = "2";
   private static final String RESET_PASSWORD_TOKEN = "RESET_PASSWORD_TOKEN";
   private static final String CLIENT_KEY_HASH = "$GooruCLIENTKeyHash$";
-  private static final String NONCE_KEY_HASH = "$GooruNONCEHash$";
+  private static final String REFRESH_TOKEN_HASH = "$GooruREFRESHTokenHash$";
   private static final String COLON = ":";
+  private static final String REFRESH_TOKEN_DELIMITER = "######";
 
   private InternalHelper() {
     throw new AssertionError();
@@ -57,6 +58,28 @@ public final class InternalHelper {
         + (partnerId != null ? partnerId : "") + COLON + clientId;
 
     return Base64.getEncoder().encodeToString(result.getBytes());
+  }
+
+  public static String generateRefreshToken(String userId) {
+    String key = REFRESH_TOKEN_HASH + COLON + System.currentTimeMillis() + COLON + userId;
+    String token = encrypt(key) + REFRESH_TOKEN_DELIMITER + userId;
+    return Base64.getEncoder().encodeToString(token.getBytes());
+  }
+
+  public static String extractUserIdFromRefreshToken(String token) {
+    byte[] tokenizerDecoded = Base64.getDecoder().decode(token.getBytes());
+    final String tokenizer = new String(tokenizerDecoded, 0, tokenizerDecoded.length);
+    int index = tokenizer.indexOf(REFRESH_TOKEN_DELIMITER);
+    if (index <= 0) {
+      return null;
+    }
+    String userId = tokenizer.substring((index + REFRESH_TOKEN_DELIMITER.length()));
+    return userId;
+  }
+
+  public static String generateRefreshTokenKey(String userId) {
+    String key = REFRESH_TOKEN_HASH + COLON + userId;
+    return encrypt(key);
   }
 
   public static String[] getUsernameAndPassword(String basicAuthCredentials) {
@@ -149,4 +172,5 @@ public final class InternalHelper {
       sb.append(',');
     }
   }
+
 }
