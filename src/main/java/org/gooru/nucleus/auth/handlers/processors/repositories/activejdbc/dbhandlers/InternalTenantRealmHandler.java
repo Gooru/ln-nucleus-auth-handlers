@@ -25,7 +25,7 @@ public class InternalTenantRealmHandler implements DBHandler {
   private String shortName;
   private AJEntityTenant tenant;
   private final RedisClient redisClient;
-  private boolean longLivedToken;
+  private boolean longLivedAccess;
 
   public InternalTenantRealmHandler(ProcessorContext context) {
     this.context = context;
@@ -40,8 +40,16 @@ public class InternalTenantRealmHandler implements DBHandler {
       return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
           ExecutionResult.ExecutionStatus.FAILED);
     }
-    longLivedToken =
-        context.requestParams().getBoolean(ParameterConstants.PARAM_LONG_LIVED_ACCESS, false);
+    try {
+      longLivedAccess = Boolean
+          .valueOf(context.requestParams().getString(ParameterConstants.PARAM_LONG_LIVED_ACCESS));
+    } catch (Exception e) {
+      LOGGER.warn("Invalid long lived access value", e);
+      return new ExecutionResult<>(
+          MessageResponseFactory.createInvalidRequestResponse("invalid.long.lived.access"),
+          ExecutionResult.ExecutionStatus.FAILED);
+    }
+
     return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
   }
 
@@ -117,8 +125,8 @@ public class InternalTenantRealmHandler implements DBHandler {
 
   private ExecutionResult<MessageResponse> googleTypeRedirect(String tenantId) {
     String redirectUrl = AppConfiguration.getInstance().googleAppLoginUrl() + tenantId;
-    if (longLivedToken) {
-      redirectUrl += redirectUrl + "&" + ParameterConstants.PARAM_SHORT_NAME + "=true";
+    if (longLivedAccess) {
+      redirectUrl = redirectUrl + "&" + ParameterConstants.PARAM_LONG_LIVED_ACCESS + "=true";
     }
     return new ExecutionResult<>(MessageResponseFactory.createMovePermanentlyResponse(redirectUrl),
         ExecutionResult.ExecutionStatus.SUCCESSFUL);
@@ -126,17 +134,17 @@ public class InternalTenantRealmHandler implements DBHandler {
 
   private ExecutionResult<MessageResponse> oauth2TypeRedirect() {
     String redirectUrl = AppConfiguration.getInstance().oauth2AppLoginUrl() + this.shortName;
-    if (longLivedToken) {
-      redirectUrl += redirectUrl + "?" + ParameterConstants.PARAM_SHORT_NAME + "=true";
+    if (longLivedAccess) {
+      redirectUrl = redirectUrl + "?" + ParameterConstants.PARAM_LONG_LIVED_ACCESS + "=true";
     }
     return new ExecutionResult<>(MessageResponseFactory.createMovePermanentlyResponse(redirectUrl),
         ExecutionResult.ExecutionStatus.SUCCESSFUL);
   }
-  
+
   private ExecutionResult<MessageResponse> wsfedTypeRedirect() {
     String redirectUrl = AppConfiguration.getInstance().wsfedAppLoginUrl() + this.shortName;
-    if (longLivedToken) {
-      redirectUrl += redirectUrl + "?" + ParameterConstants.PARAM_SHORT_NAME + "=true";
+    if (longLivedAccess) {
+      redirectUrl = redirectUrl + "?" + ParameterConstants.PARAM_LONG_LIVED_ACCESS + "=true";
     }
     return new ExecutionResult<>(MessageResponseFactory.createMovePermanentlyResponse(redirectUrl),
         ExecutionResult.ExecutionStatus.SUCCESSFUL);
