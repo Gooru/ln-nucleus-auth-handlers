@@ -44,6 +44,7 @@ public class AJEntityTenant extends Model {
 
   public static final String GRANT_TYPE_OAUTH2 = "oauth2";
   public static final String GRANT_TYPE_GOOGLE = "google";
+  public static final String GRANT_TYPE_WSFED = "wsfed";
   public static final String GRANT_TYPE_CREDENTIAL = "credential";
 
   public static final String SELECT_BY_ID =

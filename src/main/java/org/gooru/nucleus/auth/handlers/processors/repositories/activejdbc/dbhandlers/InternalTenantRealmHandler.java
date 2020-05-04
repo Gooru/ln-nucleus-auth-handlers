@@ -96,6 +96,8 @@ public class InternalTenantRealmHandler implements DBHandler {
         return googleTypeRedirect(this.tenant.getString(AJEntityTenant.ID));
       } else if (grantType.equalsIgnoreCase(AJEntityTenant.GRANT_TYPE_OAUTH2)) {
         return oauth2TypeRedirect();
+      } else if (grantType.equalsIgnoreCase(AJEntityTenant.GRANT_TYPE_WSFED)) {
+        return wsfedTypeRedirect();
       }
 
       if (count == 2) {
@@ -124,6 +126,15 @@ public class InternalTenantRealmHandler implements DBHandler {
 
   private ExecutionResult<MessageResponse> oauth2TypeRedirect() {
     String redirectUrl = AppConfiguration.getInstance().oauth2AppLoginUrl() + this.shortName;
+    if (longLivedToken) {
+      redirectUrl += redirectUrl + "?" + ParameterConstants.PARAM_SHORT_NAME + "=true";
+    }
+    return new ExecutionResult<>(MessageResponseFactory.createMovePermanentlyResponse(redirectUrl),
+        ExecutionResult.ExecutionStatus.SUCCESSFUL);
+  }
+  
+  private ExecutionResult<MessageResponse> wsfedTypeRedirect() {
+    String redirectUrl = AppConfiguration.getInstance().wsfedAppLoginUrl() + this.shortName;
     if (longLivedToken) {
       redirectUrl += redirectUrl + "?" + ParameterConstants.PARAM_SHORT_NAME + "=true";
     }

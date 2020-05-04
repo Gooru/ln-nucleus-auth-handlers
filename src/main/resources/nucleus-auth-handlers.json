@@ -25,6 +25,7 @@
   	"credential.applogin.url": "http://local.gooru.org/sign-in",
   	"google.applogin.url": "http://staging.gooru.org/api/nucleus-auth-idp/v2/google?tenantId=",
   	"oauth2.applogin.url": "http://staging.gooru.org/api/nucleus-auth-idp/v1/oauth2/",
-  	"default.applogin.url": "http://local.gooru.org/sign-in"
+  	"default.applogin.url": "http://local.gooru.org/sign-in",
+  	"wsfed.applogin.url": "https://staging.gooru.org/api/nucleus-auth-idp/v3/wsfed/login/"
   }
 }
