@@ -91,5 +91,8 @@ public final class DBHandlerBuilder {
     return new CreateAccessTokenUsingRefreshTokenHandler(context);
   }
 
+  public static DBHandler buildRevokeRefreshTokenHandler(ProcessorContext context) {
+    return new RevokeRefreshTokenHandler(context);
+  }
 
 }

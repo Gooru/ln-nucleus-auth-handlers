@@ -58,4 +58,10 @@ public class AJAuthenticationRepo implements AuthenticationRepo {
     return new TransactionExecutor().executeTransaction(
         DBHandlerBuilder.buildCreateAccessTokenUsingRefreshTokenHandler(context));
   }
+
+  @Override
+  public MessageResponse revokeRefreshToken() {
+    return new TransactionExecutor().executeTransaction(
+        DBHandlerBuilder.buildRevokeRefreshTokenHandler(context));
+  }
 }

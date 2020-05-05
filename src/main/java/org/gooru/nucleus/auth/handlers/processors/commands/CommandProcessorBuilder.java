@@ -150,6 +150,13 @@ public enum CommandProcessorBuilder {
     public Processor build(ProcessorContext context) {
       return new CreateAccessTokenUsingRefreshTokenProcessor(context);
     }
+  },
+  REVOKE_REFRESH_TOKEN(
+      MessageConstants.MSG_OP_REFRESH_TOKEN_REVOKE) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new RevokeRefreshTokenProcessor(context);
+    }
   };
 
 

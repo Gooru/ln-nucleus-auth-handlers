@@ -17,4 +17,6 @@ public interface AuthenticationRepo {
   MessageResponse signout();
 
   MessageResponse createAccessTokenUsingRefreshToken();
+  
+  MessageResponse revokeRefreshToken();
 }
